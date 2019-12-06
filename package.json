@@ -1,0 +1,9 @@
+{
+  "name": "rainbow-bot-js",
+  "version": "0.0.0",
+  "description": "RainbowBOT JS",
+  "main": "app.js",
+  "author": {
+    "name": ""
+  }
+}
