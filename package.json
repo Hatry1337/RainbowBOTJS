@@ -2,8 +2,12 @@
   "name": "rainbow-bot-js",
   "version": "0.0.0",
   "description": "RainbowBOT JS",
-  "main": "app.js",
+  "main": "bot.js",
   "author": {
     "name": ""
+  },
+  "dependencies": {
+    "discord.js": "^11.5.1",
+    "ping-lite": "^2.0.2"
   }
 }
