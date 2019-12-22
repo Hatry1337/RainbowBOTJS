@@ -29,6 +29,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="bot.js" />
+    <Content Include="cmds\hentai.js">
+      <SubType>Code</SubType>
+    </Content>
     <Content Include="cmds\rhelp.js" />
     <Content Include="cmds\rstats.js">
       <SubType>Code</SubType>

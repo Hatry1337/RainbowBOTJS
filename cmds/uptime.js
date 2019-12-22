@@ -1,6 +1,5 @@
-﻿const Discord = require("discord.js");
-
-function uptime(message, date) {
+﻿
+function uptime(message, date, Discord) {
     let cur_date = new Date();
     let normal = msToTime(cur_date - date);
     emb = new Discord.RichEmbed()
@@ -22,4 +21,4 @@ function msToTime(duration, show_days) {
     return show_days ? (GetNumberWithPostfix(days, 'day') + ", " + hours + ":" + minutes + ":" + seconds) : (hours + ":" + minutes + ":" + seconds);
 }
 
-module.exports = { uptime };
+//module.exports = { uptime };

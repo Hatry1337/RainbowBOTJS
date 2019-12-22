@@ -1,5 +1,7 @@
-const Discord = require('discord.js');
-function ukrmova(message) {
+
+console.log("Imported ukrmova");
+
+function ukrmova(message, Discord) {
 	let words = [ 	
 				"Гинеколог - пихвозаглядач",
 				"Парашютисты - падалки",
@@ -37,4 +39,4 @@ function arrayRandElement(arr) {
     var rand = Math.floor(Math.random() * arr.length);
     return arr[rand];
 }
-module.exports = {ukrmova}
+//module.exports = {ukrmova}

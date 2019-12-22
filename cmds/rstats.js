@@ -1,7 +1,7 @@
-﻿const Discord = require("discord.js");
-const fs = require("fs");
+﻿
+console.log("Imported rstats");
 
-function rstats(message, client, date) {
+function rstats(message, client, date, Discord, fs) {
     emb = new Discord.RichEmbed()
         .setColor(0x8b00ff)
         .setTitle("Статистика бота")
@@ -30,4 +30,4 @@ function msToTime(duration, show_days) {
     return show_days ? (GetNumberWithPostfix(days, 'day') + ", " + hours + ":" + minutes + ":" + seconds) : (hours + ":" + minutes + ":" + seconds);
 }
 
-module.exports = { rstats };
+//module.exports = { rstats };

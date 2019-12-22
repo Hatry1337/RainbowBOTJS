@@ -1,5 +1,7 @@
-const Discord = require('discord.js');
-function rhelp(message){ 
+
+console.log("Imported rhelp");
+
+function rhelp(message, Discord){ 
 	emb = new Discord.RichEmbed()
 	.setTitle('Помощь по командам:')
 	.addField(name = "!rhelp", value = "Показывает это сообщение", inline= true)
@@ -28,4 +30,4 @@ function rhelp(message){
 	.setColor(0x8b00ff)
 	message.channel.send(embed=emb)
 }
-module.exports = {rhelp}
+//module.exports = {rhelp}

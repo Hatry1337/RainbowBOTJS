@@ -1,5 +1,7 @@
-const Discord = require('discord.js');
-function upd(message){ 
+
+console.log("Imported upd");
+
+function upd(message, Discord){ 
 	emb = new Discord.RichEmbed()
 	.setTitle("Апдейт-лог")
 	.setColor(0x00FF00)
@@ -22,4 +24,4 @@ function upd(message){
 	.addField(name = "**v2.0**, 06.12.2019", value = "Полный переход на Discord.js\n```Кстати, если хотите чтобы я добавил вашу хентай картинку, пишите !rep <ссылка>. То что понравится обязательно добавлю. Туда же можете присылать свои идеи для бота.```")
 	message.channel.send(embed=emb);
 }
-module.exports = {upd}
+//module.exports = {upd}
