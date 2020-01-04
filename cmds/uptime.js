@@ -1,4 +1,4 @@
-﻿
+﻿console.log("Imported uptime");
 function uptime(message, date, Discord) {
     let cur_date = new Date();
     let normal = msToTime(cur_date - date);
