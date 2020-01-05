@@ -105,6 +105,13 @@ function buy(message, Discord, db, client, gu, uu) {
                 }
                 uu(user.discord_id, user, function () {
                     message.channel.send(`Вы успешно купили ${getProd(parseInt(args[1]))} ${count} шт.`);
+                    if (user.bm1_time === 0) {
+                        user.bm1_time = new Date().getTime() / 1000;
+                        uu(user.discord_id, user, function () {
+                            message.channel.send(`Майнинг запущен!`);
+                            return;
+                        });
+                    }
                     return;
                 });
             }
