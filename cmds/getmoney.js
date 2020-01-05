@@ -1,4 +1,4 @@
-﻿console.log("Imported profile");
+﻿console.log("Imported getmoney");
 function getmoney(message, Discord, db, client, gu, uu) {
     gu(message.author.id, function (user) {
         if (user.bm1_time === 0) {
