@@ -1,6 +1,19 @@
 ﻿console.log("Imported profile");
 function profile(message, Discord, db, client, gu, uu) {
-    gu(message.author.id, function (user) {
+    args = message.content.split(" ");
+    var id = message.author.id;
+    if (args[1]) {
+        var uarg = args[1].toString();
+        uarg = uarg.replace("<@!", "");
+        uarg = uarg.replace(">", "");
+        id = uarg;
+        console.log(id)
+    }
+    gu(id, function (user) {
+        if (!(user)) {
+            message.channel.send("Данный пользователь не зарегистрирован!");
+            return;
+        }
         emb = new Discord.RichEmbed()
             .setTitle(`Профиль ${user.user}:`)
             .setColor(0x8b00ff)

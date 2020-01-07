@@ -7,6 +7,7 @@
     "name": ""
   },
   "dependencies": {
+    "dblapi.js": "^2.3.0",
     "discord.js": "^11.5.1",
     "ping-lite": "^2.0.2",
     "sqlite3": "^4.1.1"

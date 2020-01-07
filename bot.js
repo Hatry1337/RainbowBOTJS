@@ -1,21 +1,23 @@
-const token = "NjI3NDkyMTQyMjk3NjQ1MDU2.Xepk7Q.hc1ZAkTaZ5yrwDW5qNiElMt1_50";
+﻿const token = "NjI3NDkyMTQyMjk3NjQ1MDU2.Xepk7Q.hc1ZAkTaZ5yrwDW5qNiElMt1_50";
 const Discord = require('discord.js');
 const fs = require("fs");
 const sqlite = require('sqlite3').verbose();
 const db = new sqlite.Database('./database.db');
+const DBL = require("dblapi.js");
 
 const client = new Discord.Client();
+const dbl = new DBL('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjU3MTk0ODk5MzY0MzU0NDU4NyIsImJvdCI6dHJ1ZSwiaWF0IjoxNTc1NTczMjAyfQ.9OfSSDWcanClZpsqdFsz7U-1gStTb0SwYZWF49FtrNU', client);
 
 var utime;
 
 client.once('ready', () => {
     console.log('Ready!');
     utime = new Date();
-	client.user.setPresence({
-	        game: {
-	          name: `!rhelp`,
-	          type: 0,
-	        }
+    client.user.setPresence({
+        game: {
+            name: `!rhelp`,
+            type: 0,
+        }
     })
     load_modules(getFiles("./cmds/"));
     getUserByDiscordID("508637328349331462", function (user) {
@@ -24,78 +26,176 @@ client.once('ready', () => {
 });
 
 client.once('reconnecting', () => {
-	console.log('Reconnecting!');
+    console.log('Reconnecting!');
 });
 
 client.once('disconnect', () => {
-	console.log('Disconnect!');
+    console.log('Disconnect!');
 });
 
-client.on('message', async message => {
-	if (message.author.bot) return;
-    if (!message.content.startsWith("!")) return;
 
+
+function messageStats() {
     fs.readFile('stats.json', 'utf8', function (error, data) {
-        data = JSON.parse(data);
-        var file = {
-            stats: {
-                messages: data.stats.messages+1,
+        var file;
+        if (!(data)) {
+            file = {
+                stats: {
+                    messages: 1,
+                }
+            }
+        } else {
+            data = JSON.parse(data);
+            file = {
+                stats: {
+                    messages: data.stats.messages + 1,
+                }
             }
         }
         json = JSON.stringify(file, null, 4)
         fs.writeFile(`stats.json`, json, null, function () { })
     });
+}
+
+client.on('message', async message => {
+    if (message.author.bot) return;
+    if (!message.content.startsWith("!")) return;
+
+    messageStats();
 
     checkReg(message, function () {
-        if (message.content.startsWith(`!rhelp`)) {
-            rhelp(message, Discord);
-            return;
+        getUserByDiscordID(message.author.id, function (user) {
 
-        } else if (message.content.startsWith(`!ukrmova`)) {
-            ukrmova(message, Discord);
-            return;
+            checkBan(message, function () {
+                checkVip(message, function () {
+                    if (message.content.startsWith(`!rhelp`)) {
+                        rhelp(message, Discord);
+                        return;
 
-        } else if (message.content.startsWith(`!upd`)) {
-            upd(message, Discord);
-            return;
+                    } else if (message.content.startsWith(`!ukrmova`)) {
+                        ukrmova(message, Discord);
+                        return;
 
-        } else if (message.content.startsWith(`!uptime`)) {
-            uptime(message, utime, Discord);
-            return;
+                    } else if (message.content.startsWith(`!upd`)) {
+                        upd(message, Discord);
+                        return;
 
-        } else if (message.content.startsWith(`!rstats`)) {
-            rstats(message, client, utime, Discord, fs);
-            return;
+                    } else if (message.content.startsWith(`!uptime`)) {
+                        uptime(message, utime, Discord);
+                        return;
 
-        } else if (message.content.startsWith(`!hentai`)) {
-            hentai(message, client, Discord, fs, db, getUserByDiscordID);
-            return;
+                    } else if (message.content.startsWith(`!rstats`)) {
+                        rstats(message, client, utime, Discord, fs);
+                        return;
 
-        } else if (message.content.startsWith(`!shop`)) {
-            shop(message, client, Discord, db, getUserByDiscordID);
-            return;
+                    } else if (message.content.startsWith(`!hentai`)) {
+                        hentai(message, client, Discord, fs, db, getUserByDiscordID);
+                        return;
 
-        } else if (message.content.startsWith(`!buy`)) {
-            buy(message, Discord, db, client, getUserByDiscordID, updateUser);
-            return
+                    } else if (message.content.startsWith(`!shop`)) {
+                        shop(message, client, Discord, db, getUserByDiscordID);
+                        return;
 
-        } else if (message.content.startsWith(`!profile`)) {
-            profile(message, Discord, db, client, getUserByDiscordID, updateUser);
-            return
+                    } else if (message.content.startsWith(`!buy`)) {
+                        buy(message, Discord, db, client, getUserByDiscordID, updateUser);
+                        return
 
-        } else if (message.content.startsWith(`!getmoney`)) {
-            getmoney(message, Discord, db, client, getUserByDiscordID, updateUser);
-            return
+                    } else if (message.content.startsWith(`!profile`)) {
+                        profile(message, Discord, db, client, getUserByDiscordID, updateUser);
+                        return
 
-        }else {
-            console.log('You need to enter a valid command!')
-        }
+                    } else if (message.content.startsWith(`!getmoney`)) {
+                        getmoney(message, Discord, db, client, getUserByDiscordID, updateUser);
+                        return
+
+                    } else if (message.content.startsWith(`!set`)) {
+                        if (user.user_group === "Admin") {
+                            sett(message, Discord, db, client, getUserByDiscordID, updateUser);
+                            return;
+                        } else {
+                            message.channel.send("У вас нет прав администратора!");
+                            return;
+                        }
+
+                    } else if (message.content.startsWith(`!ban`)) {
+                        if (user.user_group === "Admin") {
+                            ban(message, Discord, db, client, getUserByDiscordID, updateUser);
+                            return;
+                        } else {
+                            message.channel.send("У вас нет прав администратора!");
+                            return;
+                        }
+
+                    } else if (message.content.startsWith(`!freevip`)) {
+                        freevip(message, Discord, db, client, getUserByDiscordID, updateUser, dbl);
+                        return
+
+                    } else if (message.content.startsWith(`!items`)) {
+                        items(message, Discord, db, client, getUserByDiscordID, updateUser);
+                        return
+
+                    } else {
+                        console.log('You need to enter a valid command!')
+                    }
+                });
+            });
+        });
     });
 });
 
 
+function checkVip(message, done) {
+    getUserByDiscordID(message.author.id, function (user) {
+        if (user.user_group === "VIP") {
+            var curTS = new Date().getTime() / 1000;
+            var diff;
+            if (user.vip_time === "inf") {
+                done();
+            } else {
+                diff = user.vip_time - curTS;
+            }
+            if (diff <= 0) {
+                user.vip_time = 0;
+                user.user_group = "Player";
+                updateUser(message.author.id, user, function () {
+                    done();
+                });
+            } else {
+                done();
+            }
+        } else {
+            done();
+        }
+    });
+}
 
-
+function checkBan(message, done) {
+    getUserByDiscordID(message.author.id, function (user) {
+        if (user.user_group === "Banned") {
+            var ban_time;
+            var curTS = new Date().getTime() / 1000;
+            var diff;
+            if (user.ban_time === "inf") {
+                ban_time = "никогда, лол)";
+            } else {
+                diff = user.ban_time - curTS;
+                ban_time = timeConversion(diff * 1000);
+            }
+            if (diff <= 0) {
+                user.ban_time = 0;
+                user.user_group = "Player";
+                updateUser(message.author.id, user, function () {
+                    done();
+                });
+            } else {
+                message.channel.send(`Вы забанены! Причина: ${user.ban_reason}, Бан истекает через: ${ban_time}`);
+                return;
+            }
+        } else {
+            done();
+        }
+    });
+}
 
 function checkReg(message, done) {
     getUserByDiscordID(message.author.id, function (user) {
@@ -107,7 +207,24 @@ function checkReg(message, done) {
     });
 }
 
+function timeConversion(millisec) {
+    var seconds = parseInt(millisec / 1000);
+    var minutes = parseInt(millisec / (1000 * 60));
+    var hours = parseInt(millisec / (1000 * 60 * 60));
+    var days = parseInt(millisec / (1000 * 60 * 60 * 24));
 
+    var stime;
+    if (seconds < 60) {
+        stime = `${seconds} секунд`;
+    } else if (minutes < 60) {
+        stime = `${minutes} минут, ${seconds - minutes * 60} секунд`;
+    } else if (hours < 24) {
+        stime = `${hours} часов, ${minutes - hours * 60} минут, ${seconds - minutes * 60} секунд`;
+    } else {
+        stime = `${days} дней, ${hours - days * 24} часов, ${minutes - hours * 60} минут, ${seconds - minutes * 60} секунд`;
+    }
+    return stime;
+}
 
 
 var getFiles = function (dir, files_) {

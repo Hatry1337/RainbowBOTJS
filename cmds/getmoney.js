@@ -16,7 +16,32 @@ function getmoney(message, Discord, db, client, gu, uu) {
             var bmdc_rate = 27.8;
             var ss_rate = 2.8;
             var ss_xp_rate = 0.006;
-            message.channel.send(`Ваш доход за ${timeConversion(diff*1000)}: ${11}`);
+
+            var total_points =
+                (bm1_rate * diff) * user.bitminer1 +
+                (bm2_rate * diff) * user.bitminer2 +
+                (bmr_rate * diff) * user.bitminer_rack +
+                (bmdc_rate * diff) * user.bitm_dc +
+                (ss_rate * diff) * user.solar_station;
+
+            var total_xp =
+                (ss_xp_rate * diff) * user.solar_station;
+
+            total_points = parseInt(total_points);
+            total_xp = parseInt(total_xp);
+
+            user.user_points = user.user_points + total_points;
+            user.user_xp = user.user_xp + total_xp;
+            if (!(total_xp === 0)) {
+                message.channel.send(`Ваш доход за ${timeConversion(diff * 1000)}: ${total_points} Поинтов, ${total_xp} ед. Опыта`);
+            } else {
+                message.channel.send(`Ваш доход за ${timeConversion(diff * 1000)}: ${total_points} Поинтов`);
+            }
+
+            user.bm1_time = new Date().getTime() / 1000;
+            uu(user.discord_id, user, function () {
+                return;
+            });
         }
     });
 }

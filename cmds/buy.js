@@ -1,6 +1,20 @@
 ﻿console.log("Imported buy");
 function buy(message, Discord, db, client, gu, uu) {
     var args = message.content.split(" ");
+
+    if (!(args[1])) {
+        message.channel.send("Введите номер товара!");
+        return;
+    }
+    if (isNaN(args[1])) {
+        message.channel.send("Номер товара должен быть __числом__ от 0 до 7!");
+        return;
+    }
+    if ((args[1] > 7) || (args[1] <= 0)) {
+        message.channel.send("Номер товара не может быть __меньше 0 и больше 7__!");
+        return;
+    } 
+
     gu(message.author.id, function (user) {
         var bs1_pr = Math.pow(1.2, user.bitminer1) * 50000;
         var bs2_pr = Math.pow(1.2, user.bitminer2) * 100000;
@@ -62,7 +76,7 @@ function buy(message, Discord, db, client, gu, uu) {
             count = parseInt(args[2])
         }
 
-        if ((count == NaN) || (count <= 0)) {
+        if ((isNaN(count)) || (count <= 0)) {
             message.channel.send("Количество не может быть 0 или меньше.")
             return;
         }
