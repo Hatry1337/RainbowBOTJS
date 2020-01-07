@@ -1,17 +1,28 @@
-﻿const token = "NjI3NDkyMTQyMjk3NjQ1MDU2.Xepk7Q.hc1ZAkTaZ5yrwDW5qNiElMt1_50";
+﻿const token = "NTcxOTQ4OTkzNjQzNTQ0NTg3.XgeiKw.cEkANo0lixhtWYJ1ILAOVHwUTlI";
+
+const Eris = require("eris");
 const Discord = require('discord.js');
+const ytdl = require('ytdl-core');
+const search = require('youtube-search');
 const fs = require("fs");
 const sqlite = require('sqlite3').verbose();
 const db = new sqlite.Database('./database.db');
 const DBL = require("dblapi.js");
 
 const client = new Discord.Client();
+const bot = new Eris(token);
 const dbl = new DBL('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjU3MTk0ODk5MzY0MzU0NDU4NyIsImJvdCI6dHJ1ZSwiaWF0IjoxNTc1NTczMjAyfQ.9OfSSDWcanClZpsqdFsz7U-1gStTb0SwYZWF49FtrNU', client);
 
+var search_opts = {
+    maxResults: 1,
+    key: 'AIzaSyA7GWi6ML0kZepUMz4Oh8niBZvXguvasmQ',
+};
+
 var utime;
+const queue = new Map();
 
 client.once('ready', () => {
-    console.log('Ready!');
+    console.log('Ready 1!');
     utime = new Date();
     client.user.setPresence({
         game: {
@@ -23,6 +34,10 @@ client.once('ready', () => {
     getUserByDiscordID("508637328349331462", function (user) {
         console.log(user);
     });
+});
+
+bot.on('ready', () => {
+    console.log('Ready 2!');
 });
 
 client.once('reconnecting', () => {
@@ -62,7 +77,7 @@ client.on('message', async message => {
     if (!message.content.startsWith("!")) return;
 
     messageStats();
-
+    const serverQueue = queue.get(message.guild.id);
     checkReg(message, function () {
         getUserByDiscordID(message.author.id, function (user) {
 
@@ -133,6 +148,26 @@ client.on('message', async message => {
                     } else if (message.content.startsWith(`!items`)) {
                         items(message, Discord, db, client, getUserByDiscordID, updateUser);
                         return
+
+                    } else if (message.content.startsWith(`!play `)) {
+                        execute(message, serverQueue);
+                        return;
+
+                    } else if (message.content.startsWith(`!playp`)) {
+                        executep(message, serverQueue);
+                        return;
+
+                    } else if (message.content.startsWith(`!skip`)) {
+                        skip(message, serverQueue);
+                        return;
+
+                    } else if (message.content.startsWith(`!stop`)) {
+                        stop(message, serverQueue);
+                        return;
+
+                    } else if (message.content.startsWith(`!queue`)) {
+                        show_queue(message.channel, serverQueue);
+                        return;
 
                     } else {
                         console.log('You need to enter a valid command!')
@@ -319,4 +354,263 @@ function updateUser(discord_id, newUser, done) {
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+async function execute(message, serverQueue) {
+    const sch_req = message.content.substr(6);
+
+    const voiceChannel = message.member.voiceChannelID;
+    var res = null;
+    search(sch_req, search_opts, async function (err, res) {
+        if (err) return console.log(err);
+        console.log(res);
+        const songInfo = await ytdl.getInfo(res[0].link);
+        const song = {
+            title: songInfo.title,
+            url: songInfo.video_url,
+            duration: songInfo.length_seconds,
+            thumbnail: res[0].thumbnails.high,
+        };
+
+        if (!serverQueue) {
+            const queueContruct = {
+                textChannel: message.channel,
+                voiceChannel: voiceChannel,
+                vc: message.member.voiceChannel,
+                connection: null,
+                songs: [],
+                current: null,
+                volume: 5,
+                playing: true,
+            };
+
+            queue.set(message.guild.id, queueContruct);
+
+            queueContruct.songs.push(song);
+
+            try {
+                bot.joinVoiceChannel(queueContruct.voiceChannel).catch((err) => { // Join the user's voice channel
+                    bot.createMessage(message.channel.id, "Ошибка присоеднения к голосовому каналу: " + err.message); // Notify the user if there is an error
+                    console.log(err); // Log the error
+                }).then((connection) => {
+                    queueContruct.connection = connection;
+                    play(message.guild, queueContruct.songs[0]);
+                });
+            } catch (err) {
+                console.log(err);
+                queue.delete(message.guild.id);
+                return message.channel.send(err);
+            }
+        } else {
+            serverQueue.songs.push(song);
+            return show_queue(message.channel, serverQueue)
+        }
+    });
+}
+
+async function executep(message, serverQueue) {
+    var gavno = message.content.substr(7).split(";;");
+
+    console.log(gavno);
+    const voiceChannel = message.member.voiceChannelID;
+
+    var res = null;
+    search(gavno[0], search_opts, async function (err, res) {
+        if (err) return console.log(err);
+        console.log(res);
+        const songInfo = await ytdl.getInfo(res[0].link);
+        const song = {
+            title: songInfo.title,
+            url: songInfo.video_url,
+            duration: songInfo.length_seconds,
+            thumbnail: res[0].thumbnails.high,
+        };
+
+        if (!serverQueue) {
+            const queueContruct = {
+                textChannel: message.channel,
+                voiceChannel: voiceChannel,
+                vc: message.member.voiceChannel,
+                connection: null,
+                songs: [],
+                current: null,
+                volume: 5,
+                playing: true,
+            };
+
+            queue.set(message.guild.id, queueContruct);
+
+            queueContruct.songs.push(song);
+            i = 1;
+            while (i < gavno.length) {
+                search(gavno[i], search_opts, async function (err, res) {
+                    if (err) return console.log(err);
+                    console.log(res);
+                    const songInfo = await ytdl.getInfo(res[0].link);
+                    const song = {
+                        title: songInfo.title,
+                        url: songInfo.video_url,
+                        duration: songInfo.length_seconds,
+                        thumbnail: res[0].thumbnails.high,
+                    };
+                    queueContruct.songs.push(song);
+                });
+                i++;
+            };
+
+            try {
+                bot.joinVoiceChannel(queueContruct.voiceChannel).catch((err) => { // Join the user's voice channel
+                    bot.createMessage(message.channel.id, "Ошибка присоеднения к голосовому каналу: " + err.message); // Notify the user if there is an error
+                    console.log(err); // Log the error
+                }).then((connection) => {
+                    queueContruct.connection = connection;
+                    play(message.guild, queueContruct.songs[0]);
+                });
+            } catch (err) {
+                console.log(err);
+                queue.delete(message.guild.id);
+                return message.channel.send(err);
+            }
+        } else {
+            serverQueue.songs.push(song);
+            console.log(serverQueue.songs);
+            i = 1;
+            while (i < gavno.length) {
+                search(gavno[i], search_opts, async function (err, res) {
+                    if (err) return console.log(err);
+                    console.log(res);
+                    const songInfo = await ytdl.getInfo(res[0].link);
+                    const song = {
+                        title: songInfo.title,
+                        url: songInfo.video_url,
+                        duration: songInfo.length_seconds,
+                        thumbnail: res[0].thumbnails.high,
+                    };
+                    serverQueue.songs.push(song);
+                });
+                i++;
+            };
+            return show_queue(message.channel, serverQueue)
+        }
+
+    });
+}
+
+
+
+function show_queue(channel, serverQueue) {
+    let songs = serverQueue.songs;
+    if (!songs) {
+        emd = new Discord.RichEmbed()
+            .setTitle("Очередь окончена!")
+            .setColor(0x0000FF);
+        serverQueue.textChannel.send(emd);
+        bot.leaveVoiceChannel(serverQueue.voiceChannel)
+        queue.delete(guild.id);
+        return;
+    }
+    let queue = "";
+    if (!(songs === [])) {
+        let i = 0;
+        while (i < (songs.length)) {
+            if (i === 0) {
+                dur = secondsToDhms(songs[0].duration)
+                queue = `Текущий трек: _${songs[0].title}_ **${dur}**\n\nСледующие:`;
+            } else {
+                dur = secondsToDhms(songs[i].duration)
+                queue = queue + "\n" + i.toString() + ". " + songs[i].title + " " + dur;
+            }
+            i++;
+        }
+    }
+    embed = new Discord.RichEmbed()
+        .setTitle("Очередь воспроизведения:")
+        .setColor(0x0000FF)
+        .setDescription(queue);
+    if (songs[0]) {
+        embed.setThumbnail(songs[0].thumbnail.url);
+    }
+    channel.send(embed)
+}
+
+function secondsToDhms(seconds) {
+    seconds = Number(seconds);
+    var d = Math.floor(seconds / (3600 * 24));
+    var h = Math.floor(seconds % (3600 * 24) / 3600);
+    var m = Math.floor(seconds % 3600 / 60);
+    var s = Math.floor(seconds % 60);
+
+    return `**${d}:${h}:${m}:${s}**`;
+}
+
+function skip(message, serverQueue) {
+    if (!message.member.voiceChannel) return message.channel.send('Вы должны находиться в голосовом канале!');
+    if (!serverQueue) return message.channel.send('Нету трека, который можно пропустить!');
+    serverQueue.connection.stopPlaying();
+    return show_queue(message.channel, serverQueue);
+}
+
+function stop(message, serverQueue) {
+    if (!message.member.voiceChannel) return message.channel.send('Вы должны находиться в голосовом канале!');
+    serverQueue.songs = [];
+    serverQueue.connection.stopPlaying();
+    bot.leaveVoiceChannel(serverQueue.voiceChannel);
+}
+
+function play(guild, song) {
+    const serverQueue = queue.get(guild.id);
+    if (!song) {
+        emd = new Discord.RichEmbed()
+            .setTitle("Очередь окончена!")
+            .setColor(0x0000FF);
+        serverQueue.textChannel.send(emd);
+        bot.leaveVoiceChannel(serverQueue.voiceChannel)
+        queue.delete(guild.id);
+        return;
+    }
+    show_queue(serverQueue.textChannel, serverQueue);
+    serverQueue.connection.play(ytdl(song.url, { filter: 'audioonly' }));
+    serverQueue.connection.once('end', () => {
+        console.log('Music ended!');
+        serverQueue.songs.shift();
+        play(guild, serverQueue.songs[0]);
+    });
+}
+
+
+
+
+
+
+
+
 client.login(token);
+bot.connect();
