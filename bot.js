@@ -85,7 +85,7 @@ client.on('message', async message => {
                         return;
 
                     } else if (message.content.startsWith(`!rstats`)) {
-                        rstats(message, client, utime, Discord, fs);
+                        rstats(message, client, utime, Discord, fs, getDataBaseLength);
                         return;
 
                     } else if (message.content.startsWith(`!hentai`)) {
