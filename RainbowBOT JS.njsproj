@@ -48,6 +48,9 @@
     <Content Include="cmds\items.js">
       <SubType>Code</SubType>
     </Content>
+    <Content Include="cmds\pay.js">
+      <SubType>Code</SubType>
+    </Content>
     <Content Include="cmds\profile.js">
       <SubType>Code</SubType>
     </Content>

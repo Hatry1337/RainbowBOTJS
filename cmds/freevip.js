@@ -24,8 +24,9 @@ function freevip(message, Discord, db, client, gu, uu, dbl) {
                         var vip_time = cur_ts + 43200;
                         user.vip_time = vip_time;
                         user.user_group = "VIP";
+                        user.user_points = user.user_points + 30000;
                         uu(message.author.id, user, function () {
-                            message.channel.send("Вы получили VIP на 12 часов!");
+                            message.channel.send("Вы получили VIP на 12 часов + бонус 30.000 Поинтов!");
                             return;
                         });
                     }

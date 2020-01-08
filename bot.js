@@ -1,5 +1,11 @@
-﻿const token = "NTcxOTQ4OTkzNjQzNTQ0NTg3.XgeiKw.cEkANo0lixhtWYJ1ILAOVHwUTlI";
+﻿const dev_mode = false;
 
+
+if (dev_mode === true) {
+    token = "NjI3NDkyMTQyMjk3NjQ1MDU2.XhTDOw.7-rtuqO2kLSwCRvcv0ty4me9QtU"
+} else {
+    token = "NTcxOTQ4OTkzNjQzNTQ0NTg3.XgeiKw.cEkANo0lixhtWYJ1ILAOVHwUTlI"
+}
 const Eris = require("eris");
 const Discord = require('discord.js');
 const ytdl = require('ytdl-core');
@@ -168,6 +174,10 @@ client.on('message', async message => {
                     } else if (message.content.startsWith(`!queue`)) {
                         show_queue(message.channel, serverQueue);
                         return;
+
+                    } else if (message.content.startsWith(`!pay`)) {
+                        pay(message, Discord, db, client, getUserByDiscordID, updateUser);
+                        return
 
                     } else {
                         console.log('You need to enter a valid command!')
