@@ -4,7 +4,7 @@
 if (dev_mode === true) {
     token = "NjI3NDkyMTQyMjk3NjQ1MDU2.XhTDOw.7-rtuqO2kLSwCRvcv0ty4me9QtU"
 } else {
-    token = "NTcxOTQ4OTkzNjQzNTQ0NTg3.XgeiKw.cEkANo0lixhtWYJ1ILAOVHwUTlI"
+    token = "NTcxOTQ4OTkzNjQzNTQ0NTg3.XhtwIw.t1mgM4gAUDSYlgc6QrbpnsYA-c8"
 }
 const Eris = require("eris");
 const Discord = require('discord.js');
