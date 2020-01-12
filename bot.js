@@ -183,6 +183,10 @@ client.on('message', async message => {
                         roll(message, Discord);
                         return;
 
+                    } else if (message.content.startsWith(`!8ball`)) {
+                        ball8(message, Discord);
+                        return;
+
                     } else {
                         console.log('You need to enter a valid command!')
                     }

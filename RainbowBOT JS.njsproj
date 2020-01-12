@@ -30,6 +30,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="bot.js" />
+    <Content Include="cmds\8ball.js">
+      <SubType>Code</SubType>
+    </Content>
     <Content Include="cmds\ban.js">
       <SubType>Code</SubType>
     </Content>
