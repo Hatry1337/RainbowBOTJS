@@ -1,4 +1,4 @@
-﻿const dev_mode = true;
+﻿const dev_mode = false;
 
 
 if (dev_mode === true) {
