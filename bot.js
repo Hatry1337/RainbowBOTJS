@@ -14,6 +14,7 @@ const fs = require("fs");
 const sqlite = require('sqlite3').verbose();
 const db = new sqlite.Database('./database.db');
 const DBL = require("dblapi.js");
+const request = require("request");
 
 const client = new Discord.Client();
 const bot = new Eris(token);
@@ -185,6 +186,10 @@ client.on('message', async message => {
 
                     } else if (message.content.startsWith(`!8ball`)) {
                         ball8(message, Discord);
+                        return;
+
+                    } else if (message.content.startsWith(`!randcat`)) {
+                        randcat(message, Discord, request);
                         return;
 
                     } else {
