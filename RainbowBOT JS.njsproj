@@ -55,6 +55,9 @@
       <SubType>Code</SubType>
     </Content>
     <Content Include="cmds\rhelp.js" />
+    <Content Include="cmds\roll.js">
+      <SubType>Code</SubType>
+    </Content>
     <Content Include="cmds\rstats.js">
       <SubType>Code</SubType>
     </Content>

@@ -1,4 +1,4 @@
-﻿const dev_mode = false;
+﻿const dev_mode = true;
 
 
 if (dev_mode === true) {
@@ -178,6 +178,10 @@ client.on('message', async message => {
                     } else if (message.content.startsWith(`!pay`)) {
                         pay(message, Discord, db, client, getUserByDiscordID, updateUser);
                         return
+
+                    } else if (message.content.startsWith(`!roll`)) {
+                        roll(message, Discord);
+                        return;
 
                     } else {
                         console.log('You need to enter a valid command!')
