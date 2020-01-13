@@ -192,6 +192,10 @@ client.on('message', async message => {
                         randcat(message, Discord, request);
                         return;
 
+                    } else if (message.content.startsWith(`!osuinfo`)) {
+                        osuinfo(message, Discord, request);
+                        return;
+
                     } else {
                         console.log('You need to enter a valid command!')
                     }

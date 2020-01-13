@@ -51,6 +51,9 @@
     <Content Include="cmds\items.js">
       <SubType>Code</SubType>
     </Content>
+    <Content Include="cmds\osuinfo.js">
+      <SubType>Code</SubType>
+    </Content>
     <Content Include="cmds\pay.js">
       <SubType>Code</SubType>
     </Content>
