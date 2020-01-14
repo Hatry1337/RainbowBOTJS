@@ -82,7 +82,7 @@ function messageStats() {
 client.on('message', async message => {
     if (message.author.bot) return;
     if (!message.content.startsWith("!")) return;
-    if (message.channel.type === "dm") message.channel.send("Команды в личных сообщениях не поддерживаются :cry:"); return;
+    if (message.channel.type === "dm") { message.channel.send("Команды в личных сообщениях не поддерживаются :cry:"); return; }
 
     messageStats();
     const serverQueue = queue.get(message.guild.id);
