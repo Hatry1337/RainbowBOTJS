@@ -16,6 +16,10 @@ function ban(message, Discord, db, client, gu, uu) {
     } else {
         return;
     }
+    if (isNaN(parseInt(uid))) {
+        message.channel.send("Введен неверный ID!");
+        return;
+    }
     gu(uid, function (user) {
         var curTS = new Date().getTime() / 1000;
         var btime;

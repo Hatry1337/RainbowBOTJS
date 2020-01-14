@@ -2,9 +2,9 @@
 
 
 if (dev_mode === true) {
-    token = "NjI3NDkyMTQyMjk3NjQ1MDU2.XhTDOw.7-rtuqO2kLSwCRvcv0ty4me9QtU"
+    token = "NjI3NDkyMTQyMjk3NjQ1MDU2.Xh3pBg.xnRTvNixn_ubf4i25azaCt4vJ1w"
 } else {
-    token = "NTcxOTQ4OTkzNjQzNTQ0NTg3.XhtwIw.t1mgM4gAUDSYlgc6QrbpnsYA-c8"
+    token = "NTcxOTQ4OTkzNjQzNTQ0NTg3.Xh3o8A.Gt82pQ_AhmSlC0ZDI0waSTHewkw"
 }
 const Eris = require("eris");
 const Discord = require('discord.js');
@@ -82,6 +82,7 @@ function messageStats() {
 client.on('message', async message => {
     if (message.author.bot) return;
     if (!message.content.startsWith("!")) return;
+    if (message.channel.type === "dm") message.channel.send("Команды в личных сообщениях не поддерживаются :cry:"); return;
 
     messageStats();
     const serverQueue = queue.get(message.guild.id);
@@ -194,6 +195,19 @@ client.on('message', async message => {
 
                     } else if (message.content.startsWith(`!osuinfo`)) {
                         osuinfo(message, Discord, request);
+                        return;
+
+                    } else if (message.content.startsWith(`!saypm`)) {
+                        if (user.user_group === "Admin") {
+                            saypm(message, Discord, db, client, getUserByDiscordID, updateUser);
+                            return;
+                        } else {
+                            message.channel.send("У вас нет прав администратора!");
+                            return;
+                        }
+
+                    } else if (message.content.startsWith(`!rep`)) {
+                        rep(message, Discord, client);
                         return;
 
                     } else {
