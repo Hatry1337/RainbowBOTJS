@@ -23,7 +23,7 @@ function items(message, Discord, db, client, gu, uu) {
                 Bitminer S2: ${user.bitminer2}
                 Bitminer Rack: ${user.bitminer_rack}
                 Датацентр с майнерами: ${user.bitm_dc}
-                Солнечная Электростанция: ${user.bitminer_rack}`);
+                Солнечная Электростанция: ${user.solar_station}`);
         message.channel.send(embed = emb);
         return;
     });
