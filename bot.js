@@ -1,6 +1,6 @@
 ﻿const dev_mode = false;
 
-//
+
 if (dev_mode === true) {
     token = "NjI3NDkyMTQyMjk3NjQ1MDU2.Xh3pBg.xnRTvNixn_ubf4i25azaCt4vJ1w"
 } else {

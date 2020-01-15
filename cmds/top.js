@@ -1,5 +1,5 @@
 ﻿console.log("Imported top");
-function top(message, Discord, db, client, guli) {
+function top(message, Discord, db, client, gau) {
     gau(function (users) {
         var usersByPoints = sortUsersByPoints(unique(users))
         curUserPlace = usersByPoints.findIndex(x => x.discord_id === message.author.id);
