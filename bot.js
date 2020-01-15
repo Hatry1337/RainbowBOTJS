@@ -210,6 +210,10 @@ client.on('message', async message => {
                         rep(message, Discord, client);
                         return;
 
+                    } else if (message.content.startsWith(`!top`)) {
+                        top(message, Discord, db, client, getAllUsers);
+                        return
+
                     } else {
                         console.log('You need to enter a valid command!')
                     }
@@ -371,6 +375,15 @@ function getUserByLocalID(localID, done) {
         var user = rows[0];
         done(user);
         return user;
+    });
+}
+function getAllUsers(done) {
+    db.all(`SELECT * FROM users_info`, [], (err, rows) => {
+        if (err) {
+            throw err;
+        }
+        done(rows);
+        return rows;
     });
 }
 

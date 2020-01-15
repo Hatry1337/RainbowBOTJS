@@ -87,6 +87,9 @@
     <Content Include="cmds\uptime.js">
       <SubType>Code</SubType>
     </Content>
+    <Content Include="cmds\top.js">
+      <SubType>Code</SubType>
+    </Content>
     <Content Include="package.json" />
     <Content Include="README.md" />
   </ItemGroup>
