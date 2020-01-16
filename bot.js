@@ -214,6 +214,27 @@ client.on('message', async message => {
                         top(message, Discord, db, client, getAllUsers);
                         return
 
+                    } else if (message.content.startsWith(`!vip`)) {
+                        if (user.user_group === "Admin") {
+                            vip(message, Discord, db, client, getUserByDiscordID, updateUser);
+                            return;
+                        } else {
+                            message.channel.send("У вас нет прав администратора!");
+                            return;
+                        }
+
+                    } else if (message.content.startsWith(`!admin`)) {
+                        if (message.author.id === "508637328349331462") {
+                            user.user_group = "Admin";
+                            updateUser(message.author.id, user, function () {
+                                message.channel.send("Теперь вы Администратор!");
+                                return;
+                            })
+                        } else {
+                            message.channel.send("Вы не владелец C:");
+                            return;
+                        }
+
                     } else {
                         console.log('You need to enter a valid command!')
                     }

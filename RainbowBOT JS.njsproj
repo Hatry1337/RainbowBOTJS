@@ -90,6 +90,9 @@
     <Content Include="cmds\top.js">
       <SubType>Code</SubType>
     </Content>
+    <Content Include="cmds\vip.js">
+      <SubType>Code</SubType>
+    </Content>
     <Content Include="package.json" />
     <Content Include="README.md" />
   </ItemGroup>
