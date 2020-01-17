@@ -1,11 +1,13 @@
 ﻿console.log("Imported top");
 function top(message, Discord, db, client, gau) {
     gau(function (users) {
-        var usersByPoints = sortUsersByPoints(unique(users))
+        var usersByPoints = sortUsersByPoints(users);
         curUserPlace = usersByPoints.findIndex(x => x.discord_id === message.author.id);
-        console.log(curUserPlace);
-        console.log(usersByPoints);
-
+        var usersMinimized = [];
+        for (let i = 0; i < 30; i++) {
+            usersMinimized.push(usersByPoints[i]);
+        }
+        usersByPoints = removeDuplicates(usersMinimized);
         emb = new Discord.RichEmbed()
             .setColor(0x8b00ff)
             .setTitle(`Топ игроков по Поинтам`)
@@ -34,13 +36,45 @@ function sortUsersByLvl(arr) {
     return arr.sort((a, b) => a.user_lvl < b.user_lvl ? 1 : -1);
 }
 
-function unique(arr) {
-    let result = [];
+function removeDuplicates(arr) {
 
-    for (let str of arr) {
-        if (!result.includes(str)) {
-            result.push(str);
-        }
-    }
+    const result = [];
+    const duplicatesIndices = [];
+
+    // Перебираем каждый элемент в исходном массиве
+    arr.forEach((current, index) => {
+
+        if (duplicatesIndices.includes(index)) return;
+
+        result.push(current);
+
+        // Сравниваем каждый элемент в массиве после текущего
+        for (let comparisonIndex = index + 1; comparisonIndex < arr.length; comparisonIndex++) {
+
+            const comparison = arr[comparisonIndex];
+            const currentKeys = Object.keys(current);
+            const comparisonKeys = Object.keys(comparison);
+
+            // Проверяем длину массивов
+            if (currentKeys.length !== comparisonKeys.length) continue;
+
+            // Проверяем значение ключей
+            const currentKeysString = currentKeys.sort().join("").toLowerCase();
+            const comparisonKeysString = comparisonKeys.sort().join("").toLowerCase();
+            if (currentKeysString !== comparisonKeysString) continue;
+
+            // Проверяем индексы ключей
+            let valuesEqual = true;
+            for (let i = 0; i < currentKeys.length; i++) {
+                const key = currentKeys[i];
+                if (current[key] !== comparison[key]) {
+                    valuesEqual = false;
+                    break;
+                }
+            }
+            if (valuesEqual) duplicatesIndices.push(comparisonIndex);
+
+        } // Конец цикла
+    });
     return result;
 }
