@@ -14,13 +14,13 @@ function items(message, Discord, db, client, gu, uu) {
             message.channel.send("Данный пользователь не зарегистрирован!");
             return;
         }
-        var bm1_rate = 1.2;
-        var bm2_rate = 2.5;
-        var bmr_rate = 5.6;
-        var bmdc_rate = 27.8;
+        var bm1_rate = 1.2 * 60 * 60;
+        var bm2_rate = 2.5 * 60 * 60;
+        var bmr_rate = 5.6 * 60 * 60;
+        var bmdc_rate = 27.8 * 60 * 60;
         var ss_rate = 2.8;
 
-        var mining_speed = (bm1_rate * user.bitminer1) + (bm2_rate * user.bitminer2) + (bmr_rate * user.bitminer_rack) + (bmdc_rate * user.bitm_dc) * 60 * 60
+        var mining_speed = (bm1_rate * user.bitminer1) + (bm2_rate * user.bitminer2) + (bmr_rate * user.bitminer_rack) + (bmdc_rate * user.bitm_dc);
 
         emb = new Discord.RichEmbed()
             .setTitle(`Предметы игрока ${user.user}:`)
