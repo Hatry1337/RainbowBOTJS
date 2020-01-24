@@ -15,6 +15,7 @@ const sqlite = require('sqlite3').verbose();
 const db = new sqlite.Database('./database.db');
 const DBL = require("dblapi.js");
 const request = require("request");
+const Jimp = require("jimp");
 
 const client = new Discord.Client();
 const bot = new Eris(token);
@@ -56,7 +57,6 @@ client.once('disconnect', () => {
 });
 
 
-
 function messageStats() {
     fs.readFile('stats.json', 'utf8', function (error, data) {
         var file;
@@ -74,8 +74,8 @@ function messageStats() {
                 }
             }
         }
-        json = JSON.stringify(file, null, 4)
-        fs.writeFile(`stats.json`, json, null, function () { })
+        json = JSON.stringify(file, null, 4);
+        fs.writeFile(`stats.json`, json, null, function () { });
     });
 }
 
@@ -234,6 +234,10 @@ client.on('message', async message => {
                             message.channel.send("Вы не владелец C:");
                             return;
                         }
+
+                    } else if (message.content.startsWith(`!lolilic`)) {
+                        lolilic(message, Discord, db, client, getUserByDiscordID, updateUser, Jimp);
+                        return
 
                     } else {
                         console.log('You need to enter a valid command!')
@@ -420,7 +424,7 @@ function getUserByName(Name, done) {
 }
 
 function updateUser(discord_id, newUser, done) {
-    db.run(`UPDATE users_info SET user=?, user_points=?, user_group=?, user_lvl=?, user_xp=?, bitminer1=?, bitminer2=?, bitminer_rack=?, bitm_dc=?, solar_station=?, bm1_time=?, bm2_time=?, bmr_time=?, bitm_dc_time=?, ss_time=?, ban_reason=?, ban_time=?, vip_time=?, num=?, discord_id=?, news_sub=?, damage=? WHERE discord_id = ?`, [newUser.user, newUser.user_points, newUser.user_group, newUser.user_lvl, newUser.user_xp, newUser.bitminer1, newUser.bitminer2, newUser.bitminer_rack, newUser.bitm_dc, newUser.solar_station, newUser.bm1_time, 0, 0, 0, 0, newUser.ban_reason, newUser.ban_time, newUser.vip_time, newUser.num, newUser.discord_id, newUser.news_sub, newUser.damage, discord_id], function (err) {
+    db.run(`UPDATE users_info SET user=?, user_points=?, user_group=?, user_lvl=?, user_xp=?, bitminer1=?, bitminer2=?, bitminer_rack=?, bitm_dc=?, solar_station=?, bm1_time=?, bm2_time=?, bmr_time=?, bitm_dc_time=?, ss_time=?, ban_reason=?, ban_time=?, vip_time=?, num=?, discord_id=?, news_sub=?, damage=?, lolilic=? WHERE discord_id = ?`, [newUser.user, newUser.user_points, newUser.user_group, newUser.user_lvl, newUser.user_xp, newUser.bitminer1, newUser.bitminer2, newUser.bitminer_rack, newUser.bitm_dc, newUser.solar_station, newUser.bm1_time, 0, 0, 0, 0, newUser.ban_reason, newUser.ban_time, newUser.vip_time, newUser.num, newUser.discord_id, newUser.news_sub, newUser.damage, newUser.lolilic, discord_id], function (err) {
         if (err) {
             return console.log(err.message);
         }

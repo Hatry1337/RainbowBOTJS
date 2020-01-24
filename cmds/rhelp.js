@@ -21,10 +21,11 @@ function rhelp(message, Discord) {
         //.addField(name = "!hentai_list <номер страницы>", value = "Показать список всех хентай картинок.", inline= true)
         .addField(name = "!play <ссылка или название>", value = "Включает музыку в канале в котором вы находитесь.", inline = true)
         .addField(name = "!stop", value = "Выключает музыку в канале в котором вы находитесь.", inline = true)
-        //.addField(name = "!top <points или lvl>", value = "Топ 10 игроков по Поинтам если вы ввели points, и по уровню если ввели lvl", inline= true)
+        .addField(name = "!top", value = "Топ 10 игроков по Поинтам", inline = true)
         .addField(name = "!roll", value = "Рандомное число от 1 до 100", inline = true)
         .addField(name = "!8ball <Вопрос>", value = "Ответ на все ваши вопросы", inline = true)
         .addField(name = "!randcat", value = "Рандомная картинка с котиками", inline = true)
+        .addField(name = "!lolilic", value = "Получить лицензию на Лольку, или просмотреть если уже получили.", inline = true)
 
         .addField(name = "**Информация:**", value = "```07.01.2020 Теперь бот полностью на JavaScript!\nСделал сайт с топом игроков``` http://www.rainbowbot.xyz/", inline = false)
         .setColor(0x8b00ff)
