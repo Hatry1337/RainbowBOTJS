@@ -372,7 +372,7 @@ function getDataBaseLength(done) {
 
 function registerUser(message, done) {
     getDataBaseLength(function (dbLength) {
-        db.run(`INSERT INTO users_info VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`, [message.author.tag, 50000, "Player", 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, dbLength + 1, message.author.id, "True", 1], function (err) {
+        db.run(`INSERT INTO users_info VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`, [message.author.tag, 50000, "Player", 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, dbLength + 1, message.author.id, "True", 1, null], function (err) {
             if (err) {
                 return console.log(err.message);
             }
