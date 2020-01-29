@@ -12,16 +12,16 @@ function top(message, Discord, db, client, gau) {
             .setColor(0x8b00ff)
             .setTitle(`Топ игроков по Поинтам`)
             .setDescription(`
-:one: **${usersByPoints[0].user}** - _${usersByPoints[0].user_points}_ поинтов
-:two: **${usersByPoints[1].user}** - _${usersByPoints[1].user_points}_ поинтов
-:three: **${usersByPoints[2].user}** - _${usersByPoints[2].user_points}_ поинтов
-:four: **${usersByPoints[3].user}** - _${usersByPoints[3].user_points}_ поинтов
-:five: **${usersByPoints[4].user}** - _${usersByPoints[4].user_points}_ поинтов
-:six: **${usersByPoints[5].user}** - _${usersByPoints[5].user_points}_ поинтов
-:seven: **${usersByPoints[6].user}** - _${usersByPoints[6].user_points}_ поинтов
-:eight: **${usersByPoints[7].user}** - _${usersByPoints[7].user_points}_ поинтов
-:nine: **${usersByPoints[8].user}** - _${usersByPoints[8].user_points}_ поинтов
-:keycap_ten: **${usersByPoints[9].user}**  _${usersByPoints[9].user_points}_ поинтов
+:one: **${usersByPoints[0].user}** - _${parseInt(usersByPoints[0].user_points)}_ поинтов
+:two: **${usersByPoints[1].user}** - _${parseInt(usersByPoints[1].user_points)}_ поинтов
+:three: **${usersByPoints[2].user}** - _${parseInt(usersByPoints[2].user_points)}_ поинтов
+:four: **${usersByPoints[3].user}** - _${parseInt(usersByPoints[3].user_points)}_ поинтов
+:five: **${usersByPoints[4].user}** - _${parseInt(usersByPoints[4].user_points)}_ поинтов
+:six: **${usersByPoints[5].user}** - _${parseInt(usersByPoints[5].user_points)}_ поинтов
+:seven: **${usersByPoints[6].user}** - _${parseInt(usersByPoints[6].user_points)}_ поинтов
+:eight: **${usersByPoints[7].user}** - _${parseInt(usersByPoints[7].user_points)}_ поинтов
+:nine: **${usersByPoints[8].user}** - _${parseInt(usersByPoints[8].user_points)}_ поинтов
+:keycap_ten: **${usersByPoints[9].user}**  _${parseInt(usersByPoints[9].user_points)}_ поинтов
 
 Вы на ${curUserPlace + 1} месте.
 `)

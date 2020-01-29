@@ -26,7 +26,7 @@ function items(message, Discord, db, client, gu, uu) {
             .setTitle(`Предметы игрока ${user.user}:`)
             .setColor(0x228b22)
             .setDescription(`
-Количество Поинтов: ${user.user_points}
+Количество Поинтов: ${parseInt(user.user_points)}
 Bitminer S1: ${user.bitminer1}
 Bitminer S2: ${user.bitminer2}
 Bitminer Rack: ${user.bitminer_rack}

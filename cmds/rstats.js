@@ -6,7 +6,7 @@ function rstats(message, client, date, Discord, fs, gdbl) {
         emb = new Discord.RichEmbed()
             .setColor(0x8b00ff)
             .setTitle("Статистика бота")
-            .addField("Пинг", `${client.ping}ms.`)
+            .addField("Пинг", `${parseInt(client.ping)}ms.`)
             .addField("Количество серверов", `${client.guilds.size}`)
             .addField("Количество юзеров", `${usersCount}`)
         fs.readFile('stats.json', 'utf8', function (error, data) {

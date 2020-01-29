@@ -33,9 +33,9 @@ function getmoney(message, Discord, db, client, gu, uu) {
             user.user_points = user.user_points + total_points;
             user.user_xp = user.user_xp + total_xp;
             if (!(total_xp === 0)) {
-                message.channel.send(`Ваш доход за ${timeConversion(diff * 1000)}: ${total_points} Поинтов, ${total_xp} ед. Опыта`);
+                message.channel.send(`Ваш доход за ${timeConversion(diff * 1000)}: ${parseInt(total_points)} Поинтов, ${parseInt(total_xp)} ед. Опыта`);
             } else {
-                message.channel.send(`Ваш доход за ${timeConversion(diff * 1000)}: ${total_points} Поинтов`);
+                message.channel.send(`Ваш доход за ${timeConversion(diff * 1000)}: ${parseInt(total_points)} Поинтов`);
             }
 
             user.bm1_time = new Date().getTime() / 1000;
