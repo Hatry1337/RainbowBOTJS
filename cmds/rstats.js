@@ -7,8 +7,8 @@ function rstats(message, client, date, Discord, fs, gdbl) {
             .setColor(0x8b00ff)
             .setTitle("Статистика бота")
             .addFields([
-                { name: "Пинг",                 value: `${parseInt(client.ping)}ms.`},
-                { name: "Количество серверов",  value: `${client.guilds.size}`},
+                { name: "Пинг",                 value: `${parseInt(client.ws.ping)}ms.`},
+                { name: "Количество серверов",  value: `${client.guilds.cache.size}`},
                 { name: "Количество юзеров",    value: `${usersCount}` },
             ]);
         fs.readFile('stats.json', 'utf8', function (error, data) {
