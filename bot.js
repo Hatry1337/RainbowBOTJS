@@ -31,12 +31,7 @@ const queue = new Map();
 client.once('ready', () => {
     console.log('Ready 1!');
     utime = new Date();
-    client.user.setPresence({
-        game: {
-            name: `!rhelp`,
-            type: 0,
-        }
-    })
+    client.user.setActivity('!rhelp', { type: 'WATCHING' });
     load_modules(getFiles("./cmds/"));
     getUserByDiscordID("508637328349331462", function (user) {
         console.log(user);
