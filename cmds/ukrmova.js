@@ -27,7 +27,7 @@ function ukrmova(message, Discord) {
 				"Гинеколог - пихвозаглядач",
 				];
 
-	emb = new Discord.RichEmbed()
+	emb = new Discord.MessageEmbed()
 	.setTitle(arrayRandElement(words))
 	.setColor(0x42aaff);
 

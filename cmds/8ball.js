@@ -23,7 +23,7 @@ function ball8(message, Discord) {
     ]
     var rand = Math.floor(Math.random() * answs.length);
 
-    emb = new Discord.RichEmbed()
+    emb = new Discord.MessageEmbed()
         .setColor(0x6495ed)
         .setTitle(question)
         .setDescription(answs[rand])

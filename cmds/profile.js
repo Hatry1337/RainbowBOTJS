@@ -14,20 +14,24 @@ function profile(message, Discord, db, client, gu, uu) {
             message.channel.send("Данный пользователь не зарегистрирован!");
             return;
         }
-        emb = new Discord.RichEmbed()
+        emb = new Discord.MessageEmbed()
             .setTitle(`Профиль ${user.user}:`)
             .setColor(0x8b00ff)
-            .addField("Количество Поинтов: ", parseInt(user.user_points));
+            .addFields({ name: "Количество Поинтов: ", value: parseInt(user.user_points) });
         if (user.user_group == "Banned") {
-            emb.addField("Кто такой вообще: ", `Banned\nПричина: ${user.ban_reason}`)
-            emb.addField("Уровень: ", user.user_lvl)
-            emb.addField("Опыта: ", `${user.user_xp}/1000`)
-            emb.addField("ID: ", user.num)
+            emb.addFields([
+                { name: "Кто такой вообще: ", value: `Banned\nПричина: ${user.ban_reason}` },
+                { name: "Уровень: ", value: user.user_lvl },
+                { name: "Опыта: ", value: `${user.user_xp}/1000` },
+                { name: "ID: ", value: user.num },
+            ]);
         } else {
-            emb.addField("Кто такой вообще: ", user.user_group)
-            emb.addField("Уровень: ", user.user_lvl)
-            emb.addField("Опыта: ", `${user.user_xp}/1000`)
-            emb.addField("ID: ", user.num)
+            emb.addFields([
+                { name: "Кто такой вообще: ", value: user.user_group },
+                { name: "Уровень: ",          value: user.user_lvl },
+                { name: "Опыта: ",            value: `${user.user_xp}/1000`},
+                { name: "ID: ",               value: user.num },
+            ]);
         }
         message.channel.send(embed = emb);
         return;

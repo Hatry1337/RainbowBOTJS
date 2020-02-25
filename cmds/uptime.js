@@ -2,7 +2,7 @@
 function uptime(message, date, Discord) {
     let cur_date = new Date();
     let normal = timeConversion(cur_date - date);
-    emb = new Discord.RichEmbed()
+    emb = new Discord.MessageEmbed()
         .setTitle(`Бот онлайн: ${normal}`)
         .setColor(0xe6e6e6);
     message.channel.send(embed = emb);

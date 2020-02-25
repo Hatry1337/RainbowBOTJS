@@ -8,7 +8,7 @@ function top(message, Discord, db, client, gau) {
             usersMinimized.push(usersByPoints[i]);
         }
         usersByPoints = removeDuplicates(usersMinimized);
-        emb = new Discord.RichEmbed()
+        emb = new Discord.MessageEmbed()
             .setColor(0x8b00ff)
             .setTitle(`Топ игроков по Поинтам`)
             .setDescription(`

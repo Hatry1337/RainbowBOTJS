@@ -1,13 +1,13 @@
 ﻿console.log("Imported randcat");
 
 function randcat(message, Discord, request) {
-    request('http://aws.random.cat/meow', function (error, response, body) {
+    request('https://api.thecatapi.com/v1/images/search?size=full', function (error, response, body) {
         var data = JSON.parse(body);
 
-        emb = new Discord.RichEmbed()
+        emb = new Discord.MessageEmbed()
             .setColor(0x6495ed)
             .setTitle("Random Cat")
-            .setImage(data.file);
+            .setImage(data[0].url);
         message.channel.send(emb);
         return;
     });

@@ -22,19 +22,18 @@ function items(message, Discord, db, client, gu, uu) {
 
         var mining_speed = (bm1_rate * user.bitminer1) + (bm2_rate * user.bitminer2) + (bmr_rate * user.bitminer_rack) + (bmdc_rate * user.bitm_dc);
 
-        emb = new Discord.RichEmbed()
+        emb = new Discord.MessageEmbed()
             .setTitle(`Предметы игрока ${user.user}:`)
             .setColor(0x228b22)
-            .setDescription(`
-Количество Поинтов: ${parseInt(user.user_points)}
+            .setDescription(
+`Количество Поинтов: ${parseInt(user.user_points)}
 Bitminer S1: ${user.bitminer1}
 Bitminer S2: ${user.bitminer2}
 Bitminer Rack: ${user.bitminer_rack}
 Датацентр с майнерами: ${user.bitm_dc}
 Солнечная Электростанция: ${user.solar_station}
 
-Общая скорость майнинга: ${mining_speed} Поинтов в час.               
-`);
+Общая скорость майнинга: ${mining_speed} Поинтов в час.`);
         message.channel.send(embed = emb);
         return;
     });

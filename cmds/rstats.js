@@ -3,19 +3,22 @@ console.log("Imported rstats");
 
 function rstats(message, client, date, Discord, fs, gdbl) {
     gdbl(function (usersCount) {
-        emb = new Discord.RichEmbed()
+        emb = new Discord.MessageEmbed()
             .setColor(0x8b00ff)
             .setTitle("Статистика бота")
-            .addField("Пинг", `${parseInt(client.ping)}ms.`)
-            .addField("Количество серверов", `${client.guilds.size}`)
-            .addField("Количество юзеров", `${usersCount}`)
+            .addFields([
+                { name: "Пинг",                 value: `${parseInt(client.ping)}ms.`},
+                { name: "Количество серверов",  value: `${client.guilds.size}`},
+                { name: "Количество юзеров",    value: `${usersCount}` },
+            ]);
         fs.readFile('stats.json', 'utf8', function (error, data) {
-            emb.addField("Сообщений за всё время", `${JSON.parse(data).stats.messages}`)
-                .addField("Аптайм", `${msToTime(new Date() - date)}`);
+            emb.addFields([
+                { name: "Сообщений за всё время",   value: `${JSON.parse(data).stats.messages}`},
+                { name: "Аптайм",                   value: `${msToTime(new Date() - date)}`},
+            ]);
             message.channel.send(embed = emb);
         });
     });
-
 }
 
 

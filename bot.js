@@ -1,4 +1,4 @@
-﻿const dev_mode = false;
+﻿const dev_mode = true;
 
 
 if (dev_mode === true) {
@@ -6,7 +6,7 @@ if (dev_mode === true) {
 } else {
     token = "NTcxOTQ4OTkzNjQzNTQ0NTg3.Xh3o8A.Gt82pQ_AhmSlC0ZDI0waSTHewkw"
 }
-const Eris = require("eris");
+
 const Discord = require('discord.js');
 const ytdl = require('ytdl-core');
 const search = require('youtube-search');
@@ -18,12 +18,11 @@ const request = require("request");
 const Jimp = require("jimp");
 
 const client = new Discord.Client();
-const bot = new Eris(token);
 const dbl = new DBL('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjU3MTk0ODk5MzY0MzU0NDU4NyIsImJvdCI6dHJ1ZSwiaWF0IjoxNTc1NTczMjAyfQ.9OfSSDWcanClZpsqdFsz7U-1gStTb0SwYZWF49FtrNU', client);
 
 var search_opts = {
     maxResults: 1,
-    key: 'AIzaSyA7GWi6ML0kZepUMz4Oh8niBZvXguvasmQ',
+    key: 'AIzaSyB99VVQZPIzMlPWlovUEDwkTHuOzlCNkkw',
 };
 
 var utime;
@@ -44,9 +43,6 @@ client.once('ready', () => {
     });
 });
 
-bot.on('ready', () => {
-    console.log('Ready 2!');
-});
 
 client.once('reconnecting', () => {
     console.log('Reconnecting!');
@@ -466,7 +462,7 @@ function updateUser(discord_id, newUser, done) {
 async function execute(message, serverQueue) {
     const sch_req = message.content.substr(6);
 
-    const voiceChannel = message.member.voiceChannelID;
+    const voiceChannel = message.member.voice.channel;
     var res = null;
     search(sch_req, search_opts, async function (err, res) {
         if (err) return console.log(err);
@@ -483,7 +479,6 @@ async function execute(message, serverQueue) {
             const queueContruct = {
                 textChannel: message.channel,
                 voiceChannel: voiceChannel,
-                vc: message.member.voiceChannel,
                 connection: null,
                 songs: [],
                 current: null,
@@ -496,13 +491,9 @@ async function execute(message, serverQueue) {
             queueContruct.songs.push(song);
 
             try {
-                bot.joinVoiceChannel(queueContruct.voiceChannel).catch((err) => { // Join the user's voice channel
-                    bot.createMessage(message.channel.id, "Ошибка присоеднения к голосовому каналу: " + err.message); // Notify the user if there is an error
-                    console.log(err); // Log the error
-                }).then((connection) => {
-                    queueContruct.connection = connection;
-                    play(message.guild, queueContruct.songs[0]);
-                });
+                var connection = await voiceChannel.join();
+                queueContruct.connection = connection;
+                play(message.guild, queueContruct.songs[0]);
             } catch (err) {
                 console.log(err);
                 queue.delete(message.guild.id);
@@ -519,7 +510,7 @@ async function executep(message, serverQueue) {
     var gavno = message.content.substr(7).split(";;");
 
     console.log(gavno);
-    const voiceChannel = message.member.voiceChannelID;
+    const voiceChannel = message.member.voice.channel;
 
     var res = null;
     search(gavno[0], search_opts, async function (err, res) {
@@ -537,7 +528,6 @@ async function executep(message, serverQueue) {
             const queueContruct = {
                 textChannel: message.channel,
                 voiceChannel: voiceChannel,
-                vc: message.member.voiceChannel,
                 connection: null,
                 songs: [],
                 current: null,
@@ -566,13 +556,9 @@ async function executep(message, serverQueue) {
             };
 
             try {
-                bot.joinVoiceChannel(queueContruct.voiceChannel).catch((err) => { // Join the user's voice channel
-                    bot.createMessage(message.channel.id, "Ошибка присоеднения к голосовому каналу: " + err.message); // Notify the user if there is an error
-                    console.log(err); // Log the error
-                }).then((connection) => {
-                    queueContruct.connection = connection;
-                    play(message.guild, queueContruct.songs[0]);
-                });
+                var connection = await voiceChannel.join();
+                queueContruct.connection = connection;
+                play(message.guild, queueContruct.songs[0]);
             } catch (err) {
                 console.log(err);
                 queue.delete(message.guild.id);
@@ -606,13 +592,20 @@ async function executep(message, serverQueue) {
 
 
 function show_queue(channel, serverQueue) {
+    if (!serverQueue) {
+        emd = new Discord.MessageEmbed()
+            .setTitle("Тут так пусто, включите какую нибудь музыку!")
+            .setColor(0x0000FF);
+        channel.send(emd);
+        return;
+    }
     let songs = serverQueue.songs;
     if (!songs) {
-        emd = new Discord.RichEmbed()
+        emd = new Discord.MessageEmbed()
             .setTitle("Очередь окончена!")
             .setColor(0x0000FF);
         serverQueue.textChannel.send(emd);
-        bot.leaveVoiceChannel(serverQueue.voiceChannel)
+        serverQueue.voiceChannel.leave();
         queue.delete(guild.id);
         return;
     }
@@ -630,7 +623,7 @@ function show_queue(channel, serverQueue) {
             i++;
         }
     }
-    embed = new Discord.RichEmbed()
+    embed = new Discord.MessageEmbed()
         .setTitle("Очередь воспроизведения:")
         .setColor(0x0000FF)
         .setDescription(queue);
@@ -651,33 +644,36 @@ function secondsToDhms(seconds) {
 }
 
 function skip(message, serverQueue) {
-    if (!message.member.voiceChannel) return message.channel.send('Вы должны находиться в голосовом канале!');
+    if (!message.member.voice.channel) return message.channel.send('Вы должны находиться в голосовом канале!');
     if (!serverQueue) return message.channel.send('Нету трека, который можно пропустить!');
-    serverQueue.connection.stopPlaying();
-    return show_queue(message.channel, serverQueue);
+    serverQueue.connection.dispatcher.destroy();
+    serverQueue.songs.shift();
+    return play(message.guild, serverQueue.songs[0]);
 }
 
 function stop(message, serverQueue) {
-    if (!message.member.voiceChannel) return message.channel.send('Вы должны находиться в голосовом канале!');
+    if (!message.member.voice.channel) return message.channel.send('Вы должны находиться в голосовом канале!');
+    if (!serverQueue) return message.channel.send("Очередь и так пуста...");
     serverQueue.songs = [];
-    serverQueue.connection.stopPlaying();
-    bot.leaveVoiceChannel(serverQueue.voiceChannel);
+    serverQueue.connection.dispatcher.destroy();
+    play(message.guild, serverQueue.songs[0]);
+    return;
 }
 
 function play(guild, song) {
     const serverQueue = queue.get(guild.id);
     if (!song) {
-        emd = new Discord.RichEmbed()
+        emd = new Discord.MessageEmbed()
             .setTitle("Очередь окончена!")
             .setColor(0x0000FF);
         serverQueue.textChannel.send(emd);
-        bot.leaveVoiceChannel(serverQueue.voiceChannel)
+        serverQueue.voiceChannel.leave();
         queue.delete(guild.id);
         return;
     }
     show_queue(serverQueue.textChannel, serverQueue);
     serverQueue.connection.play(ytdl(song.url, { filter: 'audioonly' }));
-    serverQueue.connection.once('end', () => {
+    serverQueue.connection.dispatcher.once('finish', () => {
         console.log('Music ended!');
         serverQueue.songs.shift();
         play(guild, serverQueue.songs[0]);
@@ -692,4 +688,4 @@ function play(guild, song) {
 
 
 client.login(token);
-bot.connect();
+

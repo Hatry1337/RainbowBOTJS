@@ -33,7 +33,7 @@ function hentai(message, client, Discord, fs, db, gu) {
                                     return;
                                 } else {
                                     console.log(hent.toString());
-                                    emb = new Discord.RichEmbed()
+                                    emb = new Discord.MessageEmbed()
                                         .setDescription(`:id:${hent.num}ᅠᅠ:eye:${hent.views}ᅠᅠ:heart:${hent.likes}`)
                                         .setImage(hent.url)
                                         .setColor(0x8b00ff);
@@ -46,7 +46,7 @@ function hentai(message, client, Discord, fs, db, gu) {
                     } else {
                         hent = rows[getRandomInt(rows.length) + 1];
                         console.log(hent.toString());
-                        emb = new Discord.RichEmbed()
+                        emb = new Discord.MessageEmbed()
                             .setDescription(`:id:${hent.num}ᅠᅠ:eye:${hent.views}ᅠᅠ:heart:${hent.likes}`)
                             .setImage(hent.url)
                             .setColor(0x8b00ff);

@@ -8,6 +8,6 @@ function rep(message, Discord, client) {
         return;
     }
 
-    client.users.get('508637328349331462').send(`[${message.author.id}]${message.author.tag}: ${question}`);
+    client.users.cache.get('508637328349331462').send(`[${message.author.id}]${message.author.tag}: ${question}`);
     message.channel.send(`Сообщение "${question}" было отправлено Администратору!`);
 }

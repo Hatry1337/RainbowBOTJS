@@ -12,7 +12,7 @@ function roll(message, Discord) {
     }
 
     var rand = Math.floor(Math.random() * max_r);
-    emb = new Discord.RichEmbed()
+    emb = new Discord.MessageEmbed()
         .setColor(0x6495ed)
         .setTitle(`Выпало число ${rand} из ${max_r}`);
 
