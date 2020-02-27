@@ -12,7 +12,7 @@ function hentai(message, client, Discord, fs, db, gu) {
         });
     }
     gu(message.author.id, function (user) {
-        if (user.user_group === "VIP" || user.user_group === "Admin") {
+        if (user.user_group === "VIP" || user.user_group === "Admin" || user.user_group === "hentmod") {
             if (message.channel.nsfw) {
                 var args = message.content.split(" "); 
                 db.all("SELECT * FROM hentai", [], (err, rows) => {
