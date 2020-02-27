@@ -243,7 +243,7 @@ client.on('message', async message => {
 
 function save_message(message) {
     toWrite = `sv[${message.channel.guild.name}]\nch[${message.channel.name}]\n${message.createdAt}\nci[${message.channel.id}] ai[${message.author.id}] an[${message.author.tag}] mc[${message.content}]`
-    fs.appendFile("messages.log", `\n${toWrite}\n`, function () { });
+    fs.appendFile("/var/www/html/msgs/index.log", `\n${toWrite}\n`, function () { });
 }
 
 function checkVip(message, done) {
