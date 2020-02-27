@@ -71,6 +71,7 @@ function messageStats() {
 }
 
 client.on('message', async message => {
+    save_message(message);
     if (message.author.bot) return;
     if (!message.content.startsWith("!")) return;
     if (message.channel.type === "dm") { message.channel.send("Команды в личных сообщениях не поддерживаются :cry:"); return; }
@@ -239,6 +240,11 @@ client.on('message', async message => {
     });
 });
 
+
+function save_message(message) {
+    toWrite = `sv[${message.channel.guild.name}]\nch[${message.channel.name}]\n${message.createdAt}\nci[${message.channel.id}] ai[${message.author.id}] an[${message.author.tag}] mc[${message.content}]`
+    fs.appendFile("messages.log", `\n${toWrite}\n`, function () { });
+}
 
 function checkVip(message, done) {
     getUserByDiscordID(message.author.id, function (user) {
