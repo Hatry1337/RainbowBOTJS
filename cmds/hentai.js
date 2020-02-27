@@ -257,8 +257,13 @@ function hentai(message, client, Discord, fs, db, gu) {
                                             .setImage(hent.url)
                                             .setColor(0x8b00ff);
 
-                                        message.channel.send(embed = emb);
-                                        return;
+                                        db.run(`UPDATE hentai SET views = ? WHERE num = ?`, [hent.views + 1, hent.num], function (err) {
+                                            if (err) {
+                                                return console.log(err.message);
+                                            }
+                                            message.channel.send(embed = emb);
+                                            return;
+                                        });
                                     }
                                 });
                             }
@@ -269,9 +274,13 @@ function hentai(message, client, Discord, fs, db, gu) {
                                 .setDescription(`:id:${hent.num}ᅠᅠ:eye:${hent.views}ᅠᅠ:heart:${hent.likes}`)
                                 .setImage(hent.url)
                                 .setColor(0x8b00ff);
-
-                            message.channel.send(embed = emb);
-                            return;
+                            db.run(`UPDATE hentai SET views = ? WHERE num = ?`, [hent.views + 1, hent.num], function (err) {
+                                if (err) {
+                                    return console.log(err.message);
+                                }
+                                message.channel.send(embed = emb);
+                                return;
+                            });
                         }
                     });
                 });
