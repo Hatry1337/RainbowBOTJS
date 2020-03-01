@@ -1,4 +1,4 @@
-﻿const dev_mode = false;
+﻿const dev_mode = true;
 
 
 if (dev_mode === true) {
@@ -16,6 +16,7 @@ const db = new sqlite.Database('./database.db');
 const DBL = require("dblapi.js");
 const request = require("request");
 const Jimp = require("jimp");
+const lng = require("./lang");
 
 const client = new Discord.Client();
 const dbl = new DBL('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjU3MTk0ODk5MzY0MzU0NDU4NyIsImJvdCI6dHJ1ZSwiaWF0IjoxNTc1NTczMjAyfQ.9OfSSDWcanClZpsqdFsz7U-1gStTb0SwYZWF49FtrNU', client);

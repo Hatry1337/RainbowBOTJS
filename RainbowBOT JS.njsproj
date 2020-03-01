@@ -96,6 +96,9 @@
     <Content Include="cmds\vip.js">
       <SubType>Code</SubType>
     </Content>
+    <Content Include="lang.js">
+      <SubType>Code</SubType>
+    </Content>
     <Content Include="package.json" />
     <Content Include="README.md" />
   </ItemGroup>
