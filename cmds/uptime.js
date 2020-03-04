@@ -1,15 +1,15 @@
 ﻿console.log("Imported uptime");
-function uptime(message, date, Discord) {
+function uptime(message, date, Discord, lng, l) {
     let cur_date = new Date();
-    let normal = timeConversion(cur_date - date);
+    let normal = timeConversion(cur_date - date, lng, l);
     emb = new Discord.MessageEmbed()
-        .setTitle(`Бот онлайн: ${normal}`)
+        .setTitle(`${lng.uptime.title[l]}: ${normal}`)
         .setColor(0xe6e6e6);
     message.channel.send(embed = emb);
 }
 
 
-function timeConversion(millisec) {
+function timeConversion(millisec, lng, l) {
     var seconds = parseInt(millisec / 1000);
     var minutes = parseInt(millisec / (1000 * 60));
     var hours = parseInt(millisec / (1000 * 60 * 60));
@@ -17,13 +17,13 @@ function timeConversion(millisec) {
 
     var stime;
     if (seconds < 60) {
-        stime = `${seconds} секунд`;
+        stime = `${seconds} ${lng.sec[l]}`;
     } else if (minutes < 60) {
-        stime = `${minutes} минут, ${seconds-minutes*60} секунд`;
+        stime = `${minutes} ${lng.min[l]}, ${seconds - minutes * 60} ${lng.sec[l]}`;
     } else if (hours < 24) {
-        stime = `${hours} часов, ${minutes - hours * 60} минут, ${seconds - minutes * 60} секунд`;
+        stime = `${hours} ${lng.hur[l]}, ${minutes - hours * 60} ${lng.min[l]}, ${seconds - minutes * 60} ${lng.sec[l]}`;
     } else {
-        stime = `${days} дней, ${hours-days*24} часов, ${minutes - hours * 60} минут, ${seconds - minutes * 60} секунд`;
+        stime = `${days} ${lng.day[l]}, ${hours - days * 24} ${lng.hur[l]}, ${minutes - hours * 60} ${lng.min[l]}, ${seconds - minutes * 60} ${lng.sec[l]}`;
     }
     return stime;
 }

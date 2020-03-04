@@ -1,5 +1,5 @@
 ﻿console.log("Imported shop");
-function shop(message, client, Discord, db, gu) {
+function shop(message, client, Discord, db, gu, lng, l) {
     gu(message.author.id, function (user) {
         var bs1_pr = Math.pow(1.2, user.bitminer1) * 50000;
         var bs2_pr = Math.pow(1.2, user.bitminer2) * 100000;

@@ -12,7 +12,15 @@ function hentai(message, client, Discord, fs, db, gu) {
         });
     }
     gu(message.author.id, function (user) {
-        if (user.user_group === "VIP" || user.user_group === "Admin" || user.user_group === "hentmod") {
+        if (user.hent_uses) {
+            user.hent_uses = JSON.parse(user.hent_uses);
+        } else {
+            user.hent_uses = {
+                last: 0,
+                count: 0,
+            }
+        }
+        if (user.user_group === "VIP" || user.user_group === "Admin" || user.user_group === "hentmod" || user.hent_uses.count <= 5) {
             if (message.channel.nsfw) {
                 var args = message.content.split(" "); 
                 db.all("SELECT * FROM hentai", [], (err, rows) => {

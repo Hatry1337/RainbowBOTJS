@@ -1,35 +1,35 @@
 
 console.log("Imported rhelp");
 
-function rhelp(message, Discord) {
+function rhelp(message, Discord, lng, l) {
     emb = new Discord.MessageEmbed()
-        .setTitle('Помощь по командам:')
+        .setTitle(lng.rhelp.title[l])
         .addFields([
-            { name : "!rhelp", value : "Показывает это сообщение", inline : true },
-            { name : "!upd", value : "Показывает апдейт-лог", inline : true },
-            { name : "!ukrmova", value : "Рандомное украинское слово с переводом", inline : true },
-            { name : "!uptime", value : "Выводит сколько времени прошло с момента включения бота.", inline : true },
-            { name : "!rstats", value : "Выводит статистику бота (пинг, сообщения, аптайм).", inline : true },
-            { name : "!rep 'Сообщение'", value : "Отправить сообщение Администратору (если нашли баг, недоработку, или еще какие то проблемы)", inline : true },
-            { name : "!profile @user", value : "Выводит профиль указаного игрока.", inline : true },
-            { name : "!shop", value : "Открывает магазин предметов.", inline : true },
-            { name : "!items @user", value : "Открывает инвентарь с предметами указанного игрока.", inline : true },
-            { name : "!getmoney", value : "Запустить майнинг/Снять деньги с майнеров.", inline : true },
-            { name : "!freevip", value : "Получить бесплатный VIP статус.", inline : true },
-            { name : "!pay @user <количество>", value : "Передать поинты указаному игроку.", inline : true },
-            { name : "!hentai <id картинки>", value : "Присылает рандомную хентай картинку) (не смотри если нет 18!!)", inline : true },
-            { name : "!hentai like <номер картинки>", value : "Поставить лайк на указаную картинку.", inline: true},
-            { name : "!hentai offer <url картинки>", value : "Предложить свою картинку, которая будет добавлена в !hentai.", inline: true},
-            { name : "!hentai stats", value: "Статистика команды !hentai.", inline: true },
-            { name : "!play <ссылка или название>", value: "Включает музыку в канале в котором вы находитесь.", inline: true },
-            { name : "!stop", value : "Выключает музыку в канале в котором вы находитесь.", inline : true },
-            { name : "!top", value : "Топ 10 игроков по Поинтам", inline : true },
-            { name : "!roll", value : "Рандомное число от 1 до 100", inline : true },
-            { name : "!8ball <Вопрос>", value : "Ответ на все ваши вопросы", inline : true },
-            { name : "!randcat", value : "Рандомная картинка с котиками", inline : true },
-            { name : "!lolilic", value : "Получить лицензию на Лольку, или просмотреть если уже получили.", inline : true },
+            { name: "!rhelp", value: lng.rhelp.rhelp[l], inline : true },
+            { name: "!upd", value: lng.rhelp.upd[l], inline : true },
+            { name: "!ukrmova", value: lng.rhelp.ukrmova[l], inline : true },
+            { name: "!uptime", value: lng.rhelp.uptime[l], inline : true },
+            { name: "!rstats", value: lng.rhelp.rstats[l], inline : true },
+            { name: "!rep 'message'", value: lng.rhelp.rep[l], inline : true },
+            { name: "!profile @user", value: lng.rhelp.profile[l], inline : true },
+            { name: "!shop", value: lng.rhelp.shop[l], inline : true },
+            { name: "!items @user", value: lng.rhelp.items[l], inline : true },
+            { name: "!getmoney", value: lng.rhelp.getmoney[l], inline : true },
+            { name: "!freevip", value: lng.rhelp.freevip[l], inline : true },
+            { name: "!pay @user <count>", value: lng.rhelp.pay[l], inline : true },
+            { name: "!hentai <picture id>", value: lng.rhelp.hentai[l], inline : true },
+            { name: "!hentai like <picture id>", value: lng.rhelp.hntLike[l], inline: true},
+            { name: "!hentai offer <picture url>", value: lng.rhelp.hntOffer[l], inline: true},
+            { name: "!hentai stats", value: lng.rhelp.hntStats[l], inline: true },
+            { name: "!play <youtube url or search request>", value: lng.rhelp.play[l], inline: true },
+            { name: "!stop", value: lng.rhelp.stop[l], inline : true },
+            { name: "!top", value: lng.rhelp.top[l], inline : true },
+            { name: "!roll", value: lng.rhelp.roll[l], inline : true },
+            { name: "!8ball <Question>", value: lng.rhelp.eightBall[l], inline : true },
+            { name: "!randcat", value: lng.rhelp.randcat[l], inline : true },
+            { name: "!lolilic", value: lng.rhelp.lolilic[l], inline : true },
 
-            { name : "**Информация:**", value : "```07.01.2020 Теперь бот полностью на JavaScript!\nСделал сайт с топом игроков``` http://www.rainbowbot.xyz/", inline : false },
+            { name: lng.rhelp.infot[l], value: lng.rhelp.info[l], inline : false },
 
         ])
         .setColor(0x8b00ff);

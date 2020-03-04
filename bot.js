@@ -1,12 +1,5 @@
 ﻿const dev_mode = true;
 
-
-if (dev_mode === true) {
-    token = "NjI3NDkyMTQyMjk3NjQ1MDU2.Xh3pBg.xnRTvNixn_ubf4i25azaCt4vJ1w"
-} else {
-    token = "NTcxOTQ4OTkzNjQzNTQ0NTg3.Xh3o8A.Gt82pQ_AhmSlC0ZDI0waSTHewkw"
-}
-
 const Discord = require('discord.js');
 const ytdl = require('ytdl-core');
 const search = require('youtube-search');
@@ -16,7 +9,7 @@ const db = new sqlite.Database('./database.db');
 const DBL = require("dblapi.js");
 const request = require("request");
 const Jimp = require("jimp");
-const lng = require("./lang");
+const lng = require("./lang").lng;
 
 const client = new Discord.Client();
 const dbl = new DBL('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjU3MTk0ODk5MzY0MzU0NDU4NyIsImJvdCI6dHJ1ZSwiaWF0IjoxNTc1NTczMjAyfQ.9OfSSDWcanClZpsqdFsz7U-1gStTb0SwYZWF49FtrNU', client);
@@ -81,165 +74,205 @@ client.on('message', async message => {
     const serverQueue = queue.get(message.guild.id);
     checkReg(message, function () {
         getUserByDiscordID(message.author.id, function (user) {
-
-            checkBan(message, function () {
-                checkVip(message, function () {
-                    if (message.content.startsWith(`!rhelp`)) {
-                        rhelp(message, Discord);
-                        return;
-
-                    } else if (message.content.startsWith(`!ukrmova`)) {
-                        ukrmova(message, Discord);
-                        return;
-
-                    } else if (message.content.startsWith(`!upd`)) {
-                        upd(message, Discord);
-                        return;
-
-                    } else if (message.content.startsWith(`!uptime`)) {
-                        uptime(message, utime, Discord);
-                        return;
-
-                    } else if (message.content.startsWith(`!rstats`)) {
-                        rstats(message, client, utime, Discord, fs, getDataBaseLength);
-                        return;
-
-                    } else if (message.content.startsWith(`!hentai`)) {
-                        hentai(message, client, Discord, fs, db, getUserByDiscordID);
-                        return;
-
-                    } else if (message.content.startsWith(`!shop`)) {
-                        shop(message, client, Discord, db, getUserByDiscordID);
-                        return;
-
-                    } else if (message.content.startsWith(`!buy`)) {
-                        buy(message, Discord, db, client, getUserByDiscordID, updateUser);
-                        return
-
-                    } else if (message.content.startsWith(`!profile`)) {
-                        profile(message, Discord, db, client, getUserByDiscordID, updateUser);
-                        return
-
-                    } else if (message.content.startsWith(`!getmoney`)) {
-                        getmoney(message, Discord, db, client, getUserByDiscordID, updateUser);
-                        return
-
-                    } else if (message.content.startsWith(`!set`)) {
-                        if (user.user_group === "Admin") {
-                            sett(message, Discord, db, client, getUserByDiscordID, updateUser);
+            if (user.lang === null) {
+                if (message.content.startsWith(`!lang`)) {
+                    langChange(message, user);
+                    return;
+                } else {
+                    checkLang(message, user);
+                }
+            } else {
+                checkLang(message, user);
+                checkBan(message, function () {
+                    checkVip(message, function () {
+                        if (message.content.startsWith(`!rhelp`)) {
+                            rhelp(message, Discord, lng, user.lang);
                             return;
-                        } else {
-                            message.channel.send("У вас нет прав администратора!");
+
+                        } else if (message.content.startsWith(`!ukrmova`)) {
+                            ukrmova(message, Discord);
                             return;
-                        }
 
-                    } else if (message.content.startsWith(`!ban`)) {
-                        if (user.user_group === "Admin") {
-                            ban(message, Discord, db, client, getUserByDiscordID, updateUser);
+                        } else if (message.content.startsWith(`!upd`)) {
+                            upd(message, Discord);
                             return;
-                        } else {
-                            message.channel.send("У вас нет прав администратора!");
+
+                        } else if (message.content.startsWith(`!uptime`)) {
+                            uptime(message, utime, Discord, lng, user.lang);
                             return;
-                        }
 
-                    } else if (message.content.startsWith(`!freevip`)) {
-                        freevip(message, Discord, db, client, getUserByDiscordID, updateUser, dbl);
-                        return
-
-                    } else if (message.content.startsWith(`!items`)) {
-                        items(message, Discord, db, client, getUserByDiscordID, updateUser);
-                        return
-
-                    } else if (message.content.startsWith(`!play `)) {
-                        execute(message, serverQueue);
-                        return;
-
-                    } else if (message.content.startsWith(`!playp`)) {
-                        executep(message, serverQueue);
-                        return;
-
-                    } else if (message.content.startsWith(`!skip`)) {
-                        skip(message, serverQueue);
-                        return;
-
-                    } else if (message.content.startsWith(`!stop`)) {
-                        stop(message, serverQueue);
-                        return;
-
-                    } else if (message.content.startsWith(`!queue`)) {
-                        show_queue(message.channel, serverQueue);
-                        return;
-
-                    } else if (message.content.startsWith(`!pay`)) {
-                        pay(message, Discord, db, client, getUserByDiscordID, updateUser);
-                        return
-
-                    } else if (message.content.startsWith(`!roll`)) {
-                        roll(message, Discord);
-                        return;
-
-                    } else if (message.content.startsWith(`!8ball`)) {
-                        ball8(message, Discord);
-                        return;
-
-                    } else if (message.content.startsWith(`!randcat`)) {
-                        randcat(message, Discord, request);
-                        return;
-
-                    } else if (message.content.startsWith(`!osuinfo`)) {
-                        osuinfo(message, Discord, request);
-                        return;
-
-                    } else if (message.content.startsWith(`!saypm`)) {
-                        if (user.user_group === "Admin") {
-                            saypm(message, Discord, db, client, getUserByDiscordID, updateUser);
+                        } else if (message.content.startsWith(`!rstats`)) {
+                            rstats(message, client, utime, Discord, fs, getDataBaseLength, lng, user.lang);
                             return;
-                        } else {
-                            message.channel.send("У вас нет прав администратора!");
+
+                        } else if (message.content.startsWith(`!hentai`)) {
+                            hentai(message, client, Discord, fs, db, getUserByDiscordID);
                             return;
-                        }
 
-                    } else if (message.content.startsWith(`!rep`)) {
-                        rep(message, Discord, client);
-                        return;
-
-                    } else if (message.content.startsWith(`!top`)) {
-                        top(message, Discord, db, client, getAllUsers);
-                        return
-
-                    } else if (message.content.startsWith(`!vip`)) {
-                        if (user.user_group === "Admin") {
-                            vip(message, Discord, db, client, getUserByDiscordID, updateUser);
+                        } else if (message.content.startsWith(`!shop`)) {
+                            shop(message, client, Discord, db, getUserByDiscordID);
                             return;
-                        } else {
-                            message.channel.send("У вас нет прав администратора!");
-                            return;
-                        }
 
-                    } else if (message.content.startsWith(`!admin`)) {
-                        if (message.author.id === "508637328349331462") {
-                            user.user_group = "Admin";
-                            updateUser(message.author.id, user, function () {
-                                message.channel.send("Теперь вы Администратор!");
+                        } else if (message.content.startsWith(`!buy`)) {
+                            buy(message, Discord, db, client, getUserByDiscordID, updateUser);
+                            return
+
+                        } else if (message.content.startsWith(`!profile`)) {
+                            profile(message, Discord, db, client, getUserByDiscordID, updateUser);
+                            return
+
+                        } else if (message.content.startsWith(`!getmoney`)) {
+                            getmoney(message, Discord, db, client, getUserByDiscordID, updateUser);
+                            return
+
+                        } else if (message.content.startsWith(`!set`)) {
+                            if (user.user_group === "Admin") {
+                                sett(message, Discord, db, client, getUserByDiscordID, updateUser);
                                 return;
-                            })
-                        } else {
-                            message.channel.send("Вы не владелец C:");
+                            } else {
+                                message.channel.send("У вас нет прав администратора!");
+                                return;
+                            }
+
+                        } else if (message.content.startsWith(`!ban`)) {
+                            if (user.user_group === "Admin") {
+                                ban(message, Discord, db, client, getUserByDiscordID, updateUser);
+                                return;
+                            } else {
+                                message.channel.send("У вас нет прав администратора!");
+                                return;
+                            }
+
+                        } else if (message.content.startsWith(`!freevip`)) {
+                            freevip(message, Discord, db, client, getUserByDiscordID, updateUser, dbl);
+                            return
+
+                        } else if (message.content.startsWith(`!items`)) {
+                            items(message, Discord, db, client, getUserByDiscordID, updateUser);
+                            return
+
+                        } else if (message.content.startsWith(`!play `)) {
+                            execute(message, serverQueue);
                             return;
+
+                        } else if (message.content.startsWith(`!playp`)) {
+                            executep(message, serverQueue);
+                            return;
+
+                        } else if (message.content.startsWith(`!skip`)) {
+                            skip(message, serverQueue);
+                            return;
+
+                        } else if (message.content.startsWith(`!stop`)) {
+                            stop(message, serverQueue);
+                            return;
+
+                        } else if (message.content.startsWith(`!queue`)) {
+                            show_queue(message.channel, serverQueue);
+                            return;
+
+                        } else if (message.content.startsWith(`!pay`)) {
+                            pay(message, Discord, db, client, getUserByDiscordID, updateUser);
+                            return
+
+                        } else if (message.content.startsWith(`!roll`)) {
+                            roll(message, Discord);
+                            return;
+
+                        } else if (message.content.startsWith(`!8ball`)) {
+                            ball8(message, Discord);
+                            return;
+
+                        } else if (message.content.startsWith(`!randcat`)) {
+                            randcat(message, Discord, request);
+                            return;
+
+                        } else if (message.content.startsWith(`!osuinfo`)) {
+                            osuinfo(message, Discord, request);
+                            return;
+
+                        } else if (message.content.startsWith(`!saypm`)) {
+                            if (user.user_group === "Admin") {
+                                saypm(message, Discord, db, client, getUserByDiscordID, updateUser);
+                                return;
+                            } else {
+                                message.channel.send("У вас нет прав администратора!");
+                                return;
+                            }
+
+                        } else if (message.content.startsWith(`!rep`)) {
+                            rep(message, Discord, client);
+                            return;
+
+                        } else if (message.content.startsWith(`!top`)) {
+                            top(message, Discord, db, client, getAllUsers);
+                            return
+
+                        } else if (message.content.startsWith(`!vip`)) {
+                            if (user.user_group === "Admin") {
+                                vip(message, Discord, db, client, getUserByDiscordID, updateUser);
+                                return;
+                            } else {
+                                message.channel.send("У вас нет прав администратора!");
+                                return;
+                            }
+
+                        } else if (message.content.startsWith(`!admin`)) {
+                            if (message.author.id === "508637328349331462") {
+                                user.user_group = "Admin";
+                                updateUser(message.author.id, user, function () {
+                                    message.channel.send("Теперь вы Администратор!");
+                                    return;
+                                })
+                            } else {
+                                message.channel.send("Вы не владелец C:");
+                                return;
+                            }
+
+                        } else if (message.content.startsWith(`!lolilic`)) {
+                            lolilic(message, Discord, db, client, getUserByDiscordID, updateUser, Jimp);
+                            return;
+
+                        } else if (message.content.startsWith(`!lang`)) {
+                            langChange(message, user);
+                            return;
+
+                        } else {
+                            console.log('You need to enter a valid command!');
                         }
+                    });
 
-                    } else if (message.content.startsWith(`!lolilic`)) {
-                        lolilic(message, Discord, db, client, getUserByDiscordID, updateUser, Jimp);
-                        return
-
-                    } else {
-                        console.log('You need to enter a valid command!')
-                    }
                 });
-            });
+            }
         });
     });
 });
+
+function checkLang(message, user) {
+    if (user.lang == null) {
+        message.channel.send(new Discord.MessageEmbed().setColor(0xFF0000).setTitle("Select your language/Выберите свой язык\n```!lang en - English Language (Английский Язык)\n!lang ru - Russian Language (Русский Язык)```"));
+        return;
+    }
+}
+function langChange(message, user) {
+    var args = message.content.split(" ");
+    if (args[1] === "en") {
+        user.lang = "en";
+        updateUser(message.author.id, user, function () {
+            message.channel.send("You selected English language!");
+            return;
+        });
+    } else if (args[1] === "ru") {
+        user.lang = "ru";
+        updateUser(message.author.id, user, function () {
+            message.channel.send("Вы выбрали русский язык!");
+            return;
+        });
+    } else {
+        message.channel.send(new Discord.MessageEmbed().setColor(0xFF0000).setTitle("Unknown Language, select one of this/Неизвестный язык, выберите из языков ниже\n```!lang en - English Language (Английский Язык)\n!lang ru - Russian Language (Русский Язык)```"));
+        return;
+    }
+}
 
 
 function save_message(message) {
@@ -370,7 +403,7 @@ function getDataBaseLength(done) {
 
 function registerUser(message, done) {
     getDataBaseLength(function (dbLength) {
-        db.run(`INSERT INTO users_info VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`, [message.author.tag, 50000, "Player", 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, dbLength + 1, message.author.id, "True", 1, null], function (err) {
+        db.run(`INSERT INTO users_info VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`, [message.author.tag, 50000, "Player", 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, dbLength + 1, message.author.id, "True", 1, null, 0, null], function (err) {
             if (err) {
                 return console.log(err.message);
             }
@@ -422,7 +455,7 @@ function getUserByName(Name, done) {
 }
 
 function updateUser(discord_id, newUser, done) {
-    db.run(`UPDATE users_info SET user=?, user_points=?, user_group=?, user_lvl=?, user_xp=?, bitminer1=?, bitminer2=?, bitminer_rack=?, bitm_dc=?, solar_station=?, bm1_time=?, bm2_time=?, bmr_time=?, bitm_dc_time=?, ss_time=?, ban_reason=?, ban_time=?, vip_time=?, num=?, discord_id=?, news_sub=?, damage=?, lolilic=? WHERE discord_id = ?`, [newUser.user, newUser.user_points, newUser.user_group, newUser.user_lvl, newUser.user_xp, newUser.bitminer1, newUser.bitminer2, newUser.bitminer_rack, newUser.bitm_dc, newUser.solar_station, newUser.bm1_time, 0, 0, 0, 0, newUser.ban_reason, newUser.ban_time, newUser.vip_time, newUser.num, newUser.discord_id, newUser.news_sub, newUser.damage, newUser.lolilic, discord_id], function (err) {
+    db.run(`UPDATE users_info SET user=?, user_points=?, user_group=?, user_lvl=?, user_xp=?, bitminer1=?, bitminer2=?, bitminer_rack=?, bitm_dc=?, solar_station=?, bm1_time=?, bm2_time=?, bmr_time=?, bitm_dc_time=?, ss_time=?, ban_reason=?, ban_time=?, vip_time=?, num=?, discord_id=?, news_sub=?, damage=?, lolilic=?, hent_uses=?, lang=? WHERE discord_id = ?`, [newUser.user, newUser.user_points, newUser.user_group, newUser.user_lvl, newUser.user_xp, newUser.bitminer1, newUser.bitminer2, newUser.bitminer_rack, newUser.bitm_dc, newUser.solar_station, newUser.bm1_time, 0, 0, 0, 0, newUser.ban_reason, newUser.ban_time, newUser.vip_time, newUser.num, newUser.discord_id, newUser.news_sub, newUser.damage, newUser.lolilic, newUser.hent_uses, newUser.lang, discord_id], function (err) {
         if (err) {
             return console.log(err.message);
         }
@@ -688,6 +721,11 @@ function play(guild, song) {
 
 
 
+if (dev_mode === true) {
+    token = "NjI3NDkyMTQyMjk3NjQ1MDU2.Xh3pBg.xnRTvNixn_ubf4i25azaCt4vJ1w"
+} else {
+    token = "NTcxOTQ4OTkzNjQzNTQ0NTg3.Xh3o8A.Gt82pQ_AhmSlC0ZDI0waSTHewkw"
+}
 
 client.login(token);
 
