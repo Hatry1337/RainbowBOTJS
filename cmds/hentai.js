@@ -1,6 +1,6 @@
 ﻿console.log("Imported hentai");
 
-function hentai(message, client, Discord, fs, db, gu) {
+function hentai(message, client, Discord, fs, db, gu, uu, lng) {
     function getHentai(localID, done) {
         db.all(`SELECT * FROM hentai WHERE num = ${localID}`, [], (err, rows) => {
             if (err) {
@@ -13,12 +13,20 @@ function hentai(message, client, Discord, fs, db, gu) {
     }
     gu(message.author.id, function (user) {
         if (user.hent_uses) {
+            console.log("sucking from db")
             user.hent_uses = JSON.parse(user.hent_uses);
         } else {
+            console.log("GOVNO");
             user.hent_uses = {
                 last: 0,
                 count: 0,
             }
+        }
+        var curTS = new Date().getTime() / 1000;
+        if((curTS - user.hent_uses.last) >= 43200){
+            console.log(curTS - user.hent_uses.last);
+            user.hent_uses.count = 0;
+            console.log("Setting 0 govna");
         }
         if (user.user_group === "VIP" || user.user_group === "Admin" || user.user_group === "hentmod" || user.hent_uses.count <= 5) {
             if (message.channel.nsfw) {
@@ -47,7 +55,7 @@ function hentai(message, client, Discord, fs, db, gu) {
                                         page = 1;
                                     }
                                     if (page > Math.floor(hentCount / 10) + 1) {
-                                        message.channel.send("Такой страницы не существует!")
+                                        message.channel.send(lng.hentai.pageNotExist[user.lang]);
                                         return
                                     }
                                     var i;
@@ -58,7 +66,6 @@ function hentai(message, client, Discord, fs, db, gu) {
                                     }
                                     var c = page * 10;
                                     var out = "";
-                                    var counter = 0;
                                     getHentai(i, function (h1) {
                                         getHentai(i + 1, function (h2) {
                                             getHentai(i + 2, function (h3) {
@@ -74,7 +81,7 @@ function hentai(message, client, Discord, fs, db, gu) {
                                                                             while (j < 10) {
                                                                                 var hentai = hents[j];
                                                                                 if (!hentai) {
-                                                                                    out = `${out}\n**${i + j}.** ${'`'}Пусто${'`'}\n`;
+                                                                                    out = `${out}\n**${i + j}.** ${'`'}${lng.hentai.empty[user.lang]}${'`'}\n`;
                                                                                 } else {
                                                                                     out = `${out}\n**${i + j}.** ${hentai.url}\n${hentai.user} :id:${hentai.num}ᅠᅠ:eye:${hentai.views}ᅠᅠ:heart:${hentai.likes}\n`;
                                                                                 }
@@ -82,7 +89,7 @@ function hentai(message, client, Discord, fs, db, gu) {
                                                                             }
                                                                             var embd = new Discord.MessageEmbed()
                                                                                 .setColor(0x8b00ff)
-                                                                                .setTitle(`Страница ${page}/${Math.floor(hentCount / 10) + 1}`)
+                                                                                .setTitle(`${lng.hentai.page[user.lang]} ${page}/${Math.floor(hentCount / 10) + 1}`)
                                                                                 .setDescription(out);
                                                                             message.channel.send(embd);
                                                                             return;
@@ -98,14 +105,14 @@ function hentai(message, client, Discord, fs, db, gu) {
                                     });
 
                                 } else {
-                                    message.channel.send("Вы не Администратор!")
+                                    message.channel.send(lng.hentai.youAreNotAdmin[user.lang]);
                                     return;
                                 }
                             } else if (args[1] === "add") {
                                 if (user.user_group === "Admin" || user.user_group === "hentmod") {
                                     var hurl;
                                     if (!args[2]) {
-                                        message.channel.send("Вы не ввели ссылку на картинку!");
+                                        message.channel.send(lng.hentai.noLink[user.lang]);
                                         return;
                                     } else {
                                         hurl = args[2];
@@ -134,13 +141,13 @@ function hentai(message, client, Discord, fs, db, gu) {
                                             if (err) {
                                                 return console.log(err.message);
                                             }
-                                            message.channel.send(`Картинка добавлена под номером **${emptyIndex}**!`);
+                                            message.channel.send(`${lng.hentai.picAddedAt[user.lang]} **${emptyIndex}**!`);
                                             return;
                                         });
 
                                     });
                                 } else {
-                                    message.channel.send("Вы не Администратор!")
+                                    message.channel.send(lng.hentai.youAreNotAdmin[user.lang]);
                                     return;
                                 }
 
@@ -149,32 +156,32 @@ function hentai(message, client, Discord, fs, db, gu) {
                                     var nhent;
                                     if (args[2]) {
                                         if (isNaN(parseInt(args[2]))) {
-                                            message.channel.send("Такой картинки не существует!");
+                                            message.channel.send(lng.hentai.picNotExist[user.lang]);
                                             return;
                                         } else {
                                             nhent = parseInt(args[2]);
                                         }
                                     } else {
-                                        message.channel.send("Вы не ввели номер картинки для удаления!");
+                                        message.channel.send(lng.hentai.noPic[user.lang]);
                                         return;
                                     }
                                     db.run(`DELETE FROM hentai WHERE num = ?`, [nhent], function (err) {
                                         if (err) {
                                             return console.log(err.message);
                                         }
-                                        message.channel.send(`Картинка под номером **${nhent}** удалена!`);
+                                        message.channel.send(`${lng.hentai.picAtNum[user.lang]} **${nhent}** ${lng.deleted[user.lang]}!`);
                                         return;
                                     });
 
                                 } else {
-                                    message.channel.send("Вы не Администратор!")
+                                    message.channel.send(lng.hentai.youAreNotAdmin[user.lang]);
                                     return;
                                 }
                             } else if (args[1] === "offer") {
                                 if (user.user_group === "Admin" || user.user_group === "hentmod" || user.user_group === "VIP") {
                                     var hurl;
                                     if (!args[2]) {
-                                        message.channel.send("Вы не ввели ссылку на картинку!");
+                                        message.channel.send(lng.hentai.noLink[user.lang]);
                                         return;
                                     } else {
                                         hurl = args[2];
@@ -184,7 +191,7 @@ function hentai(message, client, Discord, fs, db, gu) {
                                         .setColor(0x277353)
                                         .setImage(hurl);
                                     client.users.cache.get('508637328349331462').send(embd);
-                                    message.channel.send(`Ваша картинка отправлена на модерацию, если она подходит под все требования, она будет опубликована в ближайшее время!`);
+                                    message.channel.send(lng.hentai.picOffered[user.lang]);
                                     return;
                                 }
                             } else if (args[1] === "like") {
@@ -192,13 +199,13 @@ function hentai(message, client, Discord, fs, db, gu) {
                                     var nhent;
                                     if (args[2]) {
                                         if (isNaN(parseInt(args[2]))) {
-                                            message.channel.send("Такой картинки не существует!");
+                                            message.channel.send(lng.hentai.picNotExist[user.lang]);
                                             return;
                                         } else {
                                             nhent = parseInt(args[2]);
                                         }
                                     } else {
-                                        message.channel.send("Вы не ввели номер картинки!");
+                                        message.channel.send(lng.hentai.noPic[user.lang]);
                                         return;
                                     }
                                     getHentai(nhent, function (xent) {
@@ -206,7 +213,7 @@ function hentai(message, client, Discord, fs, db, gu) {
                                             if (err) {
                                                 return console.log(err.message);
                                             }
-                                            message.channel.send(`Вы поставили лайк на картинку под номером **${nhent}**!`);
+                                            message.channel.send(`${lng.hentai.youLiked[user.lang]} **${nhent}**!`);
                                             return;
                                         });
                                     });
@@ -233,10 +240,10 @@ function hentai(message, client, Discord, fs, db, gu) {
                                                         .setColor(0x8b00ff)
                                                         .setTitle("Статистика команды !hentai:")
                                                         .addFields([
-                                                            { name: "Всего лайков: ", value: `${likes[0]['SUM(likes)']} :heart:` },
-                                                            { name: "Всего просмотров: ", value: `${views[0]['SUM(views)']} :eye:` },
-                                                            { name: "Всего картинок: ", value: `${hentCount} :frame_photo:` },
-                                                            { name: "Самые популярные картинки: ", value: `По лайкам: :id:${maxLikes[0].num}ᅠ:eye:${maxLikes[0].views}ᅠ:heart:${maxLikes[0].likes}\n\nПо просмотрам: :id:${maxViews[0].num}ᅠ:eye:${maxViews[0].views}ᅠ:heart:${maxViews[0].likes}` },
+                                                            { name: `${lng.hentai.totalLikes[user.lang]}: `, value: `${likes[0]['SUM(likes)']} :heart:` },
+                                                            { name: `${lng.hentai.totalViews[user.lang]}: `, value: `${views[0]['SUM(views)']} :eye:` },
+                                                            { name: `${lng.hentai.picsCount[user.lang]}: `, value: `${hentCount} :frame_photo:` },
+                                                            { name: `${lng.hentai.mostPopular[user.lang]}: `, value: `${lng.hentai.byLikes[user.lang]}: :id:${maxLikes[0].num}ᅠ:eye:${maxLikes[0].views}ᅠ:heart:${maxLikes[0].likes}\n\n${lng.hentai.byViews[user.lang]}: :id:${maxViews[0].num}ᅠ:eye:${maxViews[0].views}ᅠ:heart:${maxViews[0].likes}` },
 
 
                                                         ]);
@@ -249,35 +256,42 @@ function hentai(message, client, Discord, fs, db, gu) {
 
                                 }
                             }else if (isNaN(parseInt(args[1]))) {
-                                message.channel.send("invalid picture id");
+                                message.channel.send(lng.hentai.picNotExist[user.lang]);
                                 return;
+
+                                //NORMAL HENTAI CMD HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                             } else {
-                                console.log(parseInt(args[1]));
                                 getHentai(parseInt(args[1]), function (hentai) {
                                     hent = hentai;
                                     if (!(hent)) {
-                                        message.channel.send("Такой картинки не существует!");
+                                        message.channel.send(lng.hentai.picNotExist[user.lang]);
                                         return;
                                     } else {
-                                        console.log(hent.toString());
-                                        emb = new Discord.MessageEmbed()
+                                        var emb = new Discord.MessageEmbed()
                                             .setDescription(`:id:${hent.num}ᅠᅠ:eye:${hent.views}ᅠᅠ:heart:${hent.likes}`)
                                             .setImage(hent.url)
                                             .setColor(0x8b00ff);
-
                                         db.run(`UPDATE hentai SET views = ? WHERE num = ?`, [hent.views + 1, hent.num], function (err) {
                                             if (err) {
                                                 return console.log(err.message);
                                             }
-                                            message.channel.send(embed = emb);
-                                            return;
+                                            user.hent_uses.count++;
+                                            user.hent_uses.last = curTS;
+                                            console.log(JSON.stringify(user.hent_uses));
+                                            user.hent_uses = JSON.stringify(user.hent_uses);
+                                            uu(user.user_id, user, function(){
+                                                if (err) {
+                                                    return console.log(err.message);
+                                                }
+                                                message.channel.send(embed = emb);
+                                                return;
+                                            });
                                         });
                                     }
                                 });
                             }
                         } else {
                             hent = rows[getRandomInt(rows.length) + 1];
-                            console.log(hent.toString());
                             emb = new Discord.MessageEmbed()
                                 .setDescription(`:id:${hent.num}ᅠᅠ:eye:${hent.views}ᅠᅠ:heart:${hent.likes}`)
                                 .setImage(hent.url)
@@ -286,19 +300,28 @@ function hentai(message, client, Discord, fs, db, gu) {
                                 if (err) {
                                     return console.log(err.message);
                                 }
-                                message.channel.send(embed = emb);
-                                return;
+                                user.hent_uses.count++;
+                                user.hent_uses.last = curTS;
+                                console.log(JSON.stringify(user.hent_uses));
+                                user.hent_uses = JSON.stringify(user.hent_uses);
+                                uu(message.author.id, user, function(){
+                                    if (err) {
+                                        return console.log(err.message);
+                                    }
+                                    message.channel.send(embed = emb);
+                                    return;
+                                });
                             });
                         }
                     });
                 });
             } else {
-                message.channel.send("Вы не в NSFW канале!");
+                message.channel.send(lng.hentai.notNSFW[user.lang]);
                 return;
             }
 
         } else {
-            message.channel.send("Для просмотра хентая нужна группа VIP");
+            message.channel.send(lng.hentai.notVIP[user.lang]);
             return;
         }
     });

@@ -131,4 +131,115 @@
     },
 
 
+    hentai:{
+        pageNotExist:{
+            ru: "Такой страницы не существует!",
+            en: "This page is not exist!"
+        },
+        picNotExist:{
+            ru: "Такой картинки не существует!",
+            en: "This picture is not exist!"
+        },
+        empty:{
+            ru: "Пусто",
+            en: "Empty"
+        },
+        page:{
+            ru: "Страница",
+            en: "Page"
+        },
+        youAreNotAdmin:{
+            ru: "Вы не Администратор!",
+            en: "You are not an Administrator!"
+        },
+        noLink:{
+            ru: "Вы не ввели ссылку на картинку!",
+            en: "You didn't enter a link to the image!"
+        },
+        noPic:{
+            ru: "Вы не ввели номер картинки!",
+            en: "You didn't enter a number of the image!"
+        },
+        picAddedAt:{
+            ru: "Картинка добавлена под номером",
+            en: "Picture added at number"
+        },
+        picAtNum:{
+            ru: "Картинка под номером",
+            en: "Pucture at number"
+        },
+        deleted:{
+            ru: "удалена",
+            en: "deleted"
+        },
+        picOffered:{
+            ru: "Ваша картинка отправлена на модерацию, если она подходит под все требования, она будет опубликована в ближайшее время",
+            en: "Your image has been submitted for moderation, if it fits all the requirements, it will be published soon"
+        },
+        youLiked:{
+            ru: "Вы поставили лайк на картинку под номером",
+            en: "You put a like on the image at number"
+        },
+        totalLikes:{
+            ru: "Всего лайков",
+            en: "Total likes"
+        },
+        totalViews:{
+            ru: "Всего просмотров",
+            en: "Total views"
+        },
+        picsCount:{
+            ru: "Всего картинок",
+            en: "Pictures count"
+        },
+        mostPopular:{
+            ru: "Самые популярные картинки",
+            en: "Most popular pictures"
+        },
+        byLikes:{
+            ru: "По лайкам",
+            en: "By likes"
+        },
+        byViews: {
+            ru: "По просмотрам",
+            en: "By views"
+
+        },
+        notNSFW:{
+            ru: "Вы не в NSFW канале!",
+            en: "You are not in the NSFW channel!"
+        },
+        notVIP:{
+            ru: "Для просмотра хентая нужна группа VIP \n```используйте команду !freevip чтобы получить VIP бесплатно```",
+            en: "To view hentai, you need a VIP group \n```use !freevip to get free vip group```"
+        }
+    },
+    freevip:{
+        vipAlredyExist:{
+            ru: "У вас уже есть VIP статус, наслаждайтесь :)\nЗакончится через:",
+            en: "You already have VIP status, enjoy:) \nExpires in:"
+        },
+        notExp:{
+            ru: "Не закончится :wink: ",
+            en: "Not Expire :wink: "
+        },
+        forVip:{
+            ru:"Для получения VIP проголосуйте на сайте за нашего бота:\nhttps://top.gg/bot/571948993643544587\nДля проверки вашего голоса напишите команду снова\n```Статус: ",
+            en: "To get VIP vote for our bot:\nhttps://top.gg/bot/571948993643544587\nto check your vote, write the command again\n```Status: "
+        },
+        yesVote:{
+            ru: "Голос есть",
+            en: "Vote available"
+        },
+        noVote:{
+            ru: "Голоса нет",
+            en: "No Vote"
+        },
+        youGotVIP:{
+            ru: "Вы получили VIP на 12 часов + бонус 30.000 Поинтов!",
+            en: "You received a VIP for 12 hours + a bonus of 30,000 Points!"
+        }
+
+    }
+
 }

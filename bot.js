@@ -1,4 +1,4 @@
-﻿const dev_mode = true;
+﻿const dev_mode = false;
 
 const Discord = require('discord.js');
 const ytdl = require('ytdl-core');
@@ -106,7 +106,7 @@ client.on('message', async message => {
                             return;
 
                         } else if (message.content.startsWith(`!hentai`)) {
-                            hentai(message, client, Discord, fs, db, getUserByDiscordID);
+                            hentai(message, client, Discord, fs, db, getUserByDiscordID, updateUser, lng);
                             return;
 
                         } else if (message.content.startsWith(`!shop`)) {
@@ -144,7 +144,7 @@ client.on('message', async message => {
                             }
 
                         } else if (message.content.startsWith(`!freevip`)) {
-                            freevip(message, Discord, db, client, getUserByDiscordID, updateUser, dbl);
+                            freevip(message, Discord, db, client, getUserByDiscordID, updateUser, dbl, lng);
                             return
 
                         } else if (message.content.startsWith(`!items`)) {
@@ -379,7 +379,7 @@ var getFiles = function (dir, files_) {
 };
 
 function load_modules(modules) {
-    i = 0
+    i = 0;
     while (i < modules.length) {
         eval.apply(global, [fs.readFileSync(modules[i]).toString()]);
         i++;
@@ -403,7 +403,7 @@ function getDataBaseLength(done) {
 
 function registerUser(message, done) {
     getDataBaseLength(function (dbLength) {
-        db.run(`INSERT INTO users_info VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`, [message.author.tag, 50000, "Player", 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, dbLength + 1, message.author.id, "True", 1, null, 0, null], function (err) {
+        db.run(`INSERT INTO users_info VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`, [message.author.tag, 50000, "Player", 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, dbLength + 1, message.author.id, "True", 1, null, null, null], function (err) {
             if (err) {
                 return console.log(err.message);
             }
