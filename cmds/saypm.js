@@ -20,6 +20,6 @@ function saypm(message, Discord, db, client, gu, uu) {
         return;
     }
 
-    client.users.get(uid).send(`[Admin]${message.author.tag}: ${toUserMsg}`);
-    message.channel.send(`Сообщение "${toUserMsg}" было отправлено пользователю ${client.users.get(uid).tag}`);
+    client.users.cache.get(uid).send(`[Admin]${message.author.tag}: ${toUserMsg}`);
+    message.channel.send(`Сообщение "${toUserMsg}" было отправлено пользователю ${client.users.cache.get(uid).tag}`);
 }
