@@ -1,4 +1,4 @@
-﻿const dev_mode = false;
+﻿const dev_mode = true;
 
 const Discord = require('discord.js');
 const ytdl = require('ytdl-core');
@@ -30,6 +30,9 @@ client.once('ready', () => {
     getUserByDiscordID("508637328349331462", function (user) {
         console.log(user);
     });
+    /*client.channels.cache.get("662657721266339853").createInvite({ temporary: true})
+        .then(invite => console.log(invite.url))
+        .catch(console.error);*/
 });
 
 
@@ -237,7 +240,10 @@ client.on('message', async message => {
                             langChange(message, user);
                             return;
 
-                        } else {
+                        } else if (message.content.startsWith(`!krestiki`)) {
+                            krestiki(message, Discord, db, client, getUserByDiscordID, updateUser);
+                            return;
+                        }else{
                             console.log('You need to enter a valid command!');
                         }
                     });
