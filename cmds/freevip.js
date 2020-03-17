@@ -33,11 +33,11 @@ function freevip(message, Discord, db, client, gu, uu, dbl, lng) {
         } else {
             dbl.hasVoted(message.author.id).then(isVoted => {
                 if (!(isVoted)) {
-                    message.channel.send(`${lng.freevip.forVip[user.lang]}${lng.freevip.noVote[user.lang]}`);
+                    message.channel.send(`${lng.freevip.forVip[user.lang]}${lng.freevip.noVote[user.lang]}${"```"}`);
                     console.log(isVoted);
                     return;
                 } else {
-                    message.channel.send(`${lng.freevip.forVip[user.lang]}${lng.freevip.yesVote[user.lang]}`);
+                    message.channel.send(`${lng.freevip.forVip[user.lang]}${lng.freevip.yesVote[user.lang]}${"```"}`);
                     console.log(isVoted);
                     if (isVoted) {
                         var vip_time = cur_ts + 43200;
