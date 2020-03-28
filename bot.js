@@ -1,4 +1,4 @@
-﻿const dev_mode = true;
+﻿const dev_mode = false;
 
 const Discord = require('discord.js');
 const ytdl = require('ytdl-core');
@@ -241,10 +241,12 @@ client.on('message', async message => {
                             return;
 
                         } else if (message.content.startsWith(`!krestiki`)) {
-                            krestiki(message, Discord, db, client, getUserByDiscordID, updateUser);
+                            message.channel.send("Жди релиза ^^")
+                            //krestiki(message, Discord, db, client, getUserByDiscordID, updateUser);
                             return;
                         }else{
                             console.log('You need to enter a valid command!');
+                            return;
                         }
                     });
 

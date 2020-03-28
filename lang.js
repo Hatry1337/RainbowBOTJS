@@ -96,14 +96,14 @@
             ru: "Получить лицензию на Лольку, или просмотреть если уже получили.",
             en: "Get loli license"
         },
-        infot: {
-            ru: "**Информация:**",
-            en: "**Info:**"
+        usableLinksT: {
+            ru: "Полезные ссылки",
+            en: "Usable Links",
         },
-        info: {
-            ru: "```07.01.2020 Теперь бот полностью на JavaScript!\nСделал сайт с топом игроков``` https://www.rainbowbot.xyz/",
-            en: "```07.01.2020 Bot fully rewrited on JavaScript!\nI make website with 10 better players``` https://www.rainbowbot.xyz/",
-        }
+        usableLinks: {
+            ru: `https://discord.gg/YpjBAc5 - Наш дискорд сервер\nhttps://top.gg/bot/571948993643544587 - Наш бот на Top.GG\nhttps://rainbowbot.xyz - Наш сайт`,
+            en: `https://discord.gg/YpjBAc5 - Our discord server\nhttps://top.gg/bot/571948993643544587 - Our Bot on Top.GG\nhttps://rainbowbot.xyz - Our website`,
+        },
     },
 
     uptime: {

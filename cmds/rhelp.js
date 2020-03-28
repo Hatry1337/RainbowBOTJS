@@ -29,7 +29,7 @@ function rhelp(message, Discord, lng, l) {
             { name: "!randcat", value: lng.rhelp.randcat[l], inline : true },
             { name: "!lolilic", value: lng.rhelp.lolilic[l], inline : true },
 
-            { name: lng.rhelp.infot[l], value: lng.rhelp.info[l], inline : false },
+            { name: lng.rhelp.usableLinksT[l], value: lng.rhelp.usableLinks[l], inline : false },
 
         ])
         .setColor(0x8b00ff);
