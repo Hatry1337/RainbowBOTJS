@@ -16,6 +16,10 @@ function pay(message, Discord, db, client, gu, uu) {
         message.channel.send("Количество Поинтов не должно быть __меньше или равным 0__!");
         return;
     }
+    if (isNaN(parseInt(args[2]))) {
+        message.channel.send("Не верное количество поинтов, возможно вы написали 2 пробела перед количеством.!");
+        return;
+    }
 
     if (args[1]) {
         var uarg = args[1].toString();
