@@ -1,4 +1,24 @@
-console.log("Imported krestiki");
+var moduleName = "Krestiki";
+function moduleOnLoad(){
+    console.log(`Module "${this.name}" loaded!`)
+}
+
+class Krestiki {
+    constructor(Discord, Database, Client, Fs, Utils) {
+        var a=1;
+    }
+    execute = function (message) {
+        console.log("Оп хаха а крестиков то нет");
+    }
+}
+
+module.exports.info = {
+    name: moduleName,
+    onLoad: moduleOnLoad
+};
+module.exports.class = Krestiki;
+
+/*
 var krest_lobbys = [];
 function krestiki(message, Discord, db, client, gu, uu) {
     function showGameField(lobby) {
@@ -196,3 +216,4 @@ function krestiki(message, Discord, db, client, gu, uu) {
     }
 
 }
+*/

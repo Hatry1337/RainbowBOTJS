@@ -1,40 +1,22 @@
 ﻿const dev_mode = false;
 
-const Discord = require('discord.js');
-const ytdl = require('ytdl-core');
-const search = require('youtube-search');
 const fs = require("fs");
-const sqlite = require('sqlite3').verbose();
-const db = new sqlite.Database('./database.db');
-const DBL = require("dblapi.js");
-const request = require("request");
-const Jimp = require("jimp");
-const lng = require("./lang").lng;
-
+const Discord = require('discord.js');
 const client = new Discord.Client();
-const dbl = new DBL('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjU3MTk0ODk5MzY0MzU0NDU4NyIsImJvdCI6dHJ1ZSwiaWF0IjoxNTc1NTczMjAyfQ.9OfSSDWcanClZpsqdFsz7U-1gStTb0SwYZWF49FtrNU', client);
+const Database = new (require('./modules/Database')).Database();
+const Utils = new (require("./modules/Utils")).Utils(Discord, Database, client, fs, __dirname);
 
-var search_opts = {
-    maxResults: 1,
-    key: 'AIzaSyB99VVQZPIzMlPWlovUEDwkTHuOzlCNkkw',
-};
 
 var utime;
-const queue = new Map();
-
 client.once('ready', () => {
     console.log('Ready 1!');
     utime = new Date();
     client.user.setActivity('!rhelp', { type: 'WATCHING' });
-    load_modules(getFiles("./cmds/"));
-    getUserByDiscordID("508637328349331462", function (user) {
-        console.log(user);
-    });
+    Utils.loadModules(Utils.getFiles(__dirname+"/cmds"));
     /*client.channels.cache.get("662657721266339853").createInvite({ temporary: true})
         .then(invite => console.log(invite.url))
         .catch(console.error);*/
 });
-
 
 client.once('reconnecting', () => {
     console.log('Reconnecting!');
@@ -44,93 +26,70 @@ client.once('disconnect', () => {
     console.log('Disconnect!');
 });
 
-
-function messageStats() {
-    fs.readFile('stats.json', 'utf8', function (error, data) {
-        var file;
-        if (!(data)) {
-            file = {
-                stats: {
-                    messages: 1,
-                }
-            }
-        } else {
-            data = JSON.parse(data);
-            file = {
-                stats: {
-                    messages: data.stats.messages + 1,
-                }
-            }
-        }
-        json = JSON.stringify(file, null, 4);
-        fs.writeFile(`stats.json`, json, null, function () { });
-    });
-}
-
 client.on('message', async message => {
-    save_message(message);
+    if(message.author.id === Utils.Client.user.id){return}
+    if (message.channel.type === "dm") { message.channel.send("Команды в личных сообщениях не поддерживаются :cry:"); return; }
+    Utils.saveMessage(message);
     if (message.author.bot) return;
     if (!message.content.startsWith("!")) return;
-    if (message.channel.type === "dm") { message.channel.send("Команды в личных сообщениях не поддерживаются :cry:"); return; }
-
-    messageStats();
-    const serverQueue = queue.get(message.guild.id);
-    checkReg(message, function () {
-        getUserByDiscordID(message.author.id, function (user) {
+    Utils.msgStat();
+    const serverQueue = Utils.Modules.Music.queue.get(message.guild.id);
+    Utils.checkReg(message, function () {
+        Database.getUserByDiscordID(message.author.id, function (user) {
             if (user.lang === null) {
                 if (message.content.startsWith(`!lang`)) {
-                    langChange(message, user);
+                    Utils.langChange(message, user);
                     return;
                 } else {
-                    checkLang(message, user);
+                    Utils.checkLang(message, user);
                 }
             } else {
-                checkLang(message, user);
-                checkBan(message, function () {
-                    checkVip(message, function () {
+                Utils.checkLang(message, user);
+                Utils.checkBan(message, function () {
+                    Utils.checkVip(message, function () {
                         if (message.content.startsWith(`!rhelp`)) {
-                            rhelp(message, Discord, lng, user.lang);
+                            Utils.Modules.Rhelp.execute(message, user.lang);
                             return;
 
                         } else if (message.content.startsWith(`!ukrmova`)) {
-                            ukrmova(message, Discord);
+                            Utils.Modules.UkrMova.execute(message);
                             return;
 
                         } else if (message.content.startsWith(`!upd`)) {
-                            upd(message, Discord);
+                            Utils.Modules.Upd.execute(message);
                             return;
 
                         } else if (message.content.startsWith(`!uptime`)) {
-                            uptime(message, utime, Discord, lng, user.lang);
+                            Utils.Modules.Uptime.execute(message, utime, user.lang);
                             return;
 
                         } else if (message.content.startsWith(`!rstats`)) {
-                            rstats(message, client, utime, Discord, fs, getDataBaseLength, lng, user.lang);
+                            Utils.Modules.Rstats.execute(message, utime, user.lang);
                             return;
 
                         } else if (message.content.startsWith(`!hentai`)) {
-                            hentai(message, client, Discord, fs, db, getUserByDiscordID, updateUser, lng);
+                            Utils.Modules.Hentai.execute(message);
                             return;
 
                         } else if (message.content.startsWith(`!shop`)) {
-                            shop(message, client, Discord, db, getUserByDiscordID);
+                            Utils.Modules.Shop.execute(message);
                             return;
 
                         } else if (message.content.startsWith(`!buy`)) {
-                            buy(message, Discord, db, client, getUserByDiscordID, updateUser);
+                            Utils.Modules.Buy.execute(message);
                             return
 
                         } else if (message.content.startsWith(`!profile`)) {
-                            profile(message, Discord, db, client, getUserByDiscordID, updateUser);
+                            Utils.Modules.Profile.execute(message);
                             return
 
                         } else if (message.content.startsWith(`!getmoney`)) {
-                            getmoney(message, Discord, db, client, getUserByDiscordID, updateUser);
+                            Utils.Modules.GetMoney.execute(message);
                             return
 
                         } else if (message.content.startsWith(`!set`)) {
                             if (user.user_group === "Admin") {
-                                sett(message, Discord, db, client, getUserByDiscordID, updateUser);
+                                Utils.Modules.Set.execute(message);
                                 return;
                             } else {
                                 message.channel.send("У вас нет прав администратора!");
@@ -139,7 +98,7 @@ client.on('message', async message => {
 
                         } else if (message.content.startsWith(`!ban`)) {
                             if (user.user_group === "Admin") {
-                                ban(message, Discord, db, client, getUserByDiscordID, updateUser);
+                                Utils.Modules.Ban.execute(message);
                                 return;
                             } else {
                                 message.channel.send("У вас нет прав администратора!");
@@ -147,56 +106,60 @@ client.on('message', async message => {
                             }
 
                         } else if (message.content.startsWith(`!freevip`)) {
-                            freevip(message, Discord, db, client, getUserByDiscordID, updateUser, dbl, lng);
+                            Utils.Modules.FreeVIP.execute(message);
                             return
 
                         } else if (message.content.startsWith(`!items`)) {
-                            items(message, Discord, db, client, getUserByDiscordID, updateUser);
+                            Utils.Modules.Items.execute(message);
                             return
 
                         } else if (message.content.startsWith(`!play `)) {
-                            execute(message, serverQueue);
+                            Utils.Modules.Music.executePlay(message, serverQueue);
                             return;
 
                         } else if (message.content.startsWith(`!playp`)) {
-                            executep(message, serverQueue);
+                            Utils.Modules.Music.executePlayList(message, serverQueue);
+                            return;
+
+                        } else if (message.content.startsWith(`!rbfm`)) {
+                            Utils.Modules.Music.executeRadio(message, serverQueue);
                             return;
 
                         } else if (message.content.startsWith(`!skip`)) {
-                            skip(message, serverQueue);
+                            Utils.Modules.Music.Skip(message, serverQueue);
                             return;
 
                         } else if (message.content.startsWith(`!stop`)) {
-                            stop(message, serverQueue);
+                            Utils.Modules.Music.Stop(message, serverQueue);
                             return;
 
                         } else if (message.content.startsWith(`!queue`)) {
-                            show_queue(message.channel, serverQueue);
+                            Utils.Modules.Music.ShowQueue(message.channel, serverQueue);
                             return;
 
                         } else if (message.content.startsWith(`!pay`)) {
-                            pay(message, Discord, db, client, getUserByDiscordID, updateUser);
+                            Utils.Modules.Pay.execute(message);
                             return
 
                         } else if (message.content.startsWith(`!roll`)) {
-                            roll(message, Discord);
+                            Utils.Modules.Roll.execute(message);
                             return;
 
                         } else if (message.content.startsWith(`!8ball`)) {
-                            ball8(message, Discord);
+                            Utils.Modules["8ball"].execute(message);
                             return;
 
                         } else if (message.content.startsWith(`!randcat`)) {
-                            randcat(message, Discord, request);
+                            Utils.Modules.Randcat.execute(message);
                             return;
 
                         } else if (message.content.startsWith(`!osuinfo`)) {
-                            osuinfo(message, Discord, request);
+                            Utils.Modules.OsuInfo.execute(message);
                             return;
 
                         } else if (message.content.startsWith(`!saypm`)) {
                             if (user.user_group === "Admin") {
-                                saypm(message, Discord, db, client, getUserByDiscordID, updateUser);
+                                Utils.Modules.SayPM.execute(message);
                                 return;
                             } else {
                                 message.channel.send("У вас нет прав администратора!");
@@ -204,16 +167,16 @@ client.on('message', async message => {
                             }
 
                         } else if (message.content.startsWith(`!rep`)) {
-                            rep(message, Discord, client);
+                            Utils.Modules.Report.execute(message);
                             return;
 
                         } else if (message.content.startsWith(`!top`)) {
-                            top(message, Discord, db, client, getAllUsers);
+                            Utils.Modules.Top.execute(message);
                             return
 
                         } else if (message.content.startsWith(`!vip`)) {
                             if (user.user_group === "Admin") {
-                                vip(message, Discord, db, client, getUserByDiscordID, updateUser);
+                                Utils.Modules.Vip.execute(message, user.lang);
                                 return;
                             } else {
                                 message.channel.send("У вас нет прав администратора!");
@@ -223,28 +186,28 @@ client.on('message', async message => {
                         } else if (message.content.startsWith(`!admin`)) {
                             if (message.author.id === "508637328349331462") {
                                 user.user_group = "Admin";
-                                updateUser(message.author.id, user, function () {
+                                Database.updateUser(message.author.id, user, function () {
                                     message.channel.send("Теперь вы Администратор!");
                                     return;
-                                })
+                                });
                             } else {
                                 message.channel.send("Вы не владелец C:");
                                 return;
                             }
 
                         } else if (message.content.startsWith(`!lolilic`)) {
-                            lolilic(message, Discord, db, client, getUserByDiscordID, updateUser, Jimp);
+                            Utils.Modules.Lolilic.execute(message);
                             return;
 
                         } else if (message.content.startsWith(`!lang`)) {
-                            langChange(message, user);
+                            Utils.langChange(message, user);
                             return;
 
                         } else if (message.content.startsWith(`!krestiki`)) {
-                            message.channel.send("Жди релиза ^^")
+                            message.channel.send("Жди релиза ^^");
                             //krestiki(message, Discord, db, client, getUserByDiscordID, updateUser);
                             return;
-                        }else{
+                        } else{
                             console.log('You need to enter a valid command!');
                             return;
                         }
@@ -256,484 +219,11 @@ client.on('message', async message => {
     });
 });
 
-function checkLang(message, user) {
-    if (user.lang == null) {
-        message.channel.send(new Discord.MessageEmbed().setColor(0xFF0000).setTitle("Select your language/Выберите свой язык\n```!lang en - English Language (Английский Язык)\n!lang ru - Russian Language (Русский Язык)```"));
-        return;
-    }
-}
-function langChange(message, user) {
-    var args = message.content.split(" ");
-    if (args[1] === "en") {
-        user.lang = "en";
-        updateUser(message.author.id, user, function () {
-            message.channel.send("You selected English language!");
-            return;
-        });
-    } else if (args[1] === "ru") {
-        user.lang = "ru";
-        updateUser(message.author.id, user, function () {
-            message.channel.send("Вы выбрали русский язык!");
-            return;
-        });
-    } else {
-        message.channel.send(new Discord.MessageEmbed().setColor(0xFF0000).setTitle("Unknown Language, select one of this/Неизвестный язык, выберите из языков ниже\n```!lang en - English Language (Английский Язык)\n!lang ru - Russian Language (Русский Язык)```"));
-        return;
-    }
-}
 
-
-function save_message(message) {
-    toWrite = `sv[${message.channel.guild.name}]\nch[${message.channel.name}]\n${message.createdAt}\nci[${message.channel.id}] ai[${message.author.id}] an[${message.author.tag}] mc[${message.content}]`
-    fs.appendFile("/var/www/html/msgs/index.txt", `\n${toWrite}\n`, function () { });
-}
-
-function checkVip(message, done) {
-    getUserByDiscordID(message.author.id, function (user) {
-        if (user.user_group === "VIP") {
-            var curTS = new Date().getTime() / 1000;
-            var diff;
-            if (user.vip_time === "inf") {
-                done();
-            } else {
-                diff = user.vip_time - curTS;
-            }
-            if (diff <= 0) {
-                user.vip_time = 0;
-                user.user_group = "Player";
-                updateUser(message.author.id, user, function () {
-                    done();
-                });
-            } else {
-                done();
-            }
-        } else {
-            done();
-        }
-    });
-}
-
-function checkBan(message, done) {
-    getUserByDiscordID(message.author.id, function (user) {
-        if (user.user_group === "Banned") {
-            var ban_time;
-            var curTS = new Date().getTime() / 1000;
-            var diff;
-            if (user.ban_time === "inf") {
-                ban_time = "никогда, лол)";
-            } else {
-                diff = user.ban_time - curTS;
-                ban_time = timeConversion(diff * 1000);
-            }
-            if (diff <= 0) {
-                user.ban_time = 0;
-                user.user_group = "Player";
-                updateUser(message.author.id, user, function () {
-                    done();
-                });
-            } else {
-                message.channel.send(`Вы забанены! Причина: ${user.ban_reason}, Бан истекает через: ${ban_time}`);
-                return;
-            }
-        } else {
-            done();
-        }
-    });
-}
-
-function checkReg(message, done) {
-    getUserByDiscordID(message.author.id, function (user) {
-        if (!(user)) {
-            registerUser(message, function () { done() });
-        } else {
-            done();
-        }
-    });
-}
-
-function timeConversion(millisec) {
-    var seconds = parseInt(millisec / 1000);
-    var minutes = parseInt(millisec / (1000 * 60));
-    var hours = parseInt(millisec / (1000 * 60 * 60));
-    var days = parseInt(millisec / (1000 * 60 * 60 * 24));
-
-    var stime;
-    if (seconds < 60) {
-        stime = `${seconds} секунд`;
-    } else if (minutes < 60) {
-        stime = `${minutes} минут, ${seconds - minutes * 60} секунд`;
-    } else if (hours < 24) {
-        stime = `${hours} часов, ${minutes - hours * 60} минут, ${seconds - minutes * 60} секунд`;
-    } else {
-        stime = `${days} дней, ${hours - days * 24} часов, ${minutes - hours * 60} минут, ${seconds - minutes * 60} секунд`;
-    }
-    return stime;
-}
-
-
-var getFiles = function (dir, files_) {
-
-    files_ = files_ || [];
-    var files = fs.readdirSync(dir);
-    for (var i in files) {
-        var name = dir + '/' + files[i];
-        if (fs.statSync(name).isDirectory()) {
-            getFiles(name, files_);
-        } else {
-            files_.push(name);
-        }
-    }
-    return files_;
-};
-
-function load_modules(modules) {
-    i = 0;
-    while (i < modules.length) {
-        eval.apply(global, [fs.readFileSync(modules[i]).toString()]);
-        i++;
-    }
-}
-
-
-
-
-//DATABASE FUNCTIONS
-function getDataBaseLength(done) {
-    db.all(`SELECT * FROM users_info`, [], (err, rows) => {
-        if (err) {
-            throw err;
-        }
-        var length = rows.length;
-        done(length);
-        return length;
-    });
-}
-
-function registerUser(message, done) {
-    getDataBaseLength(function (dbLength) {
-        db.run(`INSERT INTO users_info VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`, [message.author.tag, 50000, "Player", 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, dbLength + 1, message.author.id, "True", 1, null, null, null], function (err) {
-            if (err) {
-                return console.log(err.message);
-            }
-            done();
-        });
-    });
-}
-
-function getUserByDiscordID(discordId, done) {
-    db.all(`SELECT * FROM users_info WHERE discord_id = ${discordId}`, [], (err, rows) => {
-        if (err) {
-            throw err;
-        }
-        var user = rows[0];
-        done(user);
-        return user;
-    });
-}
-
-function getUserByLocalID(localID, done) {
-    db.all(`SELECT * FROM users_info WHERE num = ${localID}`, [], (err, rows) => {
-        if (err) {
-            throw err;
-        }
-        var user = rows[0];
-        done(user);
-        return user;
-    });
-}
-function getAllUsers(done) {
-    db.all(`SELECT * FROM users_info`, [], (err, rows) => {
-        if (err) {
-            throw err;
-        }
-        done(rows);
-        return rows;
-    });
-}
-
-function getUserByName(Name, done) {
-    db.all(`SELECT * FROM users_info WHERE user = ${Name}`, [], (err, rows) => {
-        if (err) {
-            throw err;
-        }
-        var user = rows[0];
-        done(user);
-        return user;
-    });
-}
-
-function updateUser(discord_id, newUser, done) {
-    db.run(`UPDATE users_info SET user=?, user_points=?, user_group=?, user_lvl=?, user_xp=?, bitminer1=?, bitminer2=?, bitminer_rack=?, bitm_dc=?, solar_station=?, bm1_time=?, bm2_time=?, bmr_time=?, bitm_dc_time=?, ss_time=?, ban_reason=?, ban_time=?, vip_time=?, num=?, discord_id=?, news_sub=?, damage=?, lolilic=?, hent_uses=?, lang=? WHERE discord_id = ?`, [newUser.user, newUser.user_points, newUser.user_group, newUser.user_lvl, newUser.user_xp, newUser.bitminer1, newUser.bitminer2, newUser.bitminer_rack, newUser.bitm_dc, newUser.solar_station, newUser.bm1_time, 0, 0, 0, 0, newUser.ban_reason, newUser.ban_time, newUser.vip_time, newUser.num, newUser.discord_id, newUser.news_sub, newUser.damage, newUser.lolilic, newUser.hent_uses, newUser.lang, discord_id], function (err) {
-        if (err) {
-            return console.log(err.message);
-        }
-        done();
-    });
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-async function execute(message, serverQueue) {
-    const sch_req = message.content.substr(6);
-
-    const voiceChannel = message.member.voice.channel;
-    var res = null;
-    search(sch_req, search_opts, async function (err, res) {
-        if (err) return console.log(err);
-        console.log(res);
-        const songInfo = await ytdl.getInfo(res[0].link);
-        const song = {
-            title: songInfo.title,
-            url: songInfo.video_url,
-            duration: songInfo.length_seconds,
-            thumbnail: res[0].thumbnails.high,
-        };
-
-        if (!serverQueue) {
-            const queueContruct = {
-                textChannel: message.channel,
-                voiceChannel: voiceChannel,
-                connection: null,
-                songs: [],
-                current: null,
-                volume: 5,
-                playing: true,
-            };
-
-            queue.set(message.guild.id, queueContruct);
-
-            queueContruct.songs.push(song);
-
-            try {
-                var connection = await voiceChannel.join();
-                queueContruct.connection = connection;
-                play(message.guild, queueContruct.songs[0]);
-            } catch (err) {
-                console.log(err);
-                queue.delete(message.guild.id);
-                return message.channel.send(err);
-            }
-        } else {
-            serverQueue.songs.push(song);
-            return show_queue(message.channel, serverQueue)
-        }
-    });
-}
-
-async function executep(message, serverQueue) {
-    var gavno = message.content.substr(7).split(";;");
-
-    console.log(gavno);
-    const voiceChannel = message.member.voice.channel;
-
-    var res = null;
-    search(gavno[0], search_opts, async function (err, res) {
-        if (err) return console.log(err);
-        console.log(res);
-        const songInfo = await ytdl.getInfo(res[0].link);
-        const song = {
-            title: songInfo.title,
-            url: songInfo.video_url,
-            duration: songInfo.length_seconds,
-            thumbnail: res[0].thumbnails.high,
-        };
-
-        if (!serverQueue) {
-            const queueContruct = {
-                textChannel: message.channel,
-                voiceChannel: voiceChannel,
-                connection: null,
-                songs: [],
-                current: null,
-                volume: 5,
-                playing: true,
-            };
-
-            queue.set(message.guild.id, queueContruct);
-
-            queueContruct.songs.push(song);
-            i = 1;
-            while (i < gavno.length) {
-                search(gavno[i], search_opts, async function (err, res) {
-                    if (err) return console.log(err);
-                    console.log(res);
-                    const songInfo = await ytdl.getInfo(res[0].link);
-                    const song = {
-                        title: songInfo.title,
-                        url: songInfo.video_url,
-                        duration: songInfo.length_seconds,
-                        thumbnail: res[0].thumbnails.high,
-                    };
-                    queueContruct.songs.push(song);
-                });
-                i++;
-            };
-
-            try {
-                var connection = await voiceChannel.join();
-                queueContruct.connection = connection;
-                play(message.guild, queueContruct.songs[0]);
-            } catch (err) {
-                console.log(err);
-                queue.delete(message.guild.id);
-                return message.channel.send(err);
-            }
-        } else {
-            serverQueue.songs.push(song);
-            console.log(serverQueue.songs);
-            i = 1;
-            while (i < gavno.length) {
-                search(gavno[i], search_opts, async function (err, res) {
-                    if (err) return console.log(err);
-                    console.log(res);
-                    const songInfo = await ytdl.getInfo(res[0].link);
-                    const song = {
-                        title: songInfo.title,
-                        url: songInfo.video_url,
-                        duration: songInfo.length_seconds,
-                        thumbnail: res[0].thumbnails.high,
-                    };
-                    serverQueue.songs.push(song);
-                });
-                i++;
-            };
-            return show_queue(message.channel, serverQueue)
-        }
-
-    });
-}
-
-
-
-function show_queue(channel, serverQueue) {
-    if (!serverQueue) {
-        emd = new Discord.MessageEmbed()
-            .setTitle("Тут так пусто, включите какую нибудь музыку!")
-            .setColor(0x0000FF);
-        channel.send(emd);
-        return;
-    }
-    let songs = serverQueue.songs;
-    if (!songs) {
-        emd = new Discord.MessageEmbed()
-            .setTitle("Очередь окончена!")
-            .setColor(0x0000FF);
-        serverQueue.textChannel.send(emd);
-        serverQueue.voiceChannel.leave();
-        queue.delete(guild.id);
-        return;
-    }
-    let queue = "";
-    if (!(songs === [])) {
-        let i = 0;
-        while (i < (songs.length)) {
-            if (i === 0) {
-                dur = secondsToDhms(songs[0].duration)
-                queue = `Текущий трек: _${songs[0].title}_ **${dur}**\n\nСледующие:`;
-            } else {
-                dur = secondsToDhms(songs[i].duration)
-                queue = queue + "\n" + i.toString() + ". " + songs[i].title + " " + dur;
-            }
-            i++;
-        }
-    }
-    embed = new Discord.MessageEmbed()
-        .setTitle("Очередь воспроизведения:")
-        .setColor(0x0000FF)
-        .setDescription(queue);
-    if (songs[0]) {
-        embed.setThumbnail(songs[0].thumbnail.url);
-    }
-    channel.send(embed)
-}
-
-function secondsToDhms(seconds) {
-    seconds = Number(seconds);
-    var d = Math.floor(seconds / (3600 * 24));
-    var h = Math.floor(seconds % (3600 * 24) / 3600);
-    var m = Math.floor(seconds % 3600 / 60);
-    var s = Math.floor(seconds % 60);
-
-    return `**${d}:${h}:${m}:${s}**`;
-}
-
-function skip(message, serverQueue) {
-    if (!message.member.voice.channel) return message.channel.send('Вы должны находиться в голосовом канале!');
-    if (!serverQueue) return message.channel.send('Нету трека, который можно пропустить!');
-    serverQueue.connection.dispatcher.destroy();
-    serverQueue.songs.shift();
-    return play(message.guild, serverQueue.songs[0]);
-}
-
-function stop(message, serverQueue) {
-    if (!message.member.voice.channel) return message.channel.send('Вы должны находиться в голосовом канале!');
-    if (!serverQueue) return message.channel.send("Очередь и так пуста...");
-    serverQueue.songs = [];
-    serverQueue.connection.dispatcher.destroy();
-    play(message.guild, serverQueue.songs[0]);
-    return;
-}
-
-function play(guild, song) {
-    const serverQueue = queue.get(guild.id);
-    if (!song) {
-        emd = new Discord.MessageEmbed()
-            .setTitle("Очередь окончена!")
-            .setColor(0x0000FF);
-        serverQueue.textChannel.send(emd);
-        serverQueue.voiceChannel.leave();
-        queue.delete(guild.id);
-        return;
-    }
-    show_queue(serverQueue.textChannel, serverQueue);
-    serverQueue.connection.play(ytdl(song.url, { filter: 'audioonly' }));
-    serverQueue.connection.dispatcher.once('finish', () => {
-        console.log('Music ended!');
-        serverQueue.songs.shift();
-        play(guild, serverQueue.songs[0]);
-    });
-}
-
-
-
-
-
-
-
-if (dev_mode === true) {
-    token = "NjI3NDkyMTQyMjk3NjQ1MDU2.Xh3pBg.xnRTvNixn_ubf4i25azaCt4vJ1w"
+if (dev_mode) {
+    client.login("NjI3NDkyMTQyMjk3NjQ1MDU2.Xh3pBg.xnRTvNixn_ubf4i25azaCt4vJ1w");
 } else {
-    token = "NTcxOTQ4OTkzNjQzNTQ0NTg3.Xh3o8A.Gt82pQ_AhmSlC0ZDI0waSTHewkw"
+    client.login("NTcxOTQ4OTkzNjQzNTQ0NTg3.Xh3o8A.Gt82pQ_AhmSlC0ZDI0waSTHewkw");
 }
 
-client.login(token);
 

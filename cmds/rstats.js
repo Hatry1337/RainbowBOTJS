@@ -1,39 +1,41 @@
-﻿
-console.log("Imported rstats");
+﻿var moduleName = "Rstats";
+function moduleOnLoad(){
+    console.log(`Module "${this.name}" loaded!`)
+}
 
-function rstats(message, client, date, Discord, fs, gdbl) {
-    gdbl(function (usersCount) {
-        emb = new Discord.MessageEmbed()
-            .setColor(0x8b00ff)
-            .setTitle("Статистика бота")
-            .addFields([
-                { name: "Пинг",                 value: `${parseInt(client.ws.ping)}ms.`},
-                { name: "Количество серверов",  value: `${client.guilds.cache.size}`},
-                { name: "Количество юзеров",    value: `${usersCount}` },
-            ]);
-        fs.readFile('stats.json', 'utf8', function (error, data) {
-            emb.addFields([
-                { name: "Сообщений за всё время",   value: `${JSON.parse(data).stats.messages}`},
-                { name: "Аптайм",                   value: `${msToTime(new Date() - date)}`},
-            ]);
-            message.channel.send(embed = emb);
+class Rstats {
+    constructor(Discord, Database, Client, Fs, Utils) {
+        this.Discord = Discord;
+        this.Database = Database;
+        this.Client = Client;
+        this.FS = Fs;
+        this.DirName = Utils.DirName;
+        this.Utils = Utils;
+    }
+    execute = function (message, date, lang) {
+        var othis = this;
+        this.Database.getDBLength(function (usersCount) {
+            var emb = new othis.Discord.MessageEmbed()
+                .setColor(0x8b00ff)
+                .setTitle("Статистика бота")
+                .addFields([
+                    { name: "Пинг",                 value: `${parseInt(othis.Client.ws.ping)}ms.`},
+                    { name: "Количество серверов",  value: `${othis.Client.guilds.cache.size}`},
+                    { name: "Количество юзеров",    value: `${usersCount}` },
+                ]);
+            othis.FS.readFile(othis.DirName+'/stats.json', 'utf8', function (error, data) {
+                emb.addFields([
+                    { name: "Сообщений за всё время",   value: `${JSON.parse(data).stats.messages}`},
+                    { name: "Аптайм",                   value: `${othis.Utils.timeConversion(new Date() - date, lang)}`},
+                ]);
+                message.channel.send(emb);
+            });
         });
-    });
+    }
 }
 
-
-
-
-function msToTime(duration, show_days) {
-    var seconds = parseInt((duration / 1000) % 60);
-    var minutes = parseInt((duration / (1000 * 60)) % 60);
-    var hours = parseInt((duration / (1000 * 60 * 60)) % 24);
-    var days = parseInt(duration / (1000 * 60 * 60 * 24));
-    hours = (hours < 10) ? "0" + hours : hours;
-    minutes = (minutes < 10) ? "0" + minutes : minutes;
-    seconds = (seconds < 10) ? "0" + seconds : seconds;
-    // Формат возвращаемого значения перепишите как Вам надо.
-    return show_days ? (GetNumberWithPostfix(days, 'day') + ", " + hours + ":" + minutes + ":" + seconds) : (hours + ":" + minutes + ":" + seconds);
-}
-
-//module.exports = { rstats };
+module.exports.info = {
+    name: moduleName,
+    onLoad: moduleOnLoad
+};
+module.exports.class = Rstats;
