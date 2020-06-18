@@ -80,7 +80,7 @@ client.on('message', async message => {
                             return
 
                         } else if (message.content.startsWith(`!profile`)) {
-                            Utils.Modules.Profile.execute(message);
+                            Utils.Modules.Profile.execute(message, user.lang);
                             return
 
                         } else if (message.content.startsWith(`!getmoney`)) {
@@ -114,27 +114,27 @@ client.on('message', async message => {
                             return
 
                         } else if (message.content.startsWith(`!play `)) {
-                            Utils.Modules.Music.executePlay(message, serverQueue);
+                            Utils.Modules.Music.executePlay(message, serverQueue, user.lang);
                             return;
 
                         } else if (message.content.startsWith(`!playp`)) {
-                            Utils.Modules.Music.executePlayList(message, serverQueue);
+                            Utils.Modules.Music.executePlayList(message, serverQueue, user.lang);
                             return;
 
                         } else if (message.content.startsWith(`!rbfm`)) {
-                            Utils.Modules.Music.executeRadio(message, serverQueue);
+                            Utils.Modules.Music.executeRadio(message, serverQueue, user.lang);
                             return;
 
                         } else if (message.content.startsWith(`!skip`)) {
-                            Utils.Modules.Music.Skip(message, serverQueue);
+                            Utils.Modules.Music.Skip(message, serverQueue, user.lang);
                             return;
 
                         } else if (message.content.startsWith(`!stop`)) {
-                            Utils.Modules.Music.Stop(message, serverQueue);
+                            Utils.Modules.Music.Stop(message, serverQueue, user.lang);
                             return;
 
                         } else if (message.content.startsWith(`!queue`)) {
-                            Utils.Modules.Music.ShowQueue(message.channel, serverQueue);
+                            Utils.Modules.Music.ShowQueue(message.channel, serverQueue, user.lang);
                             return;
 
                         } else if (message.content.startsWith(`!pay`)) {
@@ -146,7 +146,7 @@ client.on('message', async message => {
                             return;
 
                         } else if (message.content.startsWith(`!8ball`)) {
-                            Utils.Modules["8ball"].execute(message);
+                            Utils.Modules["8ball"].execute(message, user.lang);
                             return;
 
                         } else if (message.content.startsWith(`!randcat`)) {

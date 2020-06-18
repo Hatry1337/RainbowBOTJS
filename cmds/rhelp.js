@@ -37,6 +37,8 @@ class Rhelp {
                 { name: "!8ball <Question>", value: this.lng.rhelp.eightBall[l], inline : true },
                 { name: "!randcat", value: this.lng.rhelp.randcat[l], inline : true },
                 { name: "!lolilic", value: this.lng.rhelp.lolilic[l], inline : true },
+                { name: "!rbfm", value: this.lng.rhelp.rbfm[l], inline : true },
+
 
                 { name: this.lng.rhelp.usableLinksT[l], value: this.lng.rhelp.usableLinks[l], inline : false },
 

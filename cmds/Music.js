@@ -17,12 +17,13 @@ class Music {
         this.YTSearch = require('youtube-search');
         this.PassThrough = require('stream').PassThrough;
         this.queue = new Map();
+        this.lng = Utils.lng;
     }
-    executePlay = async function (message, serverQueue) {
+    executePlay = async function (message, serverQueue, lang) {
         const sch_req = message.content.substr(6);
         const voiceChannel = message.member.voice.channel;
         if(!voiceChannel){
-            message.channel.send("Вы не находитесь в голосовом канале!");
+            message.channel.send(this.lng.Music.niChannel[lang]);
             return;
         }
         var res = null;
@@ -35,6 +36,7 @@ class Music {
                 url: songInfo.video_url,
                 duration: songInfo.length_seconds,
                 thumbnail: res[0].thumbnails.high,
+                startedTS: new Date(),
             };
             if (!serverQueue) {
                 const queueContruct = {
@@ -51,7 +53,7 @@ class Music {
                 try {
                     var connection = await voiceChannel.join();
                     queueContruct.connection = connection;
-                    othis.Play(message.guild, queueContruct.songs[0]);
+                    othis.Play(message.guild, queueContruct.songs[0], lang);
                 } catch (err) {
                     console.log(err);
                     othis.queue.delete(message.guild.id);
@@ -59,17 +61,17 @@ class Music {
                 }
             } else {
                 serverQueue.songs.push(song);
-                return othis.ShowQueue(message.channel, serverQueue)
+                return othis.ShowQueue(message.channel, serverQueue, lang)
             }
 
         });
     };
 
-    executePlayList = async function(message, serverQueue) {
+    executePlayList = async function(message, serverQueue, lang) {
         var gavno = message.content.substr(7).split(";;");
         const voiceChannel = message.member.voice.channel;
         if(!voiceChannel){
-            message.channel.send("Вы не находитесь в голосовом канале!");
+            message.channel.send(this.lng.Music.niChannel[lang]);
             return;
         }
         var res = null;
@@ -97,7 +99,7 @@ class Music {
                 queueContruct.songs.push(song);
                 i = 1;
                 while (i < gavno.length) {
-                    othis.search(gavno[i], othis.SearchOpts, async function (err, res) {
+                    othis.YTSearch(gavno[i], othis.SearchOpts, async function (err, res) {
                         if (err) return console.log(err);
                         const songInfo = await othis.ytdl.getInfo(res[0].link);
                         const song = {
@@ -113,7 +115,7 @@ class Music {
                 try {
                     var connection = await voiceChannel.join();
                     queueContruct.connection = connection;
-                    othis.Play(message.guild, queueContruct.songs[0]);
+                    othis.Play(message.guild, queueContruct.songs[0], lang);
                 } catch (err) {
                     console.log(err);
                     othis.queue.delete(message.guild.id);
@@ -141,10 +143,10 @@ class Music {
         });
     };
 
-    executeRadio = async function(message, serverQueue) {
+    executeRadio = async function(message, serverQueue, lang) {
         var voiceChannel = message.member.voice.channel;
         if(!voiceChannel){
-            message.channel.send("Вы не находитесь в голосовом канале!");
+            message.channel.send(this.lng.Music.niChannel[lang]);
             return;
         }
         var song = {
@@ -157,6 +159,7 @@ class Music {
                 width: 200,
                 height: 200,
             },
+            startedTS: new Date(),
         };
         var othis = this;
         if (!serverQueue) {
@@ -174,7 +177,7 @@ class Music {
             try {
                 var connection = await voiceChannel.join();
                 queueContruct.connection = connection;
-                othis.Play(message.guild, queueContruct.songs[0]);
+                othis.Play(message.guild, queueContruct.songs[0], lang);
             } catch (err) {
                 console.log(err);
                 othis.queue.delete(message.guild.id);
@@ -182,14 +185,15 @@ class Music {
             }
         } else {
             serverQueue.songs.push(song);
-            return othis.ShowQueue(message.channel, serverQueue);
+            return othis.ShowQueue(message.channel, serverQueue, lang);
         }
     };
 
-    ShowQueue = function(channel, serverQueue) {
+    ShowQueue = function(channel, serverQueue, lang) {
+        var othis = this;
         if (!serverQueue) {
             var emd = new this.Discord.MessageEmbed()
-                .setTitle("Тут так пусто, включите какую нибудь музыку!")
+                .setTitle(othis.lng.Music.emptyQueue[lang])
                 .setColor(0x0000FF);
             channel.send(emd);
             return;
@@ -197,7 +201,7 @@ class Music {
         let songs = serverQueue.songs;
         if (!songs) {
             var emd = new this.Discord.MessageEmbed()
-                .setTitle("Очередь окончена!")
+                .setTitle(othis.lng.Music.queueEnded[lang])
                 .setColor(0x0000FF);
             serverQueue.textChannel.send(emd);
             serverQueue.voiceChannel.leave();
@@ -210,7 +214,8 @@ class Music {
             while (i < (songs.length)) {
                 if (i === 0) {
                     var dur = this.SecDHMS(songs[0].duration);
-                    queue = `Текущий трек: _${songs[0].title}_ **${dur}**\n\nСледующие:`;
+                    var cdur = this.SecDHMS((new Date() - songs[0].startedTS)/1000);
+                    queue = `${othis.lng.Music.currentTrack[lang]}: _${songs[0].title}_ **${cdur}**/**${dur}**\n\n${othis.lng.Music.next[lang]}:`;
                 } else {
                     var dur = this.SecDHMS(songs[i].duration);
                     queue = queue + "\n" + i.toString() + ". " + songs[i].title + " " + dur;
@@ -221,64 +226,89 @@ class Music {
         var embed = new this.Discord.MessageEmbed();
         if (songs[0]) {
             embed
-                .setTitle("Очередь воспроизведения:")
+                .setTitle(`${othis.lng.Music.playingQueue[lang]}:`)
                 .setColor(0x0000FF)
                 .setDescription(queue)
                 .setThumbnail(songs[0].thumbnail.url);
         } else {
             embed
-                .setTitle("Тут так пусто, включите какую нибудь музыку!")
+                .setTitle(othis.lng.Music.emptyQueue[lang])
                 .setColor(0x0000FF);
         }
         channel.send(embed);
     };
 
-    Play = function(guild, song) {
+    Play = function(guild, song, lang) {
         const serverQueue = this.queue.get(guild.id);
+        var othis = this;
         if (!song) {
-            var emd = new this.Discord.MessageEmbed()
-                .setTitle("Очередь окончена!")
-                .setColor(0x0000FF);
-            serverQueue.textChannel.send(emd);
-            serverQueue.voiceChannel.leave();
-            this.queue.delete(guild.id);
-            return;
+            if(serverQueue){
+                var emd = new this.Discord.MessageEmbed()
+                    .setTitle(othis.lng.Music.queueEnded[lang])
+                    .setColor(0x0000FF);
+                serverQueue.textChannel.send(emd);
+                serverQueue.voiceChannel.leave();
+                this.queue.delete(guild.id);
+                return;
+            }
         }
-        this.ShowQueue(serverQueue.textChannel, serverQueue);
+        this.ShowQueue(serverQueue.textChannel, serverQueue, lang);
         var othis = this;
         if(song.isRadio){
             var stream = new othis.PassThrough();
             this.Request(song.url).pipe(stream);
             serverQueue.connection.play(stream);
             serverQueue.connection.dispatcher.once('finish', () => {
-                console.log('Music ended!');
                 serverQueue.songs.shift();
-                othis.Play(guild, serverQueue.songs[0]);
+                othis.Play(guild, serverQueue.songs[0], lang);
             });
+            setTimeout(function (args) {
+                if(args[0].voiceChannel.members.size <= 1){
+                    args[0].textChannel.send(args[1].lng.Music.allExitFVC[lang]);
+                    args[0].songs = [];
+                    if(args[0].connection){
+                        if(args[0].connection.dispatcher){
+                            args[0].connection.dispatcher.destroy();
+                        }
+                    }
+                    args[1].Play(args[0].textChannel.guild, args[0].songs[0], lang);
+                }
+            }, 300000,[serverQueue, othis]);
         }else {
             serverQueue.connection.play(othis.ytdl(song.url, { filter: 'audioonly' }));
             serverQueue.connection.dispatcher.once('finish', () => {
-                console.log('Music ended!');
                 serverQueue.songs.shift();
-                othis.Play(guild, serverQueue.songs[0]);
+                othis.Play(guild, serverQueue.songs[0], lang);
             });
+            setTimeout(function (args) {
+                if(args[0].voiceChannel.members.size <= 1){
+                    args[0].textChannel.send(args[1].lng.Music.allExitFVC[lang]);
+                    args[0].songs = [];
+                    if(args[0].connection){
+                        if(args[0].connection.dispatcher){
+                            args[0].connection.dispatcher.destroy();
+                        }
+                    }
+                    args[1].Play(args[0].textChannel.guild, args[0].songs[0], lang);
+                }
+            }, 300000,[serverQueue, othis]);
         }
     };
-    Skip = function(message, serverQueue) {
-        if (!message.member.voice.channel) return message.channel.send('Вы должны находиться в голосовом канале!');
-        if (!serverQueue) return message.channel.send('Нету трека, который можно пропустить!');
+    Skip = function(message, serverQueue, lang) {
+        if (!message.member.voice.channel) return message.channel.send(this.lng.Music.niChannel[lang]);
+        if (!serverQueue) return message.channel.send(this.lng.Music.noTrackSkip[lang]);
         serverQueue.connection.dispatcher.destroy();
         serverQueue.songs.shift();
-        this.Play(message.guild, serverQueue.songs[0]);
+        this.Play(message.guild, serverQueue.songs[0], lang);
         return;
     };
 
-    Stop = function(message, serverQueue) {
-        if (!message.member.voice.channel) return message.channel.send('Вы должны находиться в голосовом канале!');
-        if (!serverQueue) return message.channel.send("Очередь и так пуста...");
+    Stop = function(message, serverQueue, lang) {
+        if (!message.member.voice.channel) return message.channel.send(this.lng.Music.niChannel[lang]);
+        if (!serverQueue) return message.channel.send(this.lng.Music.queueAlyEmpty[lang]);
         serverQueue.songs = [];
         serverQueue.connection.dispatcher.destroy();
-        this.Play(message.guild, serverQueue.songs[0]);
+        this.Play(message.guild, serverQueue.songs[0], lang);
         return;
     };
 }

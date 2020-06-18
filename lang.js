@@ -96,6 +96,10 @@
             ru: "Получить лицензию на Лольку, или просмотреть если уже получили.",
             en: "Get loli license"
         },
+        rbfm:{
+            ru:"Включает радиостанцию RainbowFM в голосовом канале",
+            en:"Playing RainbowFM radio-station in your voice channel"
+        },
         usableLinksT: {
             ru: "Полезные ссылки",
             en: "Usable Links",
@@ -240,6 +244,112 @@
             en: "You received a VIP for 12 hours + a bonus of 30,000 Points!"
         }
 
+    },
+    EBall:{
+        answs: {
+            ru: [
+                "Думаю да.",
+                "Скорее всего нет.",
+                "Определенно да.",
+                "Однозначно нет.",
+                "Да.",
+                "Нет.",
+                "Конечно.",
+                "Нет конечно.",
+                "Змей говорит - да.",
+                "Ответ змея - нет.",
+                "Как мне кажется, да.",
+                "Мне кажется что нет.",
+            ],
+            en: [
+                "I think yes.",
+                "Probably not.",
+                "Clearly right.",
+                "Clearly not.",
+                "Yes.",
+                "No.",
+                "Of course.",
+                "Of course no.",
+                "Snake says - Yes.",
+                "Snake says - No.",
+                "I think so.",
+                "I don't think so.",
+            ]
+        },
+        noQuestion:{
+            ru:"Вы не ввели вопрос.",
+            en:"No question specified."
+        }
+    },
+    Music:{
+        niChannel:{
+            ru:"Вы не находитесь в голосовом канале!",
+            en:"You are not in a voice channel"
+        },
+        emptyQueue:{
+            ru:"Тут так пусто, включите какую нибудь музыку!",
+            en:"Wow, this place is so empty... Add here some music!"
+        },
+        queueEnded:{
+            ru:"Очередь окончена!",
+            en:"Queue Ended!"
+        },
+        currentTrack:{
+            ru:"Текущий трек",
+            en:"Current track"
+        },
+        next:{
+            ru:"Следующие",
+            en:"Next"
+        },
+        playingQueue:{
+            ru:"Очередь воспроизведения",
+            en:"Playing queue"
+        },
+        allExitFVC:{
+            ru:"Все покинули голосовой канал. Тогда и я пойду.",
+            en:"All members exited from voice channel. Then I'll go too."
+        },
+        noTrackSkip:{
+            ru:'Нету трека, который можно пропустить!',
+            en:"No track that can be skipped!"
+        },
+        queueAlyEmpty:{
+            ru:"Очередь и так пуста...",
+            en:"Queue already empty..."
+        }
+    },
+    profile:{
+        notReged:{
+            ru:"Данный пользователь не зарегистрирован!",
+            en:"This user is not registered!"
+        },
+        profile:{
+            ru:"Профиль",
+            en:"Profile"
+        },
+        poinCoun:{
+            ru:"Количество Поинтов",
+            en:"Count of Points"
+        },
+        whoAreYou:{
+            ru:"Кто такой вообще",
+            en:"Who you are"
+        },
+        reason:{
+            ru:"Причина",
+            en:"Reason"
+        },
+        level:{
+            ru:"Уровень",
+            en:"Level"
+        },
+        exp:{
+            ru:"Опыта",
+            en:"Exp"
+        },
+
+
     }
 
-}
+};

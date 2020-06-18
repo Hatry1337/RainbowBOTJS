@@ -7,8 +7,9 @@ class Profile {
     constructor(Discord, Database, Client, Fs, Utils) {
         this.Discord = Discord;
         this.Database = Database;
+        this.lng = Utils.lng;
     }
-    execute = function (message) {
+    execute = function (message, lang) {
         var args = message.content.split(" ");
         var id = message.author.id;
         if (args[1]) {
@@ -21,28 +22,29 @@ class Profile {
         var othis = this;
         this.Database.getUserByDiscordID(id, function (user) {
             if (!(user)) {
-                message.channel.send("Данный пользователь не зарегистрирован!");
+                message.channel.send(othis.lng.profile.notReged[lang]);
                 return;
             }
             var emb = new othis.Discord.MessageEmbed()
-                .setTitle(`Профиль ${user.user}:`)
-                .setColor(0x8b00ff)
-                .addFields({ name: "Количество Поинтов: ", value: parseInt(user.user_points) });
+                .setTitle(`${othis.lng.profile.profile[lang]} ${user.user}:`)
+                .setColor(0x8b00ff);
+
+
+            emb.addFields([{
+                name: `${othis.lng.profile.poinCoun[lang]}: `, value: parseInt(user.user_points)
+            }]);
             if (user.user_group === "Banned") {
                 emb.addFields([
-                    { name: "Кто такой вообще: ", value: `Banned\nПричина: ${user.ban_reason}` },
-                    { name: "Уровень: ", value: user.user_lvl },
-                    { name: "Опыта: ", value: `${user.user_xp}/1000` },
-                    { name: "ID: ", value: user.num },
-                ]);
-            } else {
-                emb.addFields([
-                    { name: "Кто такой вообще: ", value: user.user_group },
-                    { name: "Уровень: ",          value: user.user_lvl },
-                    { name: "Опыта: ",            value: `${user.user_xp}/1000`},
-                    { name: "ID: ",               value: user.num },
+                    { name: `${othis.lng.profile.whoAreYou[lang]}: `, value: `Banned\n${othis.lng.profile.reason[lang]}: ${user.ban_reason}` },
                 ]);
             }
+            emb.addFields([
+                { name: `${othis.lng.profile.whoAreYou[lang]}: `, value: user.user_group },
+                { name: `${othis.lng.profile.level[lang]}: `,     value: user.user_lvl },
+                { name: `${othis.lng.profile.exp[lang]}: `,       value: `${user.user_xp}/1000`},
+                { name: "ID: ",                                   value: user.num },
+            ]);
+
             message.channel.send(emb);
             return;
         });
