@@ -37,9 +37,12 @@ class Profile {
                 emb.addFields([
                     { name: `${othis.lng.profile.whoAreYou[lang]}: `, value: `Banned\n${othis.lng.profile.reason[lang]}: ${user.ban_reason}` },
                 ]);
+            }else {
+                emb.addFields([
+                    { name: `${othis.lng.profile.whoAreYou[lang]}: `, value: user.user_group },
+                ]);
             }
             emb.addFields([
-                { name: `${othis.lng.profile.whoAreYou[lang]}: `, value: user.user_group },
                 { name: `${othis.lng.profile.level[lang]}: `,     value: user.user_lvl },
                 { name: `${othis.lng.profile.exp[lang]}: `,       value: `${user.user_xp}/1000`},
                 { name: "ID: ",                                   value: user.num },
