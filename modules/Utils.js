@@ -11,6 +11,7 @@ class Utils {
         this.lng = require(this.DirName+"/lang").lng;
         this.Jimp = require("jimp");
         this.Request = require("request");
+        this.RequestPromise = require("request-promise");
     };
     msgStat = function () {
         var othis = this;

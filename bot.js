@@ -34,8 +34,8 @@ client.on('message', async message => {
     if (!message.content.startsWith("!")) return;
     Utils.msgStat();
     const serverQueue = Utils.Modules.Music.queue.get(message.guild.id);
-    Utils.checkReg(message, function () {
-        Database.getUserByDiscordID(message.author.id, function (user) {
+    Utils.checkReg(message, async function () {
+        Database.getUserByDiscordID(message.author.id, async function (user) {
             if (user.lang === null) {
                 if (message.content.startsWith(`!lang`)) {
                     Utils.langChange(message, user);
@@ -45,10 +45,10 @@ client.on('message', async message => {
                 }
             } else {
                 Utils.checkLang(message, user);
-                Utils.checkBan(message, function () {
-                    Utils.checkVip(message, function () {
+                Utils.checkBan(message, async function () {
+                    Utils.checkVip(message, async function () {
                         if (message.content.startsWith(`!rhelp`)) {
-                            Utils.Modules.Rhelp.execute(message, user.lang);
+                            await Utils.Modules.Rhelp.execute(message, user.lang);
                             return;
 
                         } else if (message.content.startsWith(`!ukrmova`)) {
@@ -114,27 +114,27 @@ client.on('message', async message => {
                             return
 
                         } else if (message.content.startsWith(`!play `)) {
-                            Utils.Modules.Music.executePlay(message, serverQueue, user.lang);
+                            await Utils.Modules.Music.executePlay(message, serverQueue, user.lang);
                             return;
 
                         } else if (message.content.startsWith(`!playp`)) {
-                            Utils.Modules.Music.executePlayList(message, serverQueue, user.lang);
+                            await Utils.Modules.Music.executePlayList(message, serverQueue, user.lang);
                             return;
 
                         } else if (message.content.startsWith(`!rbfm`)) {
-                            Utils.Modules.Music.executeRadio(message, serverQueue, user.lang);
+                            await Utils.Modules.Music.executeRadio(message, serverQueue, user.lang);
                             return;
 
                         } else if (message.content.startsWith(`!skip`)) {
-                            Utils.Modules.Music.Skip(message, serverQueue, user.lang);
+                            await Utils.Modules.Music.Skip(message, serverQueue, user.lang);
                             return;
 
                         } else if (message.content.startsWith(`!stop`)) {
-                            Utils.Modules.Music.Stop(message, serverQueue, user.lang);
+                            await Utils.Modules.Music.Stop(message, serverQueue, user.lang);
                             return;
 
                         } else if (message.content.startsWith(`!queue`)) {
-                            Utils.Modules.Music.ShowQueue(message.channel, serverQueue, user.lang);
+                            await Utils.Modules.Music.ShowQueue(message.channel, serverQueue, user.lang);
                             return;
 
                         } else if (message.content.startsWith(`!pay`)) {
@@ -171,7 +171,7 @@ client.on('message', async message => {
                             return;
 
                         } else if (message.content.startsWith(`!top`)) {
-                            Utils.Modules.Top.execute(message);
+                            await Utils.Modules.Top.execute(message);
                             return
 
                         } else if (message.content.startsWith(`!vip`)) {
@@ -196,7 +196,7 @@ client.on('message', async message => {
                             }
 
                         } else if (message.content.startsWith(`!lolilic`)) {
-                            Utils.Modules.Lolilic.execute(message);
+                            await Utils.Modules.Lolilic.execute(message);
                             return;
 
                         } else if (message.content.startsWith(`!lang`)) {

@@ -9,7 +9,7 @@ class Rhelp {
         this.Database = Database;
         this.lng = Utils.lng;
     }
-    execute = function (message, lang) {
+    execute = async function (message, lang) {
         var l = lang;
         var emb = new this.Discord.MessageEmbed()
             .setTitle(this.lng.rhelp.title[l])

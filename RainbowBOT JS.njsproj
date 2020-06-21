@@ -51,9 +51,11 @@
     <Content Include="cmds\items.js">
       <SubType>Code</SubType>
     </Content>
+    <Content Include="cmds\krestiki.js" />
     <Content Include="cmds\lolilic.js">
       <SubType>Code</SubType>
     </Content>
+    <Content Include="cmds\Music.js" />
     <Content Include="cmds\osuinfo.js">
       <SubType>Code</SubType>
     </Content>
@@ -99,11 +101,14 @@
     <Content Include="lang.js">
       <SubType>Code</SubType>
     </Content>
+    <Content Include="modules\Database.js" />
+    <Content Include="modules\Utils.js" />
     <Content Include="package.json" />
     <Content Include="README.md" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="cmds\" />
+    <Folder Include="modules\" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\Node.js Tools\Microsoft.NodejsToolsV2.targets" />
 </Project>

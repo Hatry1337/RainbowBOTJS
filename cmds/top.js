@@ -8,7 +8,7 @@ class Top {
         this.Discord = Discord;
         this.Database = Database;
     }
-    downWeightUsers = function (users) {
+    downWeightUsers = async function (users) {
         var newUsers = [];
         users.forEach((usr, i) => {
             var nusr = {
@@ -18,17 +18,19 @@ class Top {
                 user_lvl: usr.user_lvl
             };
             newUsers.push(nusr);
+            if (i === users.length) {
+                return newUsers;
+            }
         });
-        return newUsers;
     };
-    sortUsersByPoints = function (arr) {
+    sortUsersByPoints = async function (arr) {
         return arr.sort((a, b) => a.user_points > b.user_points ? -1 : 1);
     };
-    sortUsersByLvl = function (arr) {
+    sortUsersByLvl = async function (arr) {
         return arr.sort((a, b) => a.user_lvl.user_lvl ? -1 : 1);
     };
 
-    removeDuplicates = function (arr) {
+    removeDuplicates = async function (arr) {
         const result = [];
         const duplicatesIndices = [];
         // Перебираем каждый элемент в исходном массиве
@@ -37,14 +39,15 @@ class Top {
             if (duplicatesIndices.includes(index)) return;
 
             result.push(current);
-
+            if (i === arr.length) {
+                return result;
+            }
         });
-        return result;
     };
-    execute = function (message) {
+    execute = async function (message) {
         var othis = this;
-        this.Database.getAllUsers(function (users) {
-            var usersByPoints = othis.sortUsersByPoints(othis.removeDuplicates(othis.downWeightUsers(users)));
+        this.Database.getAllUsers(async function (users) {
+            var usersByPoints = await othis.sortUsersByPoints(await othis.removeDuplicates(await othis.downWeightUsers(users)));
             var curUserPlace = usersByPoints.findIndex(x => x.discord_id === message.author.id);
             var emb = new othis.Discord.MessageEmbed()
                 .setColor(0x8b00ff)

@@ -9,7 +9,7 @@ class Lolilic {
         this.Database = Database;
         this.Jimp = Utils.Jimp;
     }
-    formatDate = function(d) {
+    formatDate = async function(d) {
         var days, months, years;
         years = d.getFullYear();
         if (d.getDate() < 10) {
@@ -25,7 +25,7 @@ class Lolilic {
 
         return `${days}.${months}.${years}`;
     };
-    execute = function (message) {
+    execute = async function (message) {
         var args = message.content.split(" ");
         var userLic = message.author.id;
         if (args[1]) {
@@ -42,19 +42,20 @@ class Lolilic {
             return;
         }
         var othis = this;
-        this.Database.getUserByDiscordID(userLic, function (user) {
+        this.Database.getUserByDiscordID(userLic, async function (user) {
             if (user) {
                 if (args[1]) {
                     if (user.lolilic) {
+                        message.channel.send("Лицензия готовится. Пожалуйста подождите...");
                         user.lolilic = JSON.parse(user.lolilic);
                         var userName = user.user;
-                        var creationDate = othis.formatDate(new Date(user.lolilic.create_d * 1000));
-                        var voidDate = othis.formatDate(new Date(user.lolilic.void_d * 1000));
+                        var creationDate = await othis.formatDate(new Date(user.lolilic.create_d * 1000));
+                        var voidDate = await othis.formatDate(new Date(user.lolilic.void_d * 1000));
                         var personalID = user.lolilic.pid;
-                        othis.Jimp.read('output.png', (err, img) => {
+                        await othis.Jimp.read('output.png', async (err, img) => {
                             if (err) throw err;
-                            othis.Jimp.loadFont('fonts/font-small/font.fnt').then(fontsm => {
-                                othis.Jimp.loadFont('fonts/font-medium/font.fnt').then(fontm => {
+                            await othis.Jimp.loadFont('fonts/font-small/font.fnt').then(async fontsm => {
+                                await othis.Jimp.loadFont('fonts/font-medium/font.fnt').then(async fontm => {
                                     img
                                         .print(fontsm, 1086, 1050, `PersonalID: ${personalID}`)
                                         .print(fontm, 42, 746, `Кому: ${userName}`)
@@ -72,15 +73,16 @@ class Lolilic {
                     }
                 } else {
                     if (user.lolilic) {
+                        message.channel.send("Лицензия готовится. Пожалуйста подождите...");
                         user.lolilic = JSON.parse(user.lolilic);
                         var userName = message.author.tag;
                         var creationDate = othis.formatDate(new Date(user.lolilic.create_d * 1000));
                         var voidDate = othis.formatDate(new Date(user.lolilic.void_d * 1000));
                         var personalID = user.lolilic.pid;
-                        othis.Jimp.read('output.png', (err, img) => {
+                        await othis.Jimp.read('output.png', async (err, img) => {
                             if (err) throw err;
-                            othis.Jimp.loadFont('fonts/font-small/font.fnt').then(fontsm => {
-                                othis.Jimp.loadFont('fonts/font-medium/font.fnt').then(fontm => {
+                            await othis.Jimp.loadFont('fonts/font-small/font.fnt').then(async fontsm => {
+                                await othis.Jimp.loadFont('fonts/font-medium/font.fnt').then(async fontm => {
                                     img
                                         .print(fontsm, 1086, 1050, `PersonalID: ${personalID}`)
                                         .print(fontm, 42, 746, `Кому: ${userName}`)
@@ -93,6 +95,7 @@ class Lolilic {
                             });
                         });
                     } else {
+                        message.channel.send("Лицензия готовится. Пожалуйста подождите...");
                         var cur_date = new Date();
                         var void_date = new Date();
                         void_date.setFullYear(void_date.getFullYear() + 5);
@@ -102,7 +105,7 @@ class Lolilic {
                             pid: `${message.author.discriminator}-${user.num}-${Math.floor(Math.random() * 9999)}`
                         }
                         user.lolilic = JSON.stringify(newLoliLicense);
-                        othis.Database.updateUser(message.author.id, user, function () {
+                        othis.Database.updateUser(message.author.id, user, async function () {
                             message.channel.send(`Вы успешно получили лицензию на Лолю!`);
 
                             user.lolilic = JSON.parse(user.lolilic);
@@ -111,10 +114,10 @@ class Lolilic {
                             var voidDate = othis.formatDate(new Date(user.lolilic.void_d * 1000));
                             var personalID = user.lolilic.pid;
 
-                            othis.Jimp.read('output.png', (err, img) => {
+                            await othis.Jimp.read('output.png', async (err, img) => {
                                 if (err) throw err;
-                                othis.Jimp.loadFont('fonts/font-small/font.fnt').then(fontsm => {
-                                    othis.Jimp.loadFont('fonts/font-medium/font.fnt').then(fontm => {
+                                await othis.Jimp.loadFont('fonts/font-small/font.fnt').then(async fontsm => {
+                                    await othis.Jimp.loadFont('fonts/font-medium/font.fnt').then(async fontm => {
                                         img
                                             .print(fontsm, 1086, 1050, `PersonalID: ${personalID}`)
                                             .print(fontm, 42, 746, `Кому: ${userName}`)

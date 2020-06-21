@@ -8,7 +8,7 @@ class Music {
         this.Discord = Discord;
         this.Database = Database;
         this.SecDHMS = Utils.secondsToDhms;
-        this.Request = Utils.Request;
+        this.Request = Utils.RequestPromise;
         this.SearchOpts = {
             maxResults: 1,
             key: 'AIzaSyB99VVQZPIzMlPWlovUEDwkTHuOzlCNkkw',
@@ -53,7 +53,7 @@ class Music {
                 try {
                     var connection = await voiceChannel.join();
                     queueContruct.connection = connection;
-                    othis.Play(message.guild, queueContruct.songs[0], lang);
+                    await othis.Play(message.guild, queueContruct.songs[0], lang);
                 } catch (err) {
                     console.log(err);
                     othis.queue.delete(message.guild.id);
@@ -61,7 +61,7 @@ class Music {
                 }
             } else {
                 serverQueue.songs.push(song);
-                return othis.ShowQueue(message.channel, serverQueue, lang)
+                return await othis.ShowQueue(message.channel, serverQueue, lang)
             }
 
         });
@@ -115,7 +115,7 @@ class Music {
                 try {
                     var connection = await voiceChannel.join();
                     queueContruct.connection = connection;
-                    othis.Play(message.guild, queueContruct.songs[0], lang);
+                    await othis.Play(message.guild, queueContruct.songs[0], lang);
                 } catch (err) {
                     console.log(err);
                     othis.queue.delete(message.guild.id);
@@ -138,7 +138,7 @@ class Music {
                     });
                     i++;
                 }
-                return othis.ShowQueue(message.channel, serverQueue);
+                return await othis.ShowQueue(message.channel, serverQueue);
             }
         });
     };
@@ -177,7 +177,7 @@ class Music {
             try {
                 var connection = await voiceChannel.join();
                 queueContruct.connection = connection;
-                othis.Play(message.guild, queueContruct.songs[0], lang);
+                await othis.Play(message.guild, queueContruct.songs[0], lang);
             } catch (err) {
                 console.log(err);
                 othis.queue.delete(message.guild.id);
@@ -185,11 +185,11 @@ class Music {
             }
         } else {
             serverQueue.songs.push(song);
-            return othis.ShowQueue(message.channel, serverQueue, lang);
+            return await othis.ShowQueue(message.channel, serverQueue, lang);
         }
     };
 
-    ShowQueue = function(channel, serverQueue, lang) {
+    ShowQueue = async function(channel, serverQueue, lang) {
         var othis = this;
         if (!serverQueue) {
             var emd = new this.Discord.MessageEmbed()
@@ -238,7 +238,7 @@ class Music {
         channel.send(embed);
     };
 
-    Play = function(guild, song, lang) {
+    Play = async function(guild, song, lang) {
         const serverQueue = this.queue.get(guild.id);
         var othis = this;
         if (!song) {
@@ -252,63 +252,40 @@ class Music {
                 return;
             }
         }
-        this.ShowQueue(serverQueue.textChannel, serverQueue, lang);
+        song.startedTS =  new Date();
+        await this.ShowQueue(serverQueue.textChannel, serverQueue, lang);
         var othis = this;
         if(song.isRadio){
             var stream = new othis.PassThrough();
-            this.Request(song.url).pipe(stream);
+            await this.Request(song.url, { forever: true }).pipe(stream);
             serverQueue.connection.play(stream);
-            serverQueue.connection.dispatcher.once('finish', () => {
+            serverQueue.connection.dispatcher.once('finish', async () => {
                 serverQueue.songs.shift();
-                othis.Play(guild, serverQueue.songs[0], lang);
+                await othis.Play(guild, serverQueue.songs[0], lang);
             });
-            setTimeout(function (args) {
-                if(args[0].voiceChannel.members.size <= 1){
-                    args[0].textChannel.send(args[1].lng.Music.allExitFVC[lang]);
-                    args[0].songs = [];
-                    if(args[0].connection){
-                        if(args[0].connection.dispatcher){
-                            args[0].connection.dispatcher.destroy();
-                        }
-                    }
-                    args[1].Play(args[0].textChannel.guild, args[0].songs[0], lang);
-                }
-            }, 300000,[serverQueue, othis]);
         }else {
             serverQueue.connection.play(othis.ytdl(song.url, { filter: 'audioonly' }));
-            serverQueue.connection.dispatcher.once('finish', () => {
+            serverQueue.connection.dispatcher.once('finish', async () => {
                 serverQueue.songs.shift();
-                othis.Play(guild, serverQueue.songs[0], lang);
+                await othis.Play(guild, serverQueue.songs[0], lang);
             });
-            setTimeout(function (args) {
-                if(args[0].voiceChannel.members.size <= 1){
-                    args[0].textChannel.send(args[1].lng.Music.allExitFVC[lang]);
-                    args[0].songs = [];
-                    if(args[0].connection){
-                        if(args[0].connection.dispatcher){
-                            args[0].connection.dispatcher.destroy();
-                        }
-                    }
-                    args[1].Play(args[0].textChannel.guild, args[0].songs[0], lang);
-                }
-            }, 300000,[serverQueue, othis]);
         }
     };
-    Skip = function(message, serverQueue, lang) {
+    Skip = async function(message, serverQueue, lang) {
         if (!message.member.voice.channel) return message.channel.send(this.lng.Music.niChannel[lang]);
         if (!serverQueue) return message.channel.send(this.lng.Music.noTrackSkip[lang]);
         serverQueue.connection.dispatcher.destroy();
         serverQueue.songs.shift();
-        this.Play(message.guild, serverQueue.songs[0], lang);
+        await this.Play(message.guild, serverQueue.songs[0], lang);
         return;
     };
 
-    Stop = function(message, serverQueue, lang) {
+    Stop = async function(message, serverQueue, lang) {
         if (!message.member.voice.channel) return message.channel.send(this.lng.Music.niChannel[lang]);
         if (!serverQueue) return message.channel.send(this.lng.Music.queueAlyEmpty[lang]);
         serverQueue.songs = [];
         serverQueue.connection.dispatcher.destroy();
-        this.Play(message.guild, serverQueue.songs[0], lang);
+        await this.Play(message.guild, serverQueue.songs[0], lang);
         return;
     };
 }
