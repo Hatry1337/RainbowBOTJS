@@ -313,7 +313,17 @@ class Music {
     Skip = async function(message, serverQueue, lang) {
         if (!message.member.voice.channel) return message.channel.send(this.lng.Music.niChannel[lang]);
         if (!serverQueue) return message.channel.send(this.lng.Music.noTrackSkip[lang]);
-        serverQueue.connection.dispatcher.destroy();
+        if (!serverQueue.connection.dispatcher) {
+            try {
+                serverQueue.connection = await serverQueue.voiceChannel.join();
+            } catch{
+                serverQueue.voiceChannel.leave();
+                this.queue.delete(serverQueue.textChannel.guild.id);
+                return;
+            }
+        } else {
+            serverQueue.connection.dispatcher.destroy();
+        }
         serverQueue.songs.shift();
         await this.Play(message.guild, serverQueue.songs[0], lang);
         return;
@@ -322,8 +332,18 @@ class Music {
     Stop = async function(message, serverQueue, lang) {
         if (!message.member.voice.channel) return message.channel.send(this.lng.Music.niChannel[lang]);
         if (!serverQueue) return message.channel.send(this.lng.Music.queueAlyEmpty[lang]);
+        if (!serverQueue.connection.dispatcher) {
+            try {
+                serverQueue.connection = await serverQueue.voiceChannel.join();
+            } catch{
+                serverQueue.voiceChannel.leave();
+                this.queue.delete(serverQueue.textChannel.guild.id);
+                return;
+            }
+        } else {
+            serverQueue.connection.dispatcher.destroy();
+        }
         serverQueue.songs = [];
-        serverQueue.connection.dispatcher.destroy();
         await this.Play(message.guild, serverQueue.songs[0], lang);
         return;
     };
