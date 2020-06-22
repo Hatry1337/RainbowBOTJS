@@ -166,7 +166,7 @@ client.on('message', async message => {
                                 return;
                             }
 
-                        } else if (message.content.startsWith(`!rep`)) {
+                        } else if (message.content.startsWith(`!rep `)) {
                             Utils.Modules.Report.execute(message);
                             return;
 
