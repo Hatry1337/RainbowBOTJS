@@ -76,6 +76,11 @@
             ru: "Выключает музыку в канале в котором вы находитесь.",
             en: "Stop playing music in the voice channel you are in."
         },
+        repeat: {
+            ru: "Зацикливает впоспроизведение последнего трека в очереди.",
+            en: "Loops the playback of the last track in the queue."
+        },
+
         top: {
             ru: "Топ 10 игроков по Поинтам",
             en: "Top 10 player by points"

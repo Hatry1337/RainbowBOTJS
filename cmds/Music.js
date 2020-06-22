@@ -3,6 +3,30 @@ function moduleOnLoad(){
     console.log(`Module "${this.name}" loaded!`)
 }
 
+class Song{
+    constructor(title, url, dur, thumb, started, isRadio){
+        this.title = title;
+        this.url = url;
+        this.duration = dur;
+        this.thumbnail = thumb;
+        this.startedTS = started;
+        this.isRadio = isRadio;
+    }
+}
+class ServerQueue {
+    constructor(textc, voicec, volume, playing, repeated) {
+        this.textChannel = textc;
+        this.voiceChannel = voicec;
+        this.connection = null;
+        this.songs = [];
+        this.current = null;
+        this.volume = volume;
+        this.playing = playing;
+        this.repeated = repeated;
+    }
+}
+
+
 class Music {
     constructor(Discord, Database, Client, Fs, Utils) {
         this.Discord = Discord;
@@ -31,23 +55,22 @@ class Music {
         this.YTSearch(sch_req, this.SearchOpts, async function (err, res) {
             if (err) return console.log(err);
             const songInfo = await othis.ytdl.getInfo(res[0].link);
-            const song = {
-                title: songInfo.title,
-                url: songInfo.video_url,
-                duration: songInfo.length_seconds,
-                thumbnail: res[0].thumbnails.high,
-                startedTS: new Date(),
-            };
+            const song = new Song(
+                songInfo.title,
+                songInfo.video_url,
+                songInfo.length_seconds,
+                res[0].thumbnails.high,
+                new Date(),
+                false
+            );
             if (!serverQueue) {
-                const queueContruct = {
-                    textChannel: message.channel,
-                    voiceChannel: voiceChannel,
-                    connection: null,
-                    songs: [],
-                    current: null,
-                    volume: 5,
-                    playing: true,
-                };
+                const queueContruct = new ServerQueue(
+                    message.channel,
+                    voiceChannel,
+                    5,
+                    true,
+                    false
+                );
                 othis.queue.set(message.guild.id, queueContruct);
                 queueContruct.songs.push(song);
                 try {
@@ -79,22 +102,22 @@ class Music {
         this.YTSearch(gavno[0], this.SearchOpts, async function (err, res) {
             if (err) return console.log(err);
             const songInfo = await othis.ytdl.getInfo(res[0].link);
-            const song = {
-                title: songInfo.title,
-                url: songInfo.video_url,
-                duration: songInfo.length_seconds,
-                thumbnail: res[0].thumbnails.high,
-            };
+            const song = new Song(
+                songInfo.title,
+                songInfo.video_url,
+                songInfo.length_seconds,
+                res[0].thumbnails.high,
+                new Date(),
+                false
+            );
             if (!serverQueue) {
-                const queueContruct = {
-                    textChannel: message.channel,
-                    voiceChannel: voiceChannel,
-                    connection: null,
-                    songs: [],
-                    current: null,
-                    volume: 5,
-                    playing: true,
-                };
+                const queueContruct = new ServerQueue(
+                    message.channel,
+                    voiceChannel,
+                    5,
+                    true,
+                    false
+                );
                 othis.queue.set(message.guild.id, queueContruct);
                 queueContruct.songs.push(song);
                 i = 1;
@@ -102,12 +125,14 @@ class Music {
                     othis.YTSearch(gavno[i], othis.SearchOpts, async function (err, res) {
                         if (err) return console.log(err);
                         const songInfo = await othis.ytdl.getInfo(res[0].link);
-                        const song = {
-                            title: songInfo.title,
-                            url: songInfo.video_url,
-                            duration: songInfo.length_seconds,
-                            thumbnail: res[0].thumbnails.high,
-                        };
+                        const song = new Song(
+                            songInfo.title,
+                            songInfo.video_url,
+                            songInfo.length_seconds,
+                            res[0].thumbnails.high,
+                            new Date(),
+                            false
+                        );
                         queueContruct.songs.push(song);
                     });
                     i++;
@@ -128,12 +153,14 @@ class Music {
                     othis.YTSearch(gavno[i], othis.SearchOpts, async function (err, res) {
                         if (err) return console.log(err);
                         const songInfo = await othis.ytdl.getInfo(res[0].link);
-                        const song = {
-                            title: songInfo.title,
-                            url: songInfo.video_url,
-                            duration: songInfo.length_seconds,
-                            thumbnail: res[0].thumbnails.high,
-                        };
+                        const song = new Song(
+                            songInfo.title,
+                            songInfo.video_url,
+                            songInfo.length_seconds,
+                            res[0].thumbnails.high,
+                            new Date(),
+                            false
+                        );
                         serverQueue.songs.push(song);
                     });
                     i++;
@@ -149,29 +176,27 @@ class Music {
             message.channel.send(this.lng.Music.niChannel[lang]);
             return;
         }
-        var song = {
-            isRadio: true,
-            title: "RainbowFM",
-            url: "https://air.rainbowbot.xyz",
-            duration: 36000,
-            thumbnail: {
+        const song = new Song(
+            "RainbowFM",
+            "https://air.rainbowbot.xyz",
+            36000,
+            {
                 url: "https://media.discordapp.net/attachments/612222713716801537/722382264427610154/rbfm200.png",
                 width: 200,
                 height: 200,
             },
-            startedTS: new Date(),
-        };
+            new Date(),
+            true
+        );
         var othis = this;
         if (!serverQueue) {
-            const queueContruct = {
-                textChannel: message.channel,
-                voiceChannel: voiceChannel,
-                connection: null,
-                songs: [],
-                current: null,
-                volume: 5,
-                playing: true,
-            };
+            const queueContruct = new ServerQueue(
+                message.channel,
+                voiceChannel,
+                5,
+                true,
+                false
+            );
             this.queue.set(message.guild.id, queueContruct);
             queueContruct.songs.push(song);
             try {
@@ -215,7 +240,11 @@ class Music {
                 if (i === 0) {
                     var dur = this.SecDHMS(songs[0].duration);
                     var cdur = this.SecDHMS((new Date() - songs[0].startedTS)/1000);
-                    queue = `${othis.lng.Music.currentTrack[lang]}: _${songs[0].title}_ **${cdur}**/**${dur}**\n\n${othis.lng.Music.next[lang]}:`;
+                    if(serverQueue.repeated){
+                        queue = `${othis.lng.Music.currentTrack[lang]}: :repeat: _${songs[0].title}_ **${cdur}**/**${dur}**\n\n${othis.lng.Music.next[lang]}:`;
+                    }else {
+                        queue = `${othis.lng.Music.currentTrack[lang]}: _${songs[0].title}_ **${cdur}**/**${dur}**\n\n${othis.lng.Music.next[lang]}:`;
+                    }
                 } else {
                     var dur = this.SecDHMS(songs[i].duration);
                     queue = queue + "\n" + i.toString() + ". " + songs[i].title + " " + dur;
@@ -260,14 +289,24 @@ class Music {
             await this.Request(song.url, { forever: true }).pipe(stream);
             serverQueue.connection.play(stream);
             serverQueue.connection.dispatcher.once('finish', async () => {
-                serverQueue.songs.shift();
-                await othis.Play(guild, serverQueue.songs[0], lang);
+                if(serverQueue.repeated){
+                    await othis.Play(guild, serverQueue.songs[0], lang);
+                    return;
+                }else {
+                    serverQueue.songs.shift();
+                    await othis.Play(guild, serverQueue.songs[0], lang);
+                }
             });
         }else {
             serverQueue.connection.play(othis.ytdl(song.url, { filter: 'audioonly' }));
             serverQueue.connection.dispatcher.once('finish', async () => {
-                serverQueue.songs.shift();
-                await othis.Play(guild, serverQueue.songs[0], lang);
+                if(serverQueue.repeated){
+                    await othis.Play(guild, serverQueue.songs[0], lang);
+                    return;
+                }else {
+                    serverQueue.songs.shift();
+                    await othis.Play(guild, serverQueue.songs[0], lang);
+                }
             });
         }
     };
@@ -288,6 +327,13 @@ class Music {
         await this.Play(message.guild, serverQueue.songs[0], lang);
         return;
     };
+    Repeat = async function(message, serverQueue, lang){
+        if (!message.member.voice.channel) return message.channel.send(this.lng.Music.niChannel[lang]);
+        if (!serverQueue) return message.channel.send(this.lng.Music.emptyQueue[lang]);
+        serverQueue.repeated = !serverQueue.repeated;
+        await this.ShowQueue(serverQueue.textChannel, serverQueue, lang);
+        return;
+    }
 }
 
 module.exports.info = {

@@ -137,7 +137,11 @@ client.on('message', async message => {
                             await Utils.Modules.Music.ShowQueue(message.channel, serverQueue, user.lang);
                             return;
 
-                        } else if (message.content.startsWith(`!pay`)) {
+                        } else if (message.content.startsWith(`!repeat`)) {
+                            await Utils.Modules.Music.Repeat(message, serverQueue, user.lang);
+                            return;
+
+                        }else if (message.content.startsWith(`!pay`)) {
                             Utils.Modules.Pay.execute(message);
                             return
 

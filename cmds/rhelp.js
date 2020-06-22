@@ -32,6 +32,7 @@ class Rhelp {
                 { name: "!hentai stats", value: this.lng.rhelp.hntStats[l], inline: true },
                 { name: "!play <youtube url or search request>", value: this.lng.rhelp.play[l], inline: true },
                 { name: "!stop", value: this.lng.rhelp.stop[l], inline : true },
+                { name: "!repeat", value: this.lng.rhelp.repeat[l], inline : true },
                 { name: "!top", value: this.lng.rhelp.top[l], inline : true },
                 { name: "!roll", value: this.lng.rhelp.roll[l], inline : true },
                 { name: "!8ball <Question>", value: this.lng.rhelp.eightBall[l], inline : true },
