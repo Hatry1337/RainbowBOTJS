@@ -286,7 +286,7 @@ class Music {
         var othis = this;
         if(song.isRadio){
             var stream = new othis.PassThrough();
-            await this.Request(song.url, { forever: true }).pipe(stream);
+            await this.Request(song.url, { forever: true, rejectUnauthorized: false }).pipe(stream);
             serverQueue.connection.play(stream);
             serverQueue.connection.dispatcher.once('finish', async () => {
                 if(serverQueue.repeated){
