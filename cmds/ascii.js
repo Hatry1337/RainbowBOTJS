@@ -11,7 +11,7 @@ class Ascii {
     }
     fontExist = function (fnt) {
         var files_ = "";
-        var files = this.Utils.FS.readdirSync(this.Utils.DirName + "\\fgfonts\\");
+        var files = this.Utils.FS.readdirSync(this.Utils.DirName + "/fgfonts/");
         var i = 0;
         for (i in files) {
              files_ += files[i].replace(".flf", "")+" ";
@@ -19,7 +19,7 @@ class Ascii {
         return (files_.indexOf(fnt + " ") !== -1);
     }
     sendFonts = function (channel, i) {
-        var dir = this.Utils.DirName + "\\fgfonts\\";
+        var dir = this.Utils.DirName + "/fgfonts/";
         var files_ = "";
         var files = this.Utils.FS.readdirSync(dir);
         var mlng = files.sort(function (a, b) { return b.length - a.length; })[0].length;
@@ -52,7 +52,7 @@ class Ascii {
                     } else {
                         inverted = false;
                     }
-                    var imgpath = this.Utils.DirName + "\\tempimg\\" + imgs[0].id + imgs[0].name;
+                    var imgpath = this.Utils.DirName + "/tempimg/" + imgs[0].id + imgs[0].name;
                     var writeStream = this.Utils.FS.createWriteStream(imgpath);
                     await this.Utils.RequestPromise(imgs[0].proxyURL + "?width=130&height=120").pipe(writeStream);
                     var othis = this;

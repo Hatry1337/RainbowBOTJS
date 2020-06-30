@@ -207,10 +207,10 @@ class Utils {
         return arr[rand];
     };
     clearImageCache = function () {
-        var files = this.FS.readdirSync(this.DirName + "\\tempimg\\");
+        var files = this.FS.readdirSync(this.DirName + "/tempimg/");
         var i = 0;
         for (i in files) {
-            this.FS.unlinkSync(this.DirName + "\\tempimg\\" + files[i]);
+            this.FS.unlinkSync(this.DirName + "/tempimg/" + files[i]);
         }
     }
 }
