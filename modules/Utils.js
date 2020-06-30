@@ -13,7 +13,7 @@ class Utils {
         this.Request = require("request");
         this.RequestPromise = require("request-promise");
         this.AsciiFont = require('ascii-art-font');
-        this.AsciiFont.fontPath = 'fgfonts\\';
+        this.AsciiFont.fontPath = 'fgfonts/';
         this.AsciiImage = require('ascii-art-image');
         this.Braile = require("braille-art");
     };
