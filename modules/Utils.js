@@ -12,6 +12,10 @@ class Utils {
         this.Jimp = require("jimp");
         this.Request = require("request");
         this.RequestPromise = require("request-promise");
+        this.AsciiFont = require('ascii-art-font');
+        this.AsciiFont.fontPath = 'fgfonts\\';
+        this.AsciiImage = require('ascii-art-image');
+        this.Braile = require("braille-art");
     };
     msgStat = function () {
         var othis = this;
@@ -198,9 +202,16 @@ class Utils {
     getRandomInt = function(max) {
         return Math.floor(Math.random() * Math.floor(max));
     };
-    arrayRandElement = function(arr) {
+    arrayRandElement = function (arr) {
         var rand = Math.floor(Math.random() * arr.length);
         return arr[rand];
+    };
+    clearImageCache = function () {
+        var files = this.FS.readdirSync(this.DirName + "\\tempimg\\");
+        var i = 0;
+        for (i in files) {
+            this.FS.unlinkSync(this.DirName + "\\tempimg\\" + files[i]);
+        }
     }
 }
 

@@ -39,13 +39,18 @@ class Rhelp {
                 { name: "!randcat", value: this.lng.rhelp.randcat[l], inline : true },
                 { name: "!lolilic", value: this.lng.rhelp.lolilic[l], inline : true },
                 { name: "!rbfm", value: this.lng.rhelp.rbfm[l], inline : true },
+            ]).setColor(0x8b00ff);
+        var emb1 = new this.Discord.MessageEmbed()
+            .setTitle(this.lng.rhelp.title[l])
+            .addFields([
+                { name: "!ascii", value: this.lng.rhelp.ascii[l], inline: true },
 
+                { name: this.lng.rhelp.usableLinksT[l], value: this.lng.rhelp.usableLinks[l], inline: false },
 
-                { name: this.lng.rhelp.usableLinksT[l], value: this.lng.rhelp.usableLinks[l], inline : false },
-
-            ])
-            .setColor(0x8b00ff);
+            ]).setColor(0x8b00ff);
         message.channel.send(emb);
+        message.channel.send(emb1);
+        return;
     }
 }
 

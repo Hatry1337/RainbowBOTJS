@@ -16,6 +16,7 @@ client.once('ready', () => {
     /*client.channels.cache.get("662657721266339853").createInvite({ temporary: true})
         .then(invite => console.log(invite.url))
         .catch(console.error);*/
+    Utils.clearImageCache();
 });
 
 client.once('reconnecting', () => {
@@ -211,7 +212,10 @@ client.on('message', async message => {
                             message.channel.send("Жди релиза ^^");
                             //krestiki(message, Discord, db, client, getUserByDiscordID, updateUser);
                             return;
-                        } else{
+                        } else if (message.content.startsWith(`!ascii`)) {
+                            await Utils.Modules.Ascii.execute(message);
+                            return;
+                        }else{
                             console.log('You need to enter a valid command!');
                             return;
                         }

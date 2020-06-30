@@ -113,6 +113,23 @@
             ru: `https://discord.gg/YpjBAc5 - Наш дискорд сервер\nhttps://top.gg/bot/571948993643544587 - Наш бот на Top.GG\nhttps://rainbowbot.xyz - Наш сайт`,
             en: `https://discord.gg/YpjBAc5 - Our discord server\nhttps://top.gg/bot/571948993643544587 - Our Bot on Top.GG\nhttps://rainbowbot.xyz - Our website`,
         },
+        ascii: {
+            ru: `!ascii <text> <args>
+                text - текст для отрисовки символами
+                args - аргументы: 
+                --font <назв.шрифта> - отрисовать текст при помощи шрифта из списка.
+                --fontlist - список шрифтов, <text> не требуется.
+                --pic - отрисовать картинку, <text> не требуется, требуется приложить картинку.
+                --inverted - инвертировать картинку, --pic требуется, <text> не требуется, требуется приложить картинку.`,
+                
+            en: `!ascii <text> <args>
+                text - text to make ascii-art
+                args - arguments: 
+                --font <font name> - draw text with specified font.
+                --fontlist - list of fonts, <text> not needed.
+                --pic - draw the image, <text> not needed, need to attach the image.
+                --inverted - invert the image, --pic required, <text> not needed, need to attach the image.`,
+        },
     },
 
     uptime: {
