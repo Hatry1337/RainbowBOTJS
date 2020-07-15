@@ -197,9 +197,11 @@ class Utils {
         var othis = this;
         this.Database.getUserByDiscordID(message.author.id, function (user) {
             if (!user) {
-                othis.Database.registerUser(message, function () { done() });
+                othis.Database.registerUser(message, function (nuser) {
+                    done(nuser);
+                });
             } else {
-                done();
+                done(user);
                 return;
             }
         });

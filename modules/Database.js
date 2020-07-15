@@ -37,9 +37,12 @@ class Database {
         var sql_template = "INSERT INTO `users_info`(`user`, `user_points`, `user_group`, `user_lvl`, `user_xp`, `bitminer1`, `bitminer2`, `bitminer_rack`, `bitm_dc`, `solar_station`, `bm1_time`, `bm2_time`, `bmr_time`, `bitm_dc_time`, `ss_time`, `ban_reason`, `ban_time`, `vip_time`, `discord_id`, `news_sub`, `damage`, `lolilic`, `hent_uses`, `lang`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
         var replaces = [message.author.tag, 50000, "Player", 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, message.author.id, "True", 1, loli, hent, "$undef"];
         var sql = this.mysql.format(sql_template, replaces);
+        var othis = this;
         this.connection.query(sql, function (err, rows, fields) {
             if (err) throw err;
-            done();
+            othis.getUserByDiscordID(message.author.id, function (user) {
+                done(user);
+            });
         });
     };
     getAllUsers = function(done) {
