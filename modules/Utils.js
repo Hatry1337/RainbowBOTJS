@@ -135,63 +135,59 @@ class Utils {
             });
         }
     };
-    checkVip = function(message, done) {
+    checkVip = function(message, user, done) {
         var othis = this;
-        this.Database.getUserByDiscordID(message.author.id, function (user) {
-            if (user.user_group === "VIP") {
-                var curTS = new Date().getTime() / 1000;
-                var diff;
-                if (user.vip_time === "inf") {
+        if (user.user_group === "VIP") {
+            var curTS = new Date().getTime() / 1000;
+            var diff;
+            if (user.vip_time === "inf") {
+                done();
+                return;
+            } else {
+                diff = user.vip_time - curTS;
+            }
+            if (diff <= 0) {
+                user.vip_time = 0;
+                user.user_group = "Player";
+                othis.Database.updateUser(message.author.id, user, function () {
                     done();
                     return;
-                } else {
-                    diff = user.vip_time - curTS;
-                }
-                if (diff <= 0) {
-                    user.vip_time = 0;
-                    user.user_group = "Player";
-                    othis.Database.updateUser(message.author.id, user, function () {
-                        done();
-                        return;
-                    });
-                } else {
-                    done();
-                    return;
-                }
+                });
             } else {
                 done();
                 return;
             }
-        });
+        } else {
+            done();
+            return;
+        }
     };
-    checkBan = function(message, done) {
+    checkBan = function(message, user, done) {
         var othis = this;
-        this.Database.getUserByDiscordID(message.author.id, function (user) {
-            if (user.user_group === "Banned") {
-                var ban_time;
-                var curTS = new Date().getTime() / 1000;
-                var diff;
-                if (user.ban_time === "inf") {
-                    ban_time = "никогда, лол)";
-                } else {
-                    diff = user.ban_time - curTS;
-                    ban_time = othis.timeConversion(diff * 1000);
-                }
-                if (diff <= 0) {
-                    user.ban_time = 0;
-                    user.user_group = "Player";
-                    othis.Database.updateUser(message.author.id, user, function () {
-                        done();
-                        return;
-                    });
-                } else {
-                    return message.channel.send(`Вы забанены! Причина: ${user.ban_reason}, Бан истекает через: ${ban_time}`);
-                }
+        if (user.user_group === "Banned") {
+            var ban_time;
+            var curTS = new Date().getTime() / 1000;
+            var diff;
+            if (user.ban_time === "inf") {
+                ban_time = "никогда, лол)";
             } else {
-                done();
-                return;
+                diff = user.ban_time - curTS;
+                ban_time = othis.timeConversion(diff * 1000);
             }
-        });
+            if (diff <= 0) {
+                user.ban_time = 0;
+                user.user_group = "Player";
+                othis.Database.updateUser(message.author.id, user, function () {
+                    done();
+                    return;
+                });
+            } else {
+                return message.channel.send(`Вы забанены! Причина: ${user.ban_reason}, Бан истекает через: ${ban_time}`);
+            }
+        } else {
+            done();
+            return;
+        }
     };
     checkReg = function(message, done) {
         var othis = this;

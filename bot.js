@@ -39,8 +39,8 @@ client.on('message', async message => {
         Utils.updateUserName(message, user);
         Utils.fetchLang(message, user, function () {
             Utils.checkLang(message, user);
-            Utils.checkBan(message, async function () {
-                Utils.checkVip(message, async function () {
+            Utils.checkBan(message, user, async function () {
+                Utils.checkVip(message, user, async function () {
                     if (message.content.startsWith(`!rhelp`)) {
                         await Utils.Modules.Rhelp.execute(message, user.lang);
                         return;
