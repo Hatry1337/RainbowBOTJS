@@ -46,69 +46,104 @@ class Lolilic {
             if (user) {
                 if (args[1]) {
                     if (user.lolilic) {
-                        message.channel.send("Лицензия готовится. Пожалуйста подождите...");
-                        user.lolilic = JSON.parse(user.lolilic);
-                        var userName = user.user;
-                        var creationDate = await othis.formatDate(new Date(user.lolilic.create_d * 1000));
-                        var voidDate = await othis.formatDate(new Date(user.lolilic.void_d * 1000));
-                        var personalID = user.lolilic.pid;
-                        await othis.Jimp.read('output.png', async (err, img) => {
-                            if (err) throw err;
-                            await othis.Jimp.loadFont('fonts/font-small/font.fnt').then(async fontsm => {
-                                await othis.Jimp.loadFont('fonts/font-medium/font.fnt').then(async fontm => {
-                                    img
-                                        .print(fontsm, 1086, 1050, `PersonalID: ${personalID}`)
-                                        .print(fontm, 42, 746, `Кому: ${userName}`)
-                                        .print(fontm, 42, 809, `Когда: ${creationDate}`)
-                                        .print(fontm, 49, 867, `Действительна до: ${voidDate}`)
-                                        .write('endoutput.png'); // save
-                                    message.channel.send({ files: ['endoutput.png'] });
-                                    return;
+                        if (user.lolilic.create_d !== 0) {
+                            message.channel.send("Лицензия готовится. Пожалуйста подождите...");
+                            var userName = user.user;
+                            var creationDate = await othis.formatDate(new Date(user.lolilic.create_d * 1000));
+                            var voidDate = await othis.formatDate(new Date(user.lolilic.void_d * 1000));
+                            var personalID = user.lolilic.pid;
+                            await othis.Jimp.read('output.png', async (err, img) => {
+                                if (err) throw err;
+                                await othis.Jimp.loadFont('fonts/font-small/font.fnt').then(async fontsm => {
+                                    await othis.Jimp.loadFont('fonts/font-medium/font.fnt').then(async fontm => {
+                                        img
+                                            .print(fontsm, 1086, 1050, `PersonalID: ${personalID}`)
+                                            .print(fontm, 42, 746, `Кому: ${userName}`)
+                                            .print(fontm, 42, 809, `Когда: ${creationDate}`)
+                                            .print(fontm, 49, 867, `Действительна до: ${voidDate}`)
+                                            .write('endoutput.png'); // save
+                                        message.channel.send({ files: ['endoutput.png'] });
+                                        return;
+                                    });
                                 });
                             });
-                        });
+                        } else {
+                            message.channel.send("У данного пользователя нет лицензии на Лолю.");
+                            return;
+                        }
                     } else {
                         message.channel.send("У данного пользователя нет лицензии на Лолю.");
                         return;
                     }
                 } else {
                     if (user.lolilic) {
-                        message.channel.send("Лицензия готовится. Пожалуйста подождите...");
-                        user.lolilic = JSON.parse(user.lolilic);
-                        var userName = message.author.tag;
-                        var creationDate = othis.formatDate(new Date(user.lolilic.create_d * 1000));
-                        var voidDate = othis.formatDate(new Date(user.lolilic.void_d * 1000));
-                        var personalID = user.lolilic.pid;
-                        await othis.Jimp.read('output.png', async (err, img) => {
-                            if (err) throw err;
-                            await othis.Jimp.loadFont('fonts/font-small/font.fnt').then(async fontsm => {
-                                await othis.Jimp.loadFont('fonts/font-medium/font.fnt').then(async fontm => {
-                                    img
-                                        .print(fontsm, 1086, 1050, `PersonalID: ${personalID}`)
-                                        .print(fontm, 42, 746, `Кому: ${userName}`)
-                                        .print(fontm, 42, 809, `Когда: ${creationDate}`)
-                                        .print(fontm, 49, 867, `Действительна до: ${voidDate}`)
-                                        .write('endoutput.png'); // save
-                                    message.channel.send({ files: ['endoutput.png'] });
-                                    return;
+                        if (user.lolilic.create_d !== 0) {
+                            message.channel.send("Лицензия готовится. Пожалуйста подождите...");
+                            var userName = message.author.tag;
+                            var creationDate = othis.formatDate(new Date(user.lolilic.create_d * 1000));
+                            var voidDate = othis.formatDate(new Date(user.lolilic.void_d * 1000));
+                            var personalID = user.lolilic.pid;
+                            await othis.Jimp.read('output.png', async (err, img) => {
+                                if (err) throw err;
+                                await othis.Jimp.loadFont('fonts/font-small/font.fnt').then(async fontsm => {
+                                    await othis.Jimp.loadFont('fonts/font-medium/font.fnt').then(async fontm => {
+                                        img
+                                            .print(fontsm, 1086, 1050, `PersonalID: ${personalID}`)
+                                            .print(fontm, 42, 746, `Кому: ${userName}`)
+                                            .print(fontm, 42, 809, `Когда: ${creationDate}`)
+                                            .print(fontm, 49, 867, `Действительна до: ${voidDate}`)
+                                            .write('endoutput.png'); // save
+                                        message.channel.send({ files: ['endoutput.png'] });
+                                        return;
+                                    });
                                 });
                             });
-                        });
+                        } else {
+                            message.channel.send("Лицензия готовится. Пожалуйста подождите...");
+                            var cur_date = new Date();
+                            var void_date = new Date();
+                            void_date.setFullYear(void_date.getFullYear() + 5);
+                            user.lolilic = {
+                                create_d: (cur_date.getTime() / 1000),
+                                void_d: (void_date.getTime() / 1000),
+                                pid: `${message.author.discriminator}-${user.num}-${Math.floor(Math.random() * 9999)}`
+                            }
+                            othis.Database.updateUser(message.author.id, user, async function () {
+                                message.channel.send(`Вы успешно получили лицензию на Лолю!`);
+
+                                var userName = message.author.tag;
+                                var creationDate = othis.formatDate(new Date(user.lolilic.create_d * 1000));
+                                var voidDate = othis.formatDate(new Date(user.lolilic.void_d * 1000));
+                                var personalID = user.lolilic.pid;
+
+                                await othis.Jimp.read('output.png', async (err, img) => {
+                                    if (err) throw err;
+                                    await othis.Jimp.loadFont('fonts/font-small/font.fnt').then(async fontsm => {
+                                        await othis.Jimp.loadFont('fonts/font-medium/font.fnt').then(async fontm => {
+                                            img
+                                                .print(fontsm, 1086, 1050, `PersonalID: ${personalID}`)
+                                                .print(fontm, 42, 746, `Кому: ${userName}`)
+                                                .print(fontm, 42, 809, `Когда: ${creationDate}`)
+                                                .print(fontm, 49, 867, `Действительна до: ${voidDate}`)
+                                                .write('endoutput.png'); // save
+                                            message.channel.send({ files: ['endoutput.png'] });
+                                        });
+                                    });
+                                });
+                            });
+                        }
                     } else {
                         message.channel.send("Лицензия готовится. Пожалуйста подождите...");
                         var cur_date = new Date();
                         var void_date = new Date();
                         void_date.setFullYear(void_date.getFullYear() + 5);
-                        var newLoliLicense = {
+                        user.lolilic = {
                             create_d: (cur_date.getTime() / 1000),
                             void_d: (void_date.getTime() / 1000),
                             pid: `${message.author.discriminator}-${user.num}-${Math.floor(Math.random() * 9999)}`
                         }
-                        user.lolilic = JSON.stringify(newLoliLicense);
                         othis.Database.updateUser(message.author.id, user, async function () {
                             message.channel.send(`Вы успешно получили лицензию на Лолю!`);
-
-                            user.lolilic = JSON.parse(user.lolilic);
                             var userName = message.author.tag;
                             var creationDate = othis.formatDate(new Date(user.lolilic.create_d * 1000));
                             var voidDate = othis.formatDate(new Date(user.lolilic.void_d * 1000));
