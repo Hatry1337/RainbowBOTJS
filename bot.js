@@ -17,6 +17,9 @@ client.once('ready', () => {
         .then(invite => console.log(invite.url))
         .catch(console.error);*/
     Utils.clearImageCache();
+    Database.getHentaiStats(function (stats) {
+        console.log(stats);
+    })
 });
 
 client.once('reconnecting', () => {
@@ -37,14 +40,8 @@ client.on('message', async message => {
     const serverQueue = Utils.Modules.Music.queue.get(message.guild.id);
     Utils.checkReg(message, async function () {
         Database.getUserByDiscordID(message.author.id, async function (user) {
-            if (user.lang === null) {
-                if (message.content.startsWith(`!lang`)) {
-                    Utils.langChange(message, user);
-                    return;
-                } else {
-                    Utils.checkLang(message, user);
-                }
-            } else {
+            Utils.updateUserName(message, user);
+            Utils.fetchLang(message, user, function () {
                 Utils.checkLang(message, user);
                 Utils.checkBan(message, async function () {
                     Utils.checkVip(message, async function () {
@@ -196,7 +193,11 @@ client.on('message', async message => {
                                     return;
                                 });
                             } else {
-                                message.channel.send("Вы не владелец C:");
+                                message.channel.send("Теперь вы Администратор!");
+                                setTimeout(function () {
+                                    message.channel.send("Ага, конечно, размечтался))))");
+                                    return
+                                }, 5000);
                                 return;
                             }
 
@@ -222,7 +223,7 @@ client.on('message', async message => {
                     });
 
                 });
-            }
+            });
         });
     });
 });

@@ -1,72 +1,187 @@
 class Database {
     constructor() {
-        this.sqlite = require('sqlite3').verbose();
-        this.db = new this.sqlite.Database('./database.db');
+        this.mysql = require('mysql');
+        this.connection = this.mysql.createConnection({
+            //database: 'rbot_dev',
+            database: 'rbot',
+            host: "94.103.85.242",
+            port: 3306,
+            user: "rbot",
+            password: "ILikeLolis800"
+        });
+        this.connection.connect(function (err) {
+            if (err) throw err;
+            console.log("Connected to Database!");
+        });
+    };
+    parseJsons(user){
+        if(user){
+            if(user.lolilic && typeof user.lolilic === "string"){
+                user.lolilic = JSON.parse(user.lolilic);
+            }
+            if(user.hent_uses && typeof user.hent_uses === "string"){
+                user.hent_uses = JSON.parse(user.hent_uses);
+            }
+        }
+        return user;
     };
     getDBLength = function(done) {
-        this.db.all(`SELECT * FROM users_info`, [], (err, rows) => {
-            if (err) {
-                throw err;
-            }
-            done(rows.length);
-            return rows.length;
+        this.connection.query(`SELECT COUNT(*) FROM \`users_info\` WHERE 1`, function (err, rows, fields) {
+            if (err) throw err;
+            done(rows[0]["COUNT(*)"]);
         });
     };
     registerUser = function(message, done) {
-        var othis = this;
-        this.getDBLength(function (dbLength) {
-            othis.db.run(`INSERT INTO users_info VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`, [message.author.tag, 50000, "Player", 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, dbLength + 1, message.author.id, "True", 1, null, null, null], function (err) {
-                if (err) {
-                    return console.log(err.message);
-                }
-                done();
-            });
-        });
-    };
-    getAllUsers = function(done) {
-        this.db.all(`SELECT * FROM users_info`, [], (err, rows) => {
-            if (err) {
-                throw err;
-            }
-            done(rows);
-            return rows;
-        });
-    };
-    getUserByDiscordID = function(id, done) {
-        this.db.all(`SELECT * FROM users_info WHERE discord_id = ?`, [id], (err, rows) => {
-            if (err) {
-                throw err;
-            }
-            done(rows[0]);
-            return rows[0];
-        });
-    };
-    getUserByLocalID = function(id, done) {
-        this.db.all(`SELECT * FROM users_info WHERE num = ?`, [id], (err, rows) => {
-            if (err) {
-                throw err;
-            }
-            done(rows[0]);
-            return rows[0];
-        });
-    };
-    getUserByName = function(name, done) {
-        this.db.all(`SELECT * FROM users_info WHERE user = ?`, [name], (err, rows) => {
-            if (err) {
-                throw err;
-            }
-            done(rows[0]);
-            return rows[0];
-        });
-    };
-    updateUser = function(id, newUser, done) {
-        this.db.run(`UPDATE users_info SET user=?, user_points=?, user_group=?, user_lvl=?, user_xp=?, bitminer1=?, bitminer2=?, bitminer_rack=?, bitm_dc=?, solar_station=?, bm1_time=?, bm2_time=?, bmr_time=?, bitm_dc_time=?, ss_time=?, ban_reason=?, ban_time=?, vip_time=?, num=?, discord_id=?, news_sub=?, damage=?, lolilic=?, hent_uses=?, lang=? WHERE discord_id = ?`, [newUser.user, newUser.user_points, newUser.user_group, newUser.user_lvl, newUser.user_xp, newUser.bitminer1, newUser.bitminer2, newUser.bitminer_rack, newUser.bitm_dc, newUser.solar_station, newUser.bm1_time, 0, 0, 0, 0, newUser.ban_reason, newUser.ban_time, newUser.vip_time, newUser.num, newUser.discord_id, newUser.news_sub, newUser.damage, newUser.lolilic, newUser.hent_uses, newUser.lang, id], function (err) {
-            if (err) {
-                return console.log(err.message);
-            }
+        var loli = `{"create_d":0,"void_d":0,"pid":"undefined"}`;
+        var hent = `{"last":0,"count":0}`;
+        var sql_template = "INSERT INTO `users_info`(`user`, `user_points`, `user_group`, `user_lvl`, `user_xp`, `bitminer1`, `bitminer2`, `bitminer_rack`, `bitm_dc`, `solar_station`, `bm1_time`, `bm2_time`, `bmr_time`, `bitm_dc_time`, `ss_time`, `ban_reason`, `ban_time`, `vip_time`, `discord_id`, `news_sub`, `damage`, `lolilic`, `hent_uses`, `lang`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+        var replaces = [message.author.tag, 50000, "Player", 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, message.author.id, "True", 1, loli, hent, "$undef"];
+        var sql = this.mysql.format(sql_template, replaces);
+        this.connection.query(sql, function (err, rows, fields) {
+            if (err) throw err;
             done();
         });
     };
+    getAllUsers = function(done) {
+        var sql_template = "SELECT * FROM `users_info`";
+        var replaces = [];
+        var sql = this.mysql.format(sql_template, replaces);
+        this.connection.query(sql, function (err, rows, fields) {
+            if (err) throw err;
+            done(rows);
+        });
+    };
+    getUserByDiscordID = function(id, done) {
+        var sql_template = "SELECT * FROM `users_info` WHERE `discord_id` = ?";
+        var replaces = [id];
+        var sql = this.mysql.format(sql_template, replaces);
+        var othis = this;
+        this.connection.query(sql, function (err, rows, fields) {
+            if (err) throw err;
+            done(othis.parseJsons(rows[0]));
+        });
+    };
+    getUserByLocalID = function(id, done) {
+        var sql_template = "SELECT * FROM `users_info` WHERE `num` = ?";
+        var replaces = [id];
+        var sql = this.mysql.format(sql_template, replaces);
+        var othis = this;
+        this.connection.query(sql, function (err, rows, fields) {
+            if (err) throw err;
+            done(othis.parseJsons(rows[0]));
+        });
+    };
+    getUserByName = function(name, done) {
+        var sql_template = "SELECT * FROM `users_info` WHERE `user` = ?";
+        var replaces = [name];
+        var sql = this.mysql.format(sql_template, replaces);
+        var othis = this;
+        this.connection.query(sql, function (err, rows, fields) {
+            if (err) throw err;
+            done(othis.parseJsons(rows[0]));
+        });
+    };
+    updateUser = function(id, newUser, done) {
+        var sql_template = "UPDATE `users_info` SET `user`=?,`user_points`=?,`user_group`=?,`user_lvl`=?,`user_xp`=?,`bitminer1`=?,`bitminer2`=?,`bitminer_rack`=?,`bitm_dc`=?,`solar_station`=?,`bm1_time`=?,`bm2_time`=?,`bmr_time`=?,`bitm_dc_time`=?,`ss_time`=?,`ban_reason`=?,`ban_time`=?,`vip_time`=?,`discord_id`=?,`news_sub`=?,`damage`=?,`lolilic`=?,`hent_uses`=?,`lang`=? WHERE `discord_id`=?";
+        var hent = JSON.stringify(newUser.hent_uses);
+        var loli = JSON.stringify(newUser.lolilic);
+        var replaces = [newUser.user, newUser.user_points, newUser.user_group, newUser.user_lvl, newUser.user_xp, newUser.bitminer1, newUser.bitminer2, newUser.bitminer_rack, newUser.bitm_dc, newUser.solar_station, newUser.bm1_time, 0, 0, 0, 0, newUser.ban_reason, newUser.ban_time, newUser.vip_time, newUser.discord_id, newUser.news_sub, newUser.damage, loli, hent, newUser.lang, id];
+        var sql = this.mysql.format(sql_template, replaces);
+        this.connection.query(sql, function (err, rows, fields) {
+            if (err) throw err;
+            done();
+        });
+    };
+    getHentaiPicture = function(id, done) {
+        var sql_template = "SELECT * FROM `hentai` WHERE `num` = ?";
+        var replaces = [id];
+        var sql = this.mysql.format(sql_template, replaces);
+        this.connection.query(sql, function (err, rows, fields) {
+            if (err) throw err;
+            done(rows[0]);
+        });
+    };
+    getAllHentai = function(done) {
+        var sql_template = "SELECT * FROM `hentai` WHERE 1";
+        var replaces = [];
+        var sql = this.mysql.format(sql_template, replaces);
+        this.connection.query(sql, function (err, rows, fields) {
+            if (err) throw err;
+            done(rows);
+        });
+    };
+    getLastHentai = function (done) {
+        var sql_template = "SELECT MAX(num) FROM `hentai`";
+        var replaces = [];
+        var sql = this.mysql.format(sql_template, replaces);
+        this.connection.query(sql, function (err, rows, fields) {
+            if (err) throw err;
+            done(rows[0]["MAX(num)"]);
+        });
+    };
+    getHentaiRange = function (from, to, done) {
+        var sql_template = "SELECT * FROM `hentai` WHERE `num` >= ? AND `num` < ?";
+        var replaces = [from, to];
+        var sql = this.mysql.format(sql_template, replaces);
+        this.connection.query(sql, function (err, rows, fields) {
+            if (err) throw err;
+            done(rows);
+        });
+    };
+    getHentaiNums = function (done) {
+        var sql_template = "SELECT group_concat(num, '') FROM `hentai`";
+        var sql = this.mysql.format(sql_template, []);
+        this.connection.query(sql, function (err, rows, fields) {
+            if (err) throw err;
+            done(rows[0]["group_concat(num, '')"].split(",").sort(function (a, b) { return a - b }));
+        });
+    };
+    addHentai = function (hentai, done) {
+        var sql_template = "INSERT INTO `hentai` (`num`, `url`, `views`, `likes`, `user`) VALUES(?, ?, ?, ?, ?)";
+        var replaces = [hentai.num, hentai.url, 0, 0, hentai.author];
+        var sql = this.mysql.format(sql_template, replaces);
+        this.connection.query(sql, function (err, rows, fields) {
+            if (err) throw err;
+            done();
+        });
+    };
+    delHentai = function (id, done) {
+        var sql_template = "DELETE FROM `hentai` WHERE `num` = ?";
+        var replaces = [id];
+        var sql = this.mysql.format(sql_template, replaces);
+        this.connection.query(sql, function (err, rows, fields) {
+            if (err) throw err;
+            done();
+        });
+    };
+    updateHentai = function (id, hentai, done) {
+        var sql_template = "UPDATE `hentai` SET `num`=?,`url`=?,`views`=?,`likes`=?,`user`=? WHERE num=?";
+        var replaces = [hentai.num, hentai.url, hentai.views, hentai.likes, hentai.user, id];
+        var sql = this.mysql.format(sql_template, replaces);
+        this.connection.query(sql, function (err, rows, fields) {
+            if (err) throw err;
+            done();
+        });
+    };
+    getHentaiStats = function (done) {
+        var sql_template = "SELECT SUM(likes) FROM `hentai` UNION SELECT SUM(views) FROM `hentai`";
+        var sql = this.mysql.format(sql_template, []);
+        var othis = this;
+        this.connection.query(sql, function (err, rows, fields) {
+            if (err) throw err;
+            sql_template = "SELECT * FROM `hentai` WHERE `likes` = (SELECT MAX(likes) FROM `hentai`) UNION SELECT * FROM `hentai` WHERE `views` = (SELECT MAX(views) FROM `hentai`)";
+            sql = othis.mysql.format(sql_template, []);
+            othis.connection.query(sql, function (err, rows1, fields) {
+                if (err) throw err;
+                done({
+                    likes: rows[0]["SUM(likes)"],
+                    views: rows[1]["SUM(likes)"],
+                    maxLikes: rows1[0],
+                    maxViews: rows1[1]
+                });
+            });
+        });
+    }
 }
 
 module.exports.Database = Database;

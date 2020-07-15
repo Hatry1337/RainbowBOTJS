@@ -13,21 +13,8 @@ class Hentai {
     }
     execute = function (message) {
         var othis = this;
-        function getHentai(localID, done) {
-            othis.Database.db.all(`SELECT * FROM hentai WHERE num = ?`, [localID], (err, rows) => {
-                if (err) {
-                    throw err;
-                }
-                done(rows[0]);
-                return rows[0];
-            });
-        }
         this.Database.getUserByDiscordID(message.author.id, function (user) {
-            if (user.hent_uses) {
-                console.log("sucking from db");
-                user.hent_uses = JSON.parse(user.hent_uses);
-            } else {
-                console.log("GOVNO");
+            if (!user.hent_uses){
                 user.hent_uses = {
                     last: 0,
                     count: 0,
@@ -35,22 +22,12 @@ class Hentai {
             }
             var curTS = new Date().getTime() / 1000;
             if((curTS - user.hent_uses.last) >= 43200){
-                console.log(curTS - user.hent_uses.last);
                 user.hent_uses.count = 0;
-                console.log("Setting 0 govna");
             }
             if (user.user_group === "VIP" || user.user_group === "Admin" || user.user_group === "hentmod" || user.hent_uses.count <= 5) {
                 if (message.channel.nsfw) {
                     var args = message.content.split(" ");
-                    othis.Database.db.all("SELECT * FROM hentai", [], (err, rows) => {
-                        if (err) {
-                            throw err;
-                        }
-                        othis.Database.db.all("SELECT MAX(num) FROM hentai", [], (err, hentCount) => {
-                            if (err) {
-                                throw err;
-                            }
-                            hentCount = hentCount[0]['MAX(num)'];
+                        othis.Database.getLastHentai(function (hentCount) {
                             var hent;
                             if (args[1]) {
                                 if (args[1] === "list") {
@@ -77,44 +54,24 @@ class Hentai {
                                         }
                                         var c = page * 10;
                                         var out = "";
-                                        getHentai(i, function (h1) {
-                                            getHentai(i + 1, function (h2) {
-                                                getHentai(i + 2, function (h3) {
-                                                    getHentai(i + 3, function (h4) {
-                                                        getHentai(i + 4, function (h5) {
-                                                            getHentai(i + 5, function (h6) {
-                                                                getHentai(i + 6, function (h7) {
-                                                                    getHentai(i + 7, function (h8) {
-                                                                        getHentai(i + 8, function (h9) {
-                                                                            getHentai(i + 9, function (h10) {
-                                                                                var hents = [h1, h2, h3, h4, h5, h6, h7, h8, h9, h10];
-                                                                                var j = 0;
-                                                                                while (j < 10) {
-                                                                                    var hentai = hents[j];
-                                                                                    if (!hentai) {
-                                                                                        out = `${out}\n**${i + j}.** ${'`'}${othis.lng.hentai.empty[user.lang]}${'`'}\n`;
-                                                                                    } else {
-                                                                                        out = `${out}\n**${i + j}.** ${hentai.url}\n${hentai.user} :id:${hentai.num}ᅠᅠ:eye:${hentai.views}ᅠᅠ:heart:${hentai.likes}\n`;
-                                                                                    }
-                                                                                    j++;
-                                                                                }
-                                                                                var embd = new othis.Discord.MessageEmbed()
-                                                                                    .setColor(0x8b00ff)
-                                                                                    .setTitle(`${othis.lng.hentai.page[user.lang]} ${page}/${Math.floor(hentCount / 10) + 1}`)
-                                                                                    .setDescription(out);
-                                                                                message.channel.send(embd);
-                                                                                return;
-                                                                            });
-                                                                        });
-                                                                    });
-                                                                });
-                                                            });
-                                                        });
-                                                    });
-                                                });
-                                            });
+                                        othis.Database.getHentaiRange(i, i+10, function (hents) {
+                                            var j = 0;
+                                            while (j < 10) {
+                                                var hentai = hents[j];
+                                                if (!hentai) {
+                                                    out = `${out}\n**${i + j}.** ${'`'}${othis.lng.hentai.empty[user.lang]}${'`'}\n`;
+                                                } else {
+                                                    out = `${out}\n**${i + j}.** ${hentai.url}\n${hentai.user} :id:${hentai.num}ᅠᅠ:eye:${hentai.views}ᅠᅠ:heart:${hentai.likes}\n`;
+                                                }
+                                                j++;
+                                            }
+                                            var embd = new othis.Discord.MessageEmbed()
+                                                .setColor(0x8b00ff)
+                                                .setTitle(`${othis.lng.hentai.page[user.lang]} ${page}/${Math.floor(hentCount / 10) + 1}`)
+                                                .setDescription(out);
+                                            message.channel.send(embd);
+                                            return;
                                         });
-
                                     } else {
                                         message.channel.send(othis.lng.hentai.youAreNotAdmin[user.lang]);
                                         return;
@@ -128,11 +85,7 @@ class Hentai {
                                         } else {
                                             hurl = args[2];
                                         }
-                                        othis.Database.db.all("SELECT group_concat(num, '_') FROM hentai", [], (err, nums) => {
-                                            if (err) {
-                                                throw err;
-                                            }
-                                            nums = nums[0]["group_concat(num, '_')"].split("_").sort(function (a, b) { return a - b });
+                                        othis.Database.getHentaiNums(function (nums) {
                                             console.log(nums);
                                             var i = 0;
                                             var emptyIndex;
@@ -147,15 +100,15 @@ class Hentai {
                                             if (!emptyIndex) {
                                                 emptyIndex = hentCount + 1;
                                             }
-
-                                            othis.Database.db.run(`INSERT INTO hentai(num,url,views,likes,user) VALUES(?, ?, ?, ?, ?)`, [emptyIndex, hurl, 0, 0, user.user], function (err) {
-                                                if (err) {
-                                                    return console.log(err.message);
-                                                }
+                                            var newHent = {
+                                                num: emptyIndex,
+                                                url: hurl,
+                                                author: user.user
+                                            };
+                                            othis.Database.addHentai(newHent, function() {
                                                 message.channel.send(`${othis.lng.hentai.picAddedAt[user.lang]} **${emptyIndex}**!`);
                                                 return;
                                             });
-
                                         });
                                     } else {
                                         message.channel.send(othis.lng.hentai.youAreNotAdmin[user.lang]);
@@ -176,14 +129,10 @@ class Hentai {
                                             message.channel.send(othis.lng.hentai.noPic[user.lang]);
                                             return;
                                         }
-                                        othis.Database.db.run(`DELETE FROM hentai WHERE num = ?`, [nhent], function (err) {
-                                            if (err) {
-                                                return console.log(err.message);
-                                            }
-                                            message.channel.send(`${othis.lng.hentai.picAtNum[user.lang]} **${nhent}** ${othis.lng.deleted[user.lang]}!`);
+                                        othis.Database.delHentai(nhent,function () {
+                                            message.channel.send(`${othis.lng.hentai.picAtNum[user.lang]} **${nhent}** ${othis.lng.hentai.deleted[user.lang]}!`);
                                             return;
                                         });
-
                                     } else {
                                         message.channel.send(othis.lng.hentai.youAreNotAdmin[user.lang]);
                                         return;
@@ -202,6 +151,7 @@ class Hentai {
                                             .setColor(0x277353)
                                             .setImage(hurl);
                                         othis.Client.users.cache.get('508637328349331462').send(embd);
+                                        othis.Client.users.cache.get('373718196794032130').send(embd);
                                         message.channel.send(othis.lng.hentai.picOffered[user.lang]);
                                         return;
                                     }
@@ -219,11 +169,9 @@ class Hentai {
                                             message.channel.send(othis.lng.hentai.noPic[user.lang]);
                                             return;
                                         }
-                                        getHentai(nhent, function (xent) {
-                                            othis.Database.db.run(`UPDATE hentai SET likes = ? WHERE num = ?`, [xent.likes + 1, nhent], function (err) {
-                                                if (err) {
-                                                    return console.log(err.message);
-                                                }
+                                        othis.Database.getHentaiPicture(nhent, function (xent) {
+                                            xent.likes++;
+                                            othis.Database.updateHentai(xent.id, xent, function () {
                                                 message.channel.send(`${othis.lng.hentai.youLiked[user.lang]} **${nhent}**!`);
                                                 return;
                                             });
@@ -231,49 +179,33 @@ class Hentai {
                                     }
                                 } else if (args[1] === "stats") {
                                     if (user.user_group === "Admin" || user.user_group === "hentmod" || user.user_group === "VIP") {
-                                        othis.Database.db.all("SELECT SUM(likes) FROM hentai", [], (err, likes) => {
-                                            if (err) {
-                                                throw err;
-                                            }
-                                            othis.Database.db.all("SELECT SUM(views) FROM hentai", [], (err, views) => {
-                                                if (err) {
-                                                    throw err;
-                                                }
-                                                othis.Database.db.all("SELECT * FROM hentai WHERE likes = (SELECT MAX(likes) FROM hentai)", [], (err, maxLikes) => {
-                                                    if (err) {
-                                                        throw err;
-                                                    }
-                                                    othis.Database.db.all("SELECT * FROM hentai WHERE views = (SELECT MAX(views) FROM hentai)", [], (err, maxViews) => {
-                                                        if (err) {
-                                                            throw err;
-                                                        }
-                                                        var embd = new othis.Discord.MessageEmbed()
-                                                            .setColor(0x8b00ff)
-                                                            .setTitle("Статистика команды !hentai:")
-                                                            .addFields([
-                                                                { name: `${othis.lng.hentai.totalLikes[user.lang]}: `, value: `${likes[0]['SUM(likes)']} :heart:` },
-                                                                { name: `${othis.lng.hentai.totalViews[user.lang]}: `, value: `${views[0]['SUM(views)']} :eye:` },
-                                                                { name: `${othis.lng.hentai.picsCount[user.lang]}: `, value: `${hentCount} :frame_photo:` },
-                                                                { name: `${othis.lng.hentai.mostPopular[user.lang]}: `, value: `${othis.lng.hentai.byLikes[user.lang]}: :id:${maxLikes[0].num}ᅠ:eye:${maxLikes[0].views}ᅠ:heart:${maxLikes[0].likes}\n\n${othis.lng.hentai.byViews[user.lang]}: :id:${maxViews[0].num}ᅠ:eye:${maxViews[0].views}ᅠ:heart:${maxViews[0].likes}` },
+                                        othis.Database.getHentaiStats(function (stats) {
+                                            var embd = new othis.Discord.MessageEmbed()
+                                                .setColor(0x8b00ff)
+                                                .setTitle("Статистика команды !hentai:")
+                                                .addFields([
+                                                    { name: `${othis.lng.hentai.totalLikes[user.lang]}: `, value:
+                                                            `${stats.likes} :heart:` },
 
+                                                    { name: `${othis.lng.hentai.totalViews[user.lang]}: `, value:
+                                                            `${stats.views} :eye:` },
 
-                                                            ]);
-                                                        message.channel.send(embd);
-                                                        return;
-                                                    });
-                                                });
-                                            });
+                                                    { name: `${othis.lng.hentai.picsCount[user.lang]}: `, value:
+                                                            `${hentCount} :frame_photo:` },
+
+                                                    { name: `${othis.lng.hentai.mostPopular[user.lang]}: `, value:
+                                                        `${othis.lng.hentai.byLikes[user.lang]}: :id:${stats.maxLikes.num}ᅠ:eye:${stats.maxLikes.views}ᅠ:heart:${stats.maxLikes.likes}\n
+                                                        ${othis.lng.hentai.byViews[user.lang]}: :id:${stats.maxViews.num}ᅠ:eye:${stats.maxViews.views}ᅠ:heart:${stats.maxViews.likes}` },
+                                                ]);
+                                            message.channel.send(embd);
+                                            return;
                                         });
-
                                     }
                                 }else if (isNaN(parseInt(args[1]))) {
                                     message.channel.send(othis.lng.hentai.picNotExist[user.lang]);
                                     return;
-
-                                    //NORMAL HENTAI CMD HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                                 } else {
-                                    getHentai(parseInt(args[1]), function (hentai) {
-                                        hent = hentai;
+                                    othis.Database.getHentaiPicture(parseInt(args[1]), function (hent) {
                                         if (!(hent)) {
                                             message.channel.send(lng.hentai.picNotExist[user.lang]);
                                             return;
@@ -282,18 +214,11 @@ class Hentai {
                                                 .setDescription(`:id:${hent.num}ᅠᅠ:eye:${hent.views}ᅠᅠ:heart:${hent.likes}`)
                                                 .setImage(hent.url)
                                                 .setColor(0x8b00ff);
-                                            othis.Database.db.run(`UPDATE hentai SET views = ? WHERE num = ?`, [hent.views + 1, hent.num], function (err) {
-                                                if (err) {
-                                                    return console.log(err.message);
-                                                }
+                                            hent.views++;
+                                            othis.Database.updateHentai(hent.num, hent, function () {
                                                 user.hent_uses.count++;
                                                 user.hent_uses.last = curTS;
-                                                console.log(JSON.stringify(user.hent_uses));
-                                                user.hent_uses = JSON.stringify(user.hent_uses);
-                                                othis.Database.updateUser(user.user_id, user, function(){
-                                                    if (err) {
-                                                        return console.log(err.message);
-                                                    }
+                                                othis.Database.updateUser(user.discord_id, user, function(){
                                                     message.channel.send(emb);
                                                     return;
                                                 });
@@ -302,30 +227,23 @@ class Hentai {
                                     });
                                 }
                             } else {
-                                hent = rows[othis.Utils.getRandomInt(rows.length) + 1];
-                                var emb = new othis.Discord.MessageEmbed()
-                                    .setDescription(`:id:${hent.num}ᅠᅠ:eye:${hent.views}ᅠᅠ:heart:${hent.likes}`)
-                                    .setImage(hent.url)
-                                    .setColor(0x8b00ff);
-                                othis.Database.db.run(`UPDATE hentai SET views = ? WHERE num = ?`, [hent.views + 1, hent.num], function (err) {
-                                    if (err) {
-                                        return console.log(err.message);
-                                    }
-                                    user.hent_uses.count++;
-                                    user.hent_uses.last = curTS;
-                                    console.log(JSON.stringify(user.hent_uses));
-                                    user.hent_uses = JSON.stringify(user.hent_uses);
-                                    othis.Database.updateUser(message.author.id, user, function(){
-                                        if (err) {
-                                            return console.log(err.message);
-                                        }
-                                        message.channel.send(emb);
-                                        return;
+                                othis.Database.getHentaiPicture(othis.Utils.getRandomInt(hentCount)+1, function (hent) {
+                                    var emb = new othis.Discord.MessageEmbed()
+                                        .setDescription(`:id:${hent.num}ᅠᅠ:eye:${hent.views}ᅠᅠ:heart:${hent.likes}`)
+                                        .setImage(hent.url)
+                                        .setColor(0x8b00ff);
+                                    hent.views++;
+                                    othis.Database.updateHentai(hent.num, hent, function () {
+                                        user.hent_uses.count++;
+                                        user.hent_uses.last = curTS;
+                                        othis.Database.updateUser(user.discord_id, user, function(){
+                                            message.channel.send(emb);
+                                            return;
+                                        });
                                     });
                                 });
                             }
                         });
-                    });
                 } else {
                     message.channel.send(othis.lng.hentai.notNSFW[user.lang]);
                     return;

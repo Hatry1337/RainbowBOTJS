@@ -13,6 +13,7 @@ class Set {
         var sub_cmd = args[1];
         var uid = args[2];
         var value = args[3];
+        var value2 = args[4];
         if (!((sub_cmd) || (uid) || (value))) {
             message.channel.send("Error: Invalid Syntax\n```!set <sub_cmd> <user> <value>\n\n<sub_cmd>: points, lvl, xp, group\n<user>: @user or id\n<value>: any```");
             return;
@@ -42,6 +43,15 @@ class Set {
             } else if (sub_cmd === "group") {
                 user.user_group = value;
                 message.channel.send(`Пользователю ${user.user} была установлена группа ${value}`);
+            }else if (sub_cmd === "dbcol") {
+                if(value2){
+                    message.channel.send(`Пользователю ${user.user} был установлен параметр ${value} с "${user[value]}" на "${value2}"`);
+                    user[value] = value2;
+                    user = othis.Database.parseJsons(user);
+                }else{
+                    message.channel.send("No Database column value specified");
+                    return;
+                }
             }
             othis.Database.updateUser(uid, user, function () {
                 return;

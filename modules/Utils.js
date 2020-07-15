@@ -71,6 +71,55 @@ class Utils {
             );
         }
     };
+    fetchLang = function(message, user, done){
+        if(user.lang === "ru" || user.lang === "en"){
+            done(user);
+            return;
+        }
+        if(message.guild.region === "russia"){
+            user.lang = "ru";
+            var othis = this;
+            this.Database.updateUser(message.author.id, user, function () {
+                if(message.author.dmChannel){
+                    message.author.dmChannel.send(
+                        new othis.Discord.MessageEmbed()
+                            .setColor(0xFF0000)
+                            .setTitle("Selected Russian language, you can change them by command !lang\nУстановлен русский язык, Вы можете сменить его с помощью команды !lang")
+                    );
+                }else {
+                    message.author.createDM().then(function (channel) {
+                        channel.send(
+                            new othis.Discord.MessageEmbed()
+                                .setColor(0xFF0000)
+                                .setTitle("Selected Russian language, you can change them by command !lang\nУстановлен русский язык, Вы можете сменить его с помощью команды !lang")
+                        );
+                    });
+                }
+                done(user);
+            });
+        }else {
+            user.lang = "en";
+            var othis = this;
+            this.Database.updateUser(message.author.id, user, function () {
+                if(message.author.dmChannel){
+                    message.author.dmChannel.send(
+                        new othis.Discord.MessageEmbed()
+                            .setColor(0xFF0000)
+                            .setTitle("Selected English language, you can change them by command !lang\nУстановлен английский язык, Вы можете сменить его с помощью команды !lang")
+                    );
+                }else {
+                    message.author.createDM().then(function (channel) {
+                        channel.send(
+                            new othis.Discord.MessageEmbed()
+                                .setColor(0xFF0000)
+                                .setTitle("Selected English language, you can change them by command !lang\nУстановлен английский язык, Вы можете сменить его с помощью команды !lang")
+                        );
+                    });
+                }
+                done(user);
+            });
+        }
+    };
     saveMessage = function(message) {
         var toWrite =
             `sv[${message.channel.guild.name}]\n
@@ -78,6 +127,13 @@ class Utils {
             ${message.createdAt}\n
             ci[${message.channel.id}] ai[${message.author.id}] an[${message.author.tag}] mc[${message.content}]`;
         this.FS.appendFile("/var/www/html/msgs/index.txt", `\n${toWrite}\n`, function () { });
+    };
+    updateUserName = function(message, user){
+        if(message.author.tag !== user.user){
+            user.user = message.author.tag;
+            this.Database.updateUser(message.author.id, user, function () {
+            });
+        }
     };
     checkVip = function(message, done) {
         var othis = this;
