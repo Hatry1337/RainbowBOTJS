@@ -44,6 +44,7 @@ class Rhelp {
             .setTitle(this.lng.rhelp.title[l])
             .addFields([
                 { name: "!ascii", value: this.lng.rhelp.ascii[l], inline: true },
+                { name: "!osuinfo <osu! nickname>", value: this.lng.rhelp.osuinfo[l], inline: true },
 
                 { name: this.lng.rhelp.usableLinksT[l], value: this.lng.rhelp.usableLinks[l], inline: false },
 

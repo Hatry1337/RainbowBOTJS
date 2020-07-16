@@ -130,6 +130,10 @@
                 --pic - draw the image, <text> not needed, need to attach the image.
                 --inverted - invert the image, --pic required, <text> not needed, need to attach the image.`,
         },
+        osuinfo: {
+            ru: "Просмотреть профиль игрока osu!",
+            en: "Show osu! player's profile",
+        },
     },
 
     uptime: {
