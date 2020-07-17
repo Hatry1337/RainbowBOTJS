@@ -185,6 +185,14 @@ class Database {
                 });
             });
         });
+    };
+    writeLog = async function (type, user, data, done) {
+        var sql_template = "INSERT INTO `logs` (`type`, `user`, `data`) VALUES(?, ?, ?)";
+        var sql = this.mysql.format(sql_template, [type, user, data]);
+        this.connection.query(sql, function (err, rows, fields) {
+            if (err) throw err;
+            if (done) { done(); }
+        });
     }
 }
 

@@ -12,7 +12,8 @@ client.once('ready', () => {
     console.log('Ready 1!');
     utime = new Date();
     client.user.setActivity('!rhelp', { type: 'WATCHING' });
-    Utils.loadModules(Utils.getFiles(__dirname+"/cmds"));
+    Utils.loadModules(Utils.getFiles(__dirname + "/cmds"));
+    Database.writeLog('System-Up', "System", `{"Message":"System is up!"}`);
     /*client.channels.cache.get("662657721266339853").createInvite({ temporary: true})
         .then(invite => console.log(invite.url))
         .catch(console.error);*/
@@ -21,10 +22,12 @@ client.once('ready', () => {
 
 client.once('reconnecting', () => {
     console.log('Reconnecting!');
+    Database.writeLog('System-Reconn', "System", `{"Message":"System is reconnecting!"}`);
 });
 
 client.once('disconnect', () => {
     console.log('Disconnect!');
+    Database.writeLog('System-Disconn', "System", `{"Message":"System is disconnected!"}`);
 });
 
 client.on('message', async message => {
@@ -40,6 +43,7 @@ client.on('message', async message => {
         Utils.fetchLang(message, user, function () {
             Utils.checkLang(message, user);
             Utils.checkBan(message, user, async function () {
+                Database.writeLog('Command', message.author.id, `{"Author": "${message.author.tag}", "MContent": "${message.content}", "SVID": "${message.guild.id}", "CHName": "${message.channel.name}", "Message":"User '${message.author.tag}' typed '${message.content}' in '${message.channel.name}' on '${message.guild.name}'."}`);
                 Utils.checkVip(message, user, async function () {
                     if (message.content.startsWith(`!rhelp`)) {
                         await Utils.Modules.Rhelp.execute(message, user.lang);
