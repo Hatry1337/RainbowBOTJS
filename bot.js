@@ -14,6 +14,9 @@ client.once('ready', () => {
     client.user.setActivity('!rhelp', { type: 'WATCHING' });
     Utils.loadModules(Utils.getFiles(__dirname + "/cmds"));
     Database.writeLog('System-Up', "System", `{"Message":"System is up!"}`);
+    Database.getLogsByUser("508637328349331462", function (logs) {
+        console.log(logs);
+    });
     /*client.channels.cache.get("662657721266339853").createInvite({ temporary: true})
         .then(invite => console.log(invite.url))
         .catch(console.error);*/

@@ -187,11 +187,35 @@ class Database {
         });
     };
     writeLog = async function (type, user, data, done) {
-        var sql_template = "INSERT INTO `logs` (`type`, `user`, `data`) VALUES(?, ?, ?)";
-        var sql = this.mysql.format(sql_template, [type, user, data]);
+        var sql_template = "INSERT INTO `logs` (`type`, `user`, `data`, `unixtime`) VALUES(?, ?, ?, ?)";
+        var sql = this.mysql.format(sql_template, [type, user, data, Math.floor(new Date() / 1000)]);
         this.connection.query(sql, function (err, rows, fields) {
             if (err) throw err;
             if (done) { done(); }
+        });
+    };
+    getCountLogs = function (type, done) {
+        var sql_template = "SELECT COUNT(*) FROM `logs` WHERE `type`=?";
+        var sql = this.mysql.format(sql_template, [type]);
+        this.connection.query(sql, function (err, rows, fields) {
+            if (err) throw err;
+            done(rows[0]['COUNT(*)']);
+        });
+    };
+    getCountLogsRange = function (type, from, to, done) {
+        var sql_template = "SELECT COUNT(*) FROM `logs` WHERE `type`=? AND `unixtime` BETWEEN ? AND ?";
+        var sql = this.mysql.format(sql_template, [type, Math.floor(from), Math.floor(to)]);
+        this.connection.query(sql, function (err, rows, fields) {
+            if (err) throw err;
+            done(rows[0]['COUNT(*)']);
+        });
+    };
+    getLogsByUser = function (id, done) {
+        var sql_template = "SELECT * FROM `logs` WHERE `user`=?";
+        var sql = this.mysql.format(sql_template, [id]);
+        this.connection.query(sql, function (err, rows, fields) {
+            if (err) throw err;
+            done(rows);
         });
     }
 }
