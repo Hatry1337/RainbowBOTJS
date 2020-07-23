@@ -22,11 +22,11 @@ class Buy {
         }
         var othis = this;
         this.Database.getUserByDiscordID(message.author.id, function (user) {
-            var bs1_pr = 50000 * 1.2^(user.bitminer1);
-            var bs2_pr = 100000 * 1.2^(user.bitminer2);
-            var br_pr  = 200000 * 1.2^(user.bitminer_rack);
-            var brd_pr = 1200000 * 1.2^(user.bitmdc);
-            var ss_pr  = 12000000 * 1.2^(user.solar_station);
+            var bs1_pr = 50000    * (1.2^(user.bitminer1));
+            var bs2_pr = 100000   * (1.2^(user.bitminer2));
+            var br_pr  = 200000   * (1.2^(user.bitminer_rack));
+            var brd_pr = 1200000  * (1.2^(user.bitmdc));
+            var ss_pr  = 12000000 * (1.2^(user.solar_station));
 
             function div(val, by) {
                 return (val - val % by) / by;
