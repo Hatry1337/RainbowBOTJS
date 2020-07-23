@@ -1,4 +1,4 @@
-﻿const dev_mode = true;
+﻿const dev_mode = false;
 
 const fs = require("fs");
 const Discord = require('discord.js');
