@@ -46,7 +46,14 @@ client.on('message', async message => {
         Utils.fetchLang(message, user, function () {
             Utils.checkLang(message, user);
             Utils.checkBan(message, user, async function () {
-                Database.writeLog('Command', message.author.id, `{"Author": "${message.author.tag}", "MContent": "${message.content}", "SVID": "${message.guild.id}", "CHName": "${message.channel.name}", "Message":"User '${message.author.tag}' typed '${message.content}' in '${message.channel.name}' on '${message.guild.name}'."}`);
+                Database.writeLog('Command', message.author.id,
+                    JSON.stringify({
+                        Author: message.author.tag,
+                        MContent: message.content,
+                        SVID: message.guild.id,
+                        CHName: message.channel.name,
+                        Message: `User '${message.author.tag}' typed '${message.content}' in '${message.channel.name}' on '${message.guild.name}'.`
+                    }));
                 Utils.checkVip(message, user, async function () {
                     if (message.content.startsWith(`!rhelp`)) {
                         await Utils.Modules.Rhelp.execute(message, user.lang);

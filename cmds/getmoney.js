@@ -44,10 +44,15 @@ class GetMoney {
                 user.user_xp = user.user_xp + total_xp;
                 if (!(total_xp === 0)) {
                     message.channel.send(`Ваш доход за ${othis.Utils.timeConversion(diff * 1000, user.lang)}: ${parseInt(total_points)} Поинтов, ${parseInt(total_xp)} ед. Опыта`);
-                    othis.Database.writeLog('Getmoney', message.author.id, `{"Message":"User '${message.author.id}' getted ${parseInt(total_points)} points, and ${parseInt(total_xp)} xp."}`);
+                    othis.Database.writeLog('Getmoney', message.author.id,
+                        JSON.stringify({
+                            Message: `User '${message.author.id}' getted ${parseInt(total_points)} points, and ${parseInt(total_xp)} xp.`
+                    }));
                 } else {
                     message.channel.send(`Ваш доход за ${othis.Utils.timeConversion(diff * 1000, user.lang)}: ${parseInt(total_points)} Поинтов`);
-                    othis.Database.writeLog('Getmoney', message.author.id, `{"Message":"User '${message.author.id}' getted ${parseInt(total_points)} points."}`);
+                    othis.Database.writeLog('Getmoney', message.author.id, JSON.stringify({
+                        Message: `User '${message.author.id}' getted ${parseInt(total_points)} points.`
+                    }));
                 }
                 user.bm1_time = new Date().getTime() / 1000;
                 othis.Database.updateUser(user.discord_id, user, function () {

@@ -16,9 +16,15 @@ class Rstats {
         var othis = this;
         this.Database.getDBLength(function (usersCount) {
             othis.Database.getCountLogs("Command", function (msgAll) {
-                var stamp = new Date() / 1000;
-                othis.Database.getCountLogsRange("Command", stamp - 3600, stamp, function (msgHour) {
-                    othis.Database.getCountLogsRange("Command", stamp - 84000, stamp, function (msgDay) {
+                var stamp = new Date();
+                var stamp1 = new Date();
+                stamp.setMinutes(0);
+                stamp1.setMinutes(0);
+                stamp1.setHours(0);
+                stamp = stamp / 1000;
+                stamp1 = stamp1 / 1000;
+                othis.Database.getCountLogsRange("Command", stamp, stamp + 3600, function (msgHour) {
+                    othis.Database.getCountLogsRange("Command", stamp1, stamp1 + 84000, function (msgDay) {
                         var emb = new othis.Discord.MessageEmbed()
                             .setColor(0x8b00ff)
                             .setTitle("Статистика бота")

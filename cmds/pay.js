@@ -52,7 +52,10 @@ class Pay {
                     othis.Database.updateUser(a_user.discord_id, a_user, function () {
                         othis.Database.updateUser(b_user.discord_id, b_user, function () {
                             message.channel.send(`Вы успешно передали ${args[2]} Поинтов Игроку ${b_user.user}`);
-                            othis.Database.writeLog('Pay', message.author.id, `{"Message":"User '${message.author.tag}' transfered ${args[2]} points to user '${b_user.user}'", "BUserID":"${b_user.discord_id}"}`);
+                            othis.Database.writeLog('Pay', message.author.id,
+                                JSON.stringify({
+                                    Message: `User '${message.author.tag}' transfered ${args[2]} points to user '${b_user.user}'", "BUserID":"${b_user.discord_id}`
+                                }));
                             return;
                         });
                     });

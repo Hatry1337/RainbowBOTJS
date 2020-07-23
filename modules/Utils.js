@@ -194,7 +194,14 @@ class Utils {
         this.Database.getUserByDiscordID(message.author.id, function (user) {
             if (!user) {
                 othis.Database.registerUser(message, function (nuser) {
-                    othis.Database.writeLog('Register', message.author.id, `{"Author": "${message.author.tag}", "MContent": "${message.content}", "SVID": "${message.guild.id}", "CHName": "${message.channel.name}", "Message": "User '${message.author.tag}' has been registered."}`);
+                    othis.Database.writeLog('Register', message.author.id,
+                        JSON.stringify({
+                            Author: message.author.tag,
+                            MContent: message.content,
+                            SVID: message.guild.id,
+                            CHName: message.channel.name,
+                            Message: `User '${message.author.tag}' has been registered.`
+                    }));
                     done(nuser);
                 });
             } else {
