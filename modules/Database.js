@@ -186,9 +186,9 @@ class Database {
             });
         });
     };
-    writeLog = async function (type, user, data, done) {
-        var sql_template = "INSERT INTO `logs` (`type`, `user`, `data`, `unixtime`) VALUES(?, ?, ?, ?)";
-        var sql = this.mysql.format(sql_template, [type, user, data, Math.floor(new Date() / 1000)]);
+    writeLog = async function (type, user, server, data, done) {
+        var sql_template = "INSERT INTO `logs` (`type`, `user`, `server`, `data`, `unixtime`) VALUES(?, ?, ?, ?, ?)";
+        var sql = this.mysql.format(sql_template, [type, user, server, data, Math.floor(new Date() / 1000)]);
         this.connection.query(sql, function (err, rows, fields) {
             if (err) throw err;
             if (done) { done(); }

@@ -194,7 +194,7 @@ class Utils {
         this.Database.getUserByDiscordID(message.author.id, function (user) {
             if (!user) {
                 othis.Database.registerUser(message, function (nuser) {
-                    othis.Database.writeLog('Register', message.author.id,
+                    othis.Database.writeLog('Register', message.author.id, message.guild.name,
                         JSON.stringify({
                             Author: message.author.tag,
                             MContent: message.content,

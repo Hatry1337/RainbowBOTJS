@@ -1,4 +1,4 @@
-﻿const dev_mode = false;
+﻿const dev_mode = true;
 
 const fs = require("fs");
 const Discord = require('discord.js');
@@ -13,10 +13,7 @@ client.once('ready', () => {
     utime = new Date();
     client.user.setActivity('!rhelp', { type: 'WATCHING' });
     Utils.loadModules(Utils.getFiles(__dirname + "/cmds"));
-    Database.writeLog('System-Up', "System", `{"Message":"System is up!"}`);
-    Database.getLogsByUser("508637328349331462", function (logs) {
-        console.log(logs);
-    });
+    Database.writeLog('System-Up', "System", "System", `{"Message":"System is up!"}`);
     /*client.channels.cache.get("662657721266339853").createInvite({ temporary: true})
         .then(invite => console.log(invite.url))
         .catch(console.error);*/
@@ -25,12 +22,12 @@ client.once('ready', () => {
 
 client.once('reconnecting', () => {
     console.log('Reconnecting!');
-    Database.writeLog('System-Reconn', "System", `{"Message":"System is reconnecting!"}`);
+    Database.writeLog('System-Reconn', "System", "System", `{"Message":"System is reconnecting!"}`);
 });
 
 client.once('disconnect', () => {
     console.log('Disconnect!');
-    Database.writeLog('System-Disconn', "System", `{"Message":"System is disconnected!"}`);
+    Database.writeLog('System-Disconn', "System", "System", `{"Message":"System is disconnected!"}`);
 });
 
 client.on('message', async message => {
@@ -46,14 +43,15 @@ client.on('message', async message => {
         Utils.fetchLang(message, user, function () {
             Utils.checkLang(message, user);
             Utils.checkBan(message, user, async function () {
-                Database.writeLog('Command', message.author.id,
+                Database.writeLog('Command', message.author.id, message.guild.name,
                     JSON.stringify({
                         Author: message.author.tag,
                         MContent: message.content,
                         SVID: message.guild.id,
                         CHName: message.channel.name,
                         Message: `User '${message.author.tag}' typed '${message.content}' in '${message.channel.name}' on '${message.guild.name}'.`
-                    }));
+                    })
+                );
                 Utils.checkVip(message, user, async function () {
                     if (message.content.startsWith(`!rhelp`)) {
                         await Utils.Modules.Rhelp.execute(message, user.lang);

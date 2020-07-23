@@ -119,9 +119,9 @@ class Buy {
                     }
                     othis.Database.updateUser(user.discord_id, user, function () {
                         message.channel.send(`Вы успешно купили ${getProd(parseInt(args[1]))} ${count} шт.`);
-                        othis.Database.writeLog('Buy', message.author.id,
+                        othis.Database.writeLog('Buy', message.author.id, message.guild.name,
                             JSON.stringify({
-                                Message: `User '${message.author.id}' buyed ${getProd(parseInt(args[1]))} ${count} pcs.`
+                                Message: `User '${message.author.tag}' buyed ${getProd(parseInt(args[1]))} ${count} pcs.`
                         }));
                         if (user.bm1_time === 0) {
                             user.bm1_time = new Date().getTime() / 1000;
