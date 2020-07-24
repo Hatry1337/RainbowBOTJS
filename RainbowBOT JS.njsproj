@@ -55,6 +55,9 @@
       <SubType>Code</SubType>
     </Content>
     <Content Include="cmds\krestiki.js" />
+    <Content Include="cmds\Listener.js">
+      <SubType>Code</SubType>
+    </Content>
     <Content Include="cmds\lolilic.js">
       <SubType>Code</SubType>
     </Content>

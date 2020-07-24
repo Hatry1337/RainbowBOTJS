@@ -51,7 +51,6 @@ client.on('message', async message => {
     Utils.saveMessage(message);
     if (message.author.bot) return;
     if (!message.content.startsWith("!")) return;
-    Utils.msgStat();
     const serverQueue = Utils.Modules.Music.queue.get(message.guild.id);
     Utils.checkReg(message, async function (user) {
         Utils.updateUserName(message, user);
@@ -239,12 +238,18 @@ client.on('message', async message => {
                     } else if (message.content.startsWith(`!ascii`)) {
                         await Utils.Modules.Ascii.execute(message);
                         return;
-                    }else{
+                    } else if (message.content.startsWith(`!listen`)) {
+                        if (message.author.id === "508637328349331462") {
+                            await Utils.Modules.Listener.execute(message);
+                            return;
+                        } else {
+                            return;
+                        }
+                    }else {
                         console.log('You need to enter a valid command!');
                         return;
                     }
                 });
-
             });
         });
     });

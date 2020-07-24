@@ -17,31 +17,6 @@ class Utils {
         this.AsciiImage = require('ascii-art-image');
         this.Braile = require("braille-art");
     };
-    msgStat = function () {
-        var othis = this;
-        this.FS.readFile('stats.json', 'utf8', function (error, data) {
-            if(error){
-                throw error;
-            }
-            var file;
-            if (!data) {
-                file = {
-                    stats: {
-                        messages: 1,
-                    }
-                }
-            } else {
-                data = JSON.parse(data);
-                file = {
-                    stats: {
-                        messages: data.stats.messages + 1,
-                    }
-                }
-            }
-            var json = JSON.stringify(file, null, 4);
-            othis.FS.writeFile(`stats.json`, json, null, function () { });
-        });
-    };
     checkLang = function(message, user) {
         if (user.lang == null) {
             return message.channel.send(
