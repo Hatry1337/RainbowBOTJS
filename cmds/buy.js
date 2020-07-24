@@ -25,7 +25,7 @@ class Buy {
             var bs1_pr = 50000    * (1.2^(user.bitminer1));
             var bs2_pr = 100000   * (1.2^(user.bitminer2));
             var br_pr  = 200000   * (1.2^(user.bitminer_rack));
-            var brd_pr = 1200000  * (1.2^(user.bitmdc));
+            var brd_pr = 1200000  * (1.2^(user.bitm_dc));
             var ss_pr  = 12000000 * (1.2^(user.solar_station));
 
             function div(val, by) {
