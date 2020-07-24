@@ -18,7 +18,7 @@ client.once('ready', () => {
         setInterval(function () {
             Utils.RequestPromise({
                 method: 'POST',
-                uri: 'https://rainbowbot.xyz/apissl/rainbowbot/stats/push',
+                uri: '127.0.0.1:1337/api/rainbowbot/stats/push',
                 rejectUnauthorized: false,
                 body: {
                     servers: client.guilds.cache.size,
