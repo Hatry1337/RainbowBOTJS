@@ -19,6 +19,7 @@ client.once('ready', () => {
             Utils.RequestPromise({
                 method: 'POST',
                 uri: 'https://rainbowbot.xyz/apissl/rainbowbot/stats/push',
+                rejectUnauthorized: false,
                 body: {
                     servers: client.guilds.cache.size,
                     ping: client.ws.ping,
