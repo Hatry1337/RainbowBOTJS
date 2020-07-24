@@ -14,6 +14,20 @@ client.once('ready', () => {
     client.user.setActivity('!rhelp', { type: 'WATCHING' });
     Utils.loadModules(Utils.getFiles(__dirname + "/cmds"));
     Database.writeLog('System-Up', "System", "System", `{"Message":"System is up!"}`);
+    if (!dev_mode) {
+        setInterval(function () {
+            Utils.RequestPromise({
+                method: 'POST',
+                uri: 'https://rainbowbot.xyz/apissl/rainbowbot/stats/push',
+                body: {
+                    servers: client.guilds.cache.size,
+                    ping: client.ws.ping,
+                    secret: "EbalYaVasVsehVRotNahoooy"
+                },
+                json: true // Automatically stringifies the body to JSON
+            })
+        }, 25000)
+    }
     /*client.channels.cache.get("662657721266339853").createInvite({ temporary: true})
         .then(invite => console.log(invite.url))
         .catch(console.error);*/
