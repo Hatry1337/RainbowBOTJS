@@ -19,7 +19,7 @@ class FreeVIP {
                 if (user.vip_time === "inf") {
                     vip_void = othis.lng.freevip.notExp[user.lang];
                 } else {
-                    vip_void = othis.Utils.timeConversion((parseInt(user.vip_time - cur_ts)) * 1000, othis.lng, user.lang);
+                    vip_void = othis.Utils.timeConversion((Math.floor(user.vip_time - cur_ts)) * 1000, user.lang);
                 }
                 return message.channel.send(`${othis.lng.freevip.vipAlredyExist[user.lang]} ${vip_void}`);
             } else {
