@@ -16,9 +16,9 @@ client.once('ready', () => {
     Database.writeLog('System-Up', "System", "System", `{"Message":"System is up!"}`);
     if (!dev_mode) {
         setInterval(function () {
-            Utils.RequestPromise({
+            Utils.Request({
                 method: 'POST',
-                uri: 'http://127.0.0.1:1337/api/rainbowbot/stats/push',
+                uri: 'https://rainbowbot.xyz/apissl/rainbowbot/stats/push',
                 rejectUnauthorized: false,
                 body: {
                     servers: client.guilds.cache.size,
