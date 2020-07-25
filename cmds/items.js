@@ -7,16 +7,13 @@ class Items {
     constructor(Discord, Database, Client, Fs, Utils) {
         this.Discord = Discord;
         this.Database = Database;
+        this.Utils = Utils;
     }
     execute = function (message) {
         var args = message.content.split(" ");
         var id = message.author.id;
         if (args[1]) {
-            var uarg = args[1].toString();
-            uarg = uarg.replace("<@!", "");
-            uarg = uarg.replace(">", "");
-            id = uarg;
-            console.log(id)
+            id = this.Utils.parseID(uid);
         }
         var othis = this;
         this.Database.getUserByDiscordID(id, function (user) {

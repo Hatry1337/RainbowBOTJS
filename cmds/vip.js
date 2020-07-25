@@ -19,10 +19,7 @@ class Vip {
             return;
         }
         if (uid) {
-            var uarg = uid.toString();
-            uarg = uarg.replace("<@!", "");
-            uarg = uarg.replace(">", "");
-            uid = uarg;
+            uid = this.Utils.parseID(uid);
         } else {
             uid = message.author.id;
         }

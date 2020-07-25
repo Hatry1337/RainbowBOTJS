@@ -7,6 +7,7 @@ class Pay {
     constructor(Discord, Database, Client, Fs, Utils) {
         this.Discord = Discord;
         this.Database = Database;
+        this.Utils = Utils;
     }
     execute = function (message) {
         var args = message.content.split(" ");
@@ -30,12 +31,7 @@ class Pay {
             return;
         }
 
-        if (args[1]) {
-            var uarg = args[1].toString();
-            uarg = uarg.replace("<@!", "");
-            uarg = uarg.replace(">", "");
-            id = uarg;
-        }
+        id = this.Utils.parseID(args[1]);
         if (isNaN(parseInt(id))) {
             message.channel.send("Введен неверный ID!");
             return;
@@ -43,6 +39,10 @@ class Pay {
         var othis = this;
         this.Database.getUserByDiscordID(message.author.id, function (a_user) {
             othis.Database.getUserByDiscordID(id, function (b_user) {
+                if (!b_user) {
+                    message.channel.send("Такого пользователя не существует, либо он не зарегистрирован!");
+                    return;
+                }
                 if (a_user.user_points < args[2]) {
                     message.channel.send("У вас недостаточно Поинтов для передачи!");
                     return;

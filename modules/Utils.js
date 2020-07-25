@@ -249,6 +249,18 @@ class Utils {
         for (i in files) {
             this.FS.unlinkSync(this.DirName + "/tempimg/" + files[i]);
         }
+    };
+    parseID = function (raw_data) {
+        raw_data = raw_data.toString();
+        if (raw_data.startsWith("<<@")) {
+            return raw_data.split(">")[1];
+        } else if (raw_data.startsWith("<@!")) {
+            raw_data = raw_data.replace("<@!", "");
+            raw_data = raw_data.replace(">", "");
+            return raw_data;
+        } else {
+            return raw_data;
+        }
     }
 }
 

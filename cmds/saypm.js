@@ -8,6 +8,7 @@ class SayPM {
         this.Discord = Discord;
         this.Database = Database;
         this.Client = Client;
+        this.Utils = Utils;
     }
     execute = function (message) {
         var args = message.content.split(" ");
@@ -18,10 +19,7 @@ class SayPM {
             return;
         }
         if (uid) {
-            var uarg = uid.toString();
-            uarg = uarg.replace("<@!", "");
-            uarg = uarg.replace(">", "");
-            uid = uarg;
+            uid = this.Utils.parseID(uid);
         } else {
             return;
         }

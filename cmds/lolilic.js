@@ -8,6 +8,7 @@ class Lolilic {
         this.Discord = Discord;
         this.Database = Database;
         this.Jimp = Utils.Jimp;
+        this.Utils = Utils;
     }
     formatDate = function(d) {
         var days, months, years;
@@ -29,13 +30,7 @@ class Lolilic {
         var args = message.content.split(" ");
         var userLic = message.author.id;
         if (args[1]) {
-            userLic = args[1];
-        }
-        if (args[1]) {
-            var uarg = args[1].toString();
-            uarg = uarg.replace("<@!", "");
-            uarg = uarg.replace(">", "");
-            userLic = uarg;
+            userLic = this.Utils.parseID(uid);
         }
         if (isNaN(parseInt(userLic))) {
             message.channel.send("Введен неверный ID!");

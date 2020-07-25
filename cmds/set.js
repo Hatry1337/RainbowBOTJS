@@ -7,6 +7,7 @@ class Set {
     constructor(Discord, Database, Client, Fs, Utils) {
         this.Discord = Discord;
         this.Database = Database;
+        this.Utils = Utils;
     }
     execute = function (message) {
         var args = message.content.split(" ");
@@ -19,10 +20,7 @@ class Set {
             return;
         }
         if (uid) {
-            var uarg = uid.toString();
-            uarg = uarg.replace("<@!", "");
-            uarg = uarg.replace(">", "");
-            uid = uarg;
+            uid = this.Utils.parseID(uid);
         } else {
             uid = message.author.id;
         }
