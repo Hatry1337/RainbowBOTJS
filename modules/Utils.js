@@ -258,7 +258,11 @@ class Utils {
             raw_data = raw_data.replace("<@!", "");
             raw_data = raw_data.replace(">", "");
             return raw_data;
-        } else {
+        } else if (raw_data.startsWith("<@")) {
+            raw_data = raw_data.replace("<@", "");
+            raw_data = raw_data.replace(">", "");
+            return raw_data;
+        }else {
             return raw_data;
         }
     }
