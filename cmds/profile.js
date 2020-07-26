@@ -14,7 +14,7 @@ class Profile {
         var args = message.content.split(" ");
         var id = message.author.id;
         if (args[1]) {
-            id = this.Utils.parseID(uid);
+            id = this.Utils.parseID(args[1]);
         }
         var othis = this;
         this.Database.getUserByDiscordID(id, function (user) {

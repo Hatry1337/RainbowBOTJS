@@ -30,7 +30,7 @@ class Lolilic {
         var args = message.content.split(" ");
         var userLic = message.author.id;
         if (args[1]) {
-            userLic = this.Utils.parseID(uid);
+            userLic = this.Utils.parseID(args[1]);
         }
         if (isNaN(parseInt(userLic))) {
             message.channel.send("Введен неверный ID!");
