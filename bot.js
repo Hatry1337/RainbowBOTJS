@@ -245,6 +245,10 @@ client.on('message', async message => {
                         } else {
                             return;
                         }
+                    }else if (message.content.startsWith(`!avatar`)) {
+                        Utils.Modules.AvatarC.execute(message);
+                        return;
+
                     }else {
                         console.log('You need to enter a valid command!');
                         return;
