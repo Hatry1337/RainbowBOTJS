@@ -376,6 +376,67 @@
         },
 
 
-    }
+    },
+    shop:{
+        name:{
+            ru: `Магазин`,
+            en: `Shop`
+        },
+        description:{
+            ru: `!buy <номер предмета> <количество>`,
+            en: "!buy <item number> <count>"
+        },
+        fields:{
+            bitminers:{
+                name:{
+                    ru: "Битмайнеры:",
+                    en: "Bitminers:"
+                },
+                datacenter:{
+                    ru: "Датацентр с битмайнерами",
+                    en: "Datacenter with Bitminers"
+                }
+            },
+            businesses:{
+                name:{
+                    ru: "Бизнессы:",
+                    en: "Businesses:"
+                },
+                solarStation:{
+                    ru:"Солнечная электростанция - 21.6 опыта в час + 10.080 Поинтов в час. Цена",
+                    en:"Solar Station - 21.6 Xp. per hour + 10.080 Points per hour. Price"
+                }
+            },
+            privileges:{
+                name:{
+                    ru:"Привилегии:",
+                    en:"Privileges:"
+                },
+                VIP:{
+                    ru:"VIP - Будут доступны плюшки на некоторых серверах, хентай. Цена 100.000.000(100млн) Поинтов",
+                    en:"VIP - Special features on some servers, hentai :3. Price 100.000.000(100m) Points"
+                }
+            },
+            other:{
+                name:{
+                    ru:"Другое:",
+                    en:"Other:"
+                },
+                pythonFood:{
+                    ru:"Корм для питона - +1 к скорости перехода на js. Цена 10.000 Поинтов",
+                    en:"Food for python - +1 to speed for migrating on JavaScript. Price 10.000 Points"
+                }
+            }
+        },
+        pointsPerHour:{
+            ru: "Поинтов в час. Цена:",
+            en: "Points per hour. Price:"
+        },
+        points:{
+            ru: "Поинтов",
+            en: "Points"
+        }
 
+
+    }
 };

@@ -84,7 +84,7 @@ class Buy {
             }
 
             if (user.user_points < (count * getPrice(parseInt(args[1])))) {
-                return message.channel.send(`Недостаточно Поинтов! Нужно: ${count * getPrice(parseInt(args[1]))}, у Вас: ${user.user_points}.`);
+                return message.channel.send(`Недостаточно Поинтов! Нужно: ${Math.floor(count * getPrice(parseInt(args[1])))}, у Вас: ${user.user_points}.`);
             } else {
                 if (args[1] === "6") {
                     user.user_points = user.user_points - getPrice(parseInt(args[1]));

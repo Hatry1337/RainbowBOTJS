@@ -28,8 +28,13 @@ class SayPM {
             return;
         }
 
-        this.Client.users.cache.get(uid).send(`[Admin]${message.author.tag}: ${toUserMsg}`);
-        message.channel.send(`Сообщение "${toUserMsg}" было отправлено пользователю ${this.Client.users.cache.get(uid).tag}`);
+        var user = this.Client.users.cache.get(uid);
+        if(user) {
+            user.send(`[Admin]${message.author.tag}: ${toUserMsg}`);
+            message.channel.send(`Сообщение "${toUserMsg}" было отправлено пользователю ${this.Client.users.cache.get(uid).tag}`);
+        }else {
+            message.author.send("Такой пользователь не найден.")
+        }
     }
 }
 

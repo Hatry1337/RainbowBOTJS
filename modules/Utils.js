@@ -137,6 +137,18 @@ class Utils {
             return;
         }
     };
+    checkLvl = function(message, user, done){
+        if(user.user_xp !== 0 ){
+            var lvls = Math.floor(user.user_xp / 1000);
+            user.user_xp -= (lvls*1000);
+            user.user_lvl += lvls;
+            this.Database.updateUser(user.discord_id, user, function(){
+                done();
+            });
+        }else {
+            done();
+        }
+    };
     checkBan = function(message, user, done) {
         var othis = this;
         if (user.user_group === "Banned") {
