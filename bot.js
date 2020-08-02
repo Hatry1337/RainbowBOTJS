@@ -250,6 +250,9 @@ client.on('message', async message => {
                             Utils.Modules.AvatarC.execute(message);
                             return;
 
+                        }else if (message.content.startsWith(`!clear`)) {
+                            await Utils.Modules.Clear.execute(message, user.lang);
+                            return;
                         }else {
                             console.log('You need to enter a valid command!');
                             return;

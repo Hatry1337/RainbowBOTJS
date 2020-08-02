@@ -43,8 +43,10 @@ class Rhelp {
         var emb1 = new this.Discord.MessageEmbed()
             .setTitle(this.lng.rhelp.title[l])
             .addFields([
-                { name: "!ascii", value: this.lng.rhelp.ascii[l], inline: true },
+                { name: "!ascii", value: this.lng.rhelp.ascii[l], inline: false },
                 { name: "!osuinfo <osu! nickname>", value: this.lng.rhelp.osuinfo[l], inline: true },
+                { name: "!avatar @user", value: this.lng.rhelp.avatar[l], inline: true },
+                { name: "!clear <num>", value: this.lng.rhelp.clear[l], inline: true },
 
                 { name: this.lng.rhelp.usableLinksT[l], value: this.lng.rhelp.usableLinks[l], inline: false },
 

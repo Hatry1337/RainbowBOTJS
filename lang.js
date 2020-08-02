@@ -134,6 +134,14 @@
             ru: "Просмотреть профиль игрока osu!",
             en: "Show osu! player's profile",
         },
+        avatar: {
+            ru: "Показать аватар указанного пользователя",
+            en: "Show user's full avatar",
+        },
+        clear: {
+            ru: "Очистить указанное количество сообщений",
+            en: "Clear specified count of messages",
+        },
     },
 
     uptime: {
@@ -436,7 +444,35 @@
             ru: "Поинтов",
             en: "Points"
         }
-
-
+    },
+    clear:{
+        noPerms:{
+            ru: "У вас нет прав на использование этой команды!",
+            en: "Not enough permissions to use this command!"
+        },
+        noCount:{
+            ru: "Введите количество сообщений для удаления!",
+            en: "Messages count not specified!"
+        },
+        notInt:{
+            ru: "Количество сообщений должно быть целым числом!",
+            en: "Count of messages must be integer!"
+        },
+        underZero:{
+            ru: "Количество сообщений должно быть положительным числом.",
+            en: "Count of messages must be positive number!"
+        },
+        tooMore:{
+            ru: "За раз можно удалить не более 100 сообщений",
+            en: "You can`t delete more than 100 messages at once!"
+        },
+        succDel:{
+            ru: "Успешно удалено",
+            en: "Successfully deleted"
+        },
+        messages:{
+            ru: "сообщений",
+            en: "messages"
+        }
     }
 };
