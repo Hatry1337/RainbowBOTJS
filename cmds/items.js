@@ -33,13 +33,13 @@ class Items {
                 .setTitle(`Предметы игрока ${user.user}:`)
                 .setColor(0x228b22)
                 .setDescription(
-                    `Количество Поинтов: ${parseInt(user.user_points)}\n`+
-                    `Bitminer S1: ${user.bitminer1}\n`+
-                    `Bitminer S2: ${user.bitminer2}\n`+
-                    `Bitminer Rack: ${user.bitminer_rack}\n`+
-                    `Датацентр с майнерами: ${user.bitm_dc}\n`+
-                    `Солнечная Электростанция: ${user.solar_station}\n\n`+
-                    `Общая скорость майнинга: ${mining_speed} Поинтов в час.`
+                    `Количество Поинтов: ${parseInt(user.user_points).toReadable()}\n`+
+                    `Bitminer S1: ${user.bitminer1.toReadable()}\n`+
+                    `Bitminer S2: ${user.bitminer2.toReadable()}\n`+
+                    `Bitminer Rack: ${user.bitminer_rack.toReadable()}\n`+
+                    `Датацентр с майнерами: ${user.bitm_dc.toReadable()}\n`+
+                    `Солнечная Электростанция: ${user.solar_station.toReadable()}\n\n`+
+                    `Общая скорость майнинга: ${mining_speed.toReadable()} Поинтов в час.`
                 );
             message.channel.send(emb);
             return;

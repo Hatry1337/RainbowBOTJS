@@ -43,13 +43,13 @@ class GetMoney {
                 user.user_points = user.user_points + total_points;
                 user.user_xp = user.user_xp + total_xp;
                 if (!(total_xp === 0)) {
-                    message.channel.send(`Ваш доход за ${othis.Utils.timeConversion(diff * 1000, user.lang)}: ${total_points} Поинтов, ${total_xp} ед. Опыта`);
+                    message.channel.send(`Ваш доход за ${othis.Utils.timeConversion(diff * 1000, user.lang)}: ${total_points.toReadable()} Поинтов, ${total_xp.toReadable()} ед. Опыта`);
                     othis.Database.writeLog('Getmoney', message.author.id, message.guild.name,
                         JSON.stringify({
                             Message: `User '${message.author.tag}' getted ${total_points} points, and ${total_xp} xp.`
                     }));
                 } else {
-                    message.channel.send(`Ваш доход за ${othis.Utils.timeConversion(diff * 1000, user.lang)}: ${total_points} Поинтов`);
+                    message.channel.send(`Ваш доход за ${othis.Utils.timeConversion(diff * 1000, user.lang)}: ${total_points.toReadable()} Поинтов`);
                     othis.Database.writeLog('Getmoney', message.author.id, message.guild.name,
                         JSON.stringify({
                             Message: `User '${message.author.tag}' getted ${total_points} points.`

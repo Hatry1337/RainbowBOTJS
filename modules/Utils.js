@@ -16,6 +16,7 @@ class Utils {
         this.AsciiFont.fontPath = 'fgfonts/';
         this.AsciiImage = require('ascii-art-image');
         this.Braile = require("braille-art");
+
     };
     checkLang = function(message, user) {
         if (user.lang == null) {
@@ -274,10 +275,10 @@ class Utils {
             raw_data = raw_data.replace("<@", "");
             raw_data = raw_data.replace(">", "");
             return raw_data;
-        }else {
+        } else {
             return raw_data;
         }
-    }
+    };
 }
 
 module.exports.Utils = Utils;

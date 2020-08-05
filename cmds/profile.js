@@ -28,7 +28,7 @@ class Profile {
 
 
             emb.addFields([{
-                name: `${othis.lng.profile.poinCoun[lang]}: `, value: parseInt(user.user_points)
+                name: `${othis.lng.profile.poinCoun[lang]}: `, value: parseInt(user.user_points).toReadable()
             }]);
             if (user.user_group === "Banned") {
                 emb.addFields([

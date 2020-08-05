@@ -106,8 +106,8 @@
             en:"Playing RainbowFM radio-station in your voice channel"
         },
         usableLinksT: {
-            ru: "Полезные ссылки",
-            en: "Usable Links",
+            ru: ":warning: Полезные ссылки :warning:",
+            en: ":warning: Usable Links :warning:",
         },
         usableLinks: {
             ru: `https://discord.gg/YpjBAc5 - Наш дискорд сервер\nhttps://top.gg/bot/571948993643544587 - Наш бот на Top.GG\nhttps://rainbowbot.xyz - Наш сайт`,

@@ -84,7 +84,7 @@ class Buy {
             }
 
             if (user.user_points < (count * getPrice(parseInt(args[1])))) {
-                return message.channel.send(`Недостаточно Поинтов! Нужно: ${Math.floor(count * getPrice(parseInt(args[1])))}, у Вас: ${user.user_points}.`);
+                return message.channel.send(`Недостаточно Поинтов! Нужно: ${Math.floor(count * getPrice(parseInt(args[1]))).toReadable()}, у Вас: ${user.user_points.toReadable()}.`);
             } else {
                 if (args[1] === "6") {
                     user.user_points = user.user_points - getPrice(parseInt(args[1]));
@@ -118,7 +118,7 @@ class Buy {
                             break;
                     }
                     othis.Database.updateUser(user.discord_id, user, function () {
-                        message.channel.send(`Вы успешно купили ${getProd(parseInt(args[1]))} ${count} шт.`);
+                        message.channel.send(`Вы успешно купили ${getProd(parseInt(args[1]))} ${count.toReadable()} шт.`);
                         othis.Database.writeLog('Buy', message.author.id, message.guild.name,
                             JSON.stringify({
                                 Message: `User '${message.author.tag}' buyed ${getProd(parseInt(args[1]))} ${count} pcs.`

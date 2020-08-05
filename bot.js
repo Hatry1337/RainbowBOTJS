@@ -6,6 +6,9 @@ const client = new Discord.Client();
 const Database = new (require('./modules/Database')).Database();
 const Utils = new (require("./modules/Utils")).Utils(Discord, Database, client, fs, __dirname);
 
+Number.prototype.toReadable = function () {
+    return `${this}`.replace(/(\d)(?=(\d\d\d)+([^\d]|$))/g, '$1.')
+}
 
 var utime;
 client.once('ready', () => {

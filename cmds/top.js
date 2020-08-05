@@ -24,16 +24,16 @@ class Top {
                 .setColor(0x8b00ff)
                 .setTitle(`Топ игроков по Поинтам`)
                 .setDescription(
-                    `:one: **${usersByPoints[0].user}** - _${parseInt(usersByPoints[0].user_points)}_ поинтов\n`+
-                    `:two: **${usersByPoints[1].user}** - _${parseInt(usersByPoints[1].user_points)}_ поинтов\n`+
-                    `:three: **${usersByPoints[2].user}** - _${parseInt(usersByPoints[2].user_points)}_ поинтов\n`+
-                    `:four: **${usersByPoints[3].user}** - _${parseInt(usersByPoints[3].user_points)}_ поинтов\n`+
-                    `:five: **${usersByPoints[4].user}** - _${parseInt(usersByPoints[4].user_points)}_ поинтов\n`+
-                    `:six: **${usersByPoints[5].user}** - _${parseInt(usersByPoints[5].user_points)}_ поинтов\n`+
-                    `:seven: **${usersByPoints[6].user}** - _${parseInt(usersByPoints[6].user_points)}_ поинтов\n`+
-                    `:eight: **${usersByPoints[7].user}** - _${parseInt(usersByPoints[7].user_points)}_ поинтов\n`+
-                    `:nine: **${usersByPoints[8].user}** - _${parseInt(usersByPoints[8].user_points)}_ поинтов\n`+
-                    `:keycap_ten: **${usersByPoints[9].user}** - _${parseInt(usersByPoints[9].user_points)}_ поинтов\n`+
+                    `:one: **${usersByPoints[0].user}** - _${parseInt(usersByPoints[0].user_points).toReadable()}_ поинтов\n`+
+                    `:two: **${usersByPoints[1].user}** - _${parseInt(usersByPoints[1].user_points).toReadable()}_ поинтов\n`+
+                    `:three: **${usersByPoints[2].user}** - _${parseInt(usersByPoints[2].user_points).toReadable()}_ поинтов\n`+
+                    `:four: **${usersByPoints[3].user}** - _${parseInt(usersByPoints[3].user_points).toReadable()}_ поинтов\n`+
+                    `:five: **${usersByPoints[4].user}** - _${parseInt(usersByPoints[4].user_points).toReadable()}_ поинтов\n`+
+                    `:six: **${usersByPoints[5].user}** - _${parseInt(usersByPoints[5].user_points).toReadable()}_ поинтов\n`+
+                    `:seven: **${usersByPoints[6].user}** - _${parseInt(usersByPoints[6].user_points).toReadable()}_ поинтов\n`+
+                    `:eight: **${usersByPoints[7].user}** - _${parseInt(usersByPoints[7].user_points).toReadable()}_ поинтов\n`+
+                    `:nine: **${usersByPoints[8].user}** - _${parseInt(usersByPoints[8].user_points).toReadable()}_ поинтов\n`+
+                    `:keycap_ten: **${usersByPoints[9].user}** - _${parseInt(usersByPoints[9].user_points).toReadable()}_ поинтов\n`+
                     `\nВы на ${curUserPlace + 1} месте.`
                 );
             message.channel.send(emb);
