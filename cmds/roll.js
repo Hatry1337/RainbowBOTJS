@@ -23,6 +23,10 @@ class Roll {
             .setColor(0x6495ed)
             .setTitle(`Выпало число ${rand} из ${max_r}`);
         message.channel.send(emb);
+        this.Database.writeLog('roll', message.author.id, message.guild.name,
+            JSON.stringify({
+                Message: `User '${message.author.tag}' rolled the dice. Dice number: '${rand}' of '${max_r}'.`
+        }));
         return;
     }
 }

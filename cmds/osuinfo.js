@@ -7,6 +7,7 @@ class OsuInfo {
     constructor(Discord, Database, Client, Fs, Utils) {
         this.Discord = Discord;
         this.Request = Utils.Request;
+        this.Database = Database;
     }
 
     timeConversionOsu = function (millisec) {
@@ -59,6 +60,10 @@ class OsuInfo {
 
                     ]);
                 message.channel.send(emb);
+                othis.Database.writeLog('osuinfo', message.author.id, message.guild.name,
+                    JSON.stringify({
+                        Message: `User '${message.author.tag}' watched osu! profile of user '${data.username}'.`
+                }));
                 return;
             });
 

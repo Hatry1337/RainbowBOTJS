@@ -38,6 +38,10 @@ class Rstats {
                                 { name: "Аптайм", value: `${othis.Utils.timeConversion(new Date() - date, lang)}` },
                             ]);
                         message.channel.send(emb);
+                        othis.Database.writeLog('rstats', message.author.id, message.guild.name,
+                            JSON.stringify({
+                                Message: `User '${message.author.tag}' watched rstats. Rstats: P:'${parseInt(othis.Client.ws.ping)}', CS:'${othis.Client.guilds.cache.size}', CU:'${usersCount}', MH: '${msgHour}', MD:'${msgDay}', MALL: '${msgAll}', U:'${othis.Utils.timeConversion(new Date() - date, lang)}'.`
+                        }));
                     });
                 });
             });

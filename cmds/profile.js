@@ -46,6 +46,10 @@ class Profile {
             ]);
 
             message.channel.send(emb);
+            othis.Database.writeLog('profile', message.author.id, message.guild.name,
+                JSON.stringify({
+                    Message: `User '${message.author.tag}' watched profile of user '${user.user}'.`
+            }));
             return;
         });
     }

@@ -256,6 +256,15 @@ client.on('message', async message => {
                         }else if (message.content.startsWith(`!clear`)) {
                             await Utils.Modules.Clear.execute(message, user.lang);
                             return;
+                        }else if (message.content.startsWith(`!logs`)) {
+                            if (user.user_group === "Admin") {
+                                Utils.Modules.Logs.execute(message);
+                                return;
+                            } else {
+                                message.channel.send("У вас нет прав администратора!");
+                                return;
+                            }
+
                         }else {
                             console.log('You need to enter a valid command!');
                             return;

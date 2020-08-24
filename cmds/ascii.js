@@ -68,6 +68,10 @@ class Ascii {
                                     out += `${line.join('').trimRight()}\n`;
                                 }
                                 message.channel.send("```" + out + "```");
+                                othis.Database.writeLog('ascii', message.author.id, message.guild.name,
+                                    JSON.stringify({
+                                        Message: `User '${message.author.tag}' drawed inverted image. Cached image path: '${imgpath}'.`
+                                }));
                             }).catch(err => {
                                 console.log(`Cannot handle the request due to:\n${err}`);
                             });
@@ -87,6 +91,10 @@ class Ascii {
                                         out += `${line.join('').trimRight()}\n`;
                                     }
                                     message.channel.send("```" + out + "```");
+                                    othis.Database.writeLog('ascii', message.author.id, message.guild.name,
+                                        JSON.stringify({
+                                            Message: `User '${message.author.tag}' drawed image. Cached image path: '${imgpath}'.`
+                                    }));
                                 }).catch(err => {
                                     console.log(`Cannot handle the request due to:\n${err}`);
                                 });
@@ -99,6 +107,10 @@ class Ascii {
                 }
             } else if (args[1] === "--fontlist") {
                 this.sendFonts(message.channel, 0);
+                this.Database.writeLog('ascii', message.author.id, message.guild.name,
+                    JSON.stringify({
+                        Message: `User '${message.author.tag}' watched list of available ascii fonts.`
+                }));
                 return;
             }else {
                 var text = message.content.slice(7);
@@ -124,6 +136,10 @@ class Ascii {
                         return;
                     }
                     message.channel.send("```" + res + "```");
+                    othis.Database.writeLog('ascii', message.author.id, message.guild.name,
+                        JSON.stringify({
+                            Message: `User '${message.author.tag}' drawed text '${text}' with font '${font}'.`
+                    }));
                     return;
                 });
             }

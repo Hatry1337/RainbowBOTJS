@@ -7,6 +7,7 @@ class UkrMova {
     constructor(Discord, Database, Client, Fs, Utils) {
         this.Discord = Discord;
         this.RandElement = Utils.arrayRandElement;
+        this.Database = Database;
     }
     execute = function (message) {
         let words = [
@@ -33,11 +34,15 @@ class UkrMova {
             "Дискотека - Дискогапавка",
             "Гинеколог - пихвозаглядач",
         ];
-
+        var word = this.RandElement(words);
         var emb = new this.Discord.MessageEmbed()
-            .setTitle(this.RandElement(words))
+            .setTitle(word)
             .setColor(0x42aaff);
         message.channel.send(emb);
+        this.Database.writeLog('ukrmova', message.author.id, message.guild.name,
+            JSON.stringify({
+                Message: `User '${message.author.tag}' watched ukrainian word '${word}'.`
+            }));
     }
 }
 

@@ -58,6 +58,10 @@ class Lolilic {
                                             .print(fontm, 49, 867, `Действительна до: ${voidDate}`)
                                             .write('endoutput.png'); // save
                                         message.channel.send({ files: ['endoutput.png'] });
+                                        othis.Database.writeLog('lolilic', message.author.id, message.guild.name,
+                                            JSON.stringify({
+                                                Message: `User '${message.author.tag}' watched loli license of user '${userName}'.`
+                                        }));
                                         return;
                                     });
                                 });
@@ -89,6 +93,10 @@ class Lolilic {
                                             .print(fontm, 49, 867, `Действительна до: ${voidDate}`)
                                             .write('endoutput.png'); // save
                                         message.channel.send({ files: ['endoutput.png'] });
+                                        othis.Database.writeLog('lolilic', message.author.id, message.guild.name,
+                                            JSON.stringify({
+                                                Message: `User '${message.author.tag}' watched loli license of user '${userName}'.`
+                                            }));
                                         return;
                                     });
                                 });
@@ -122,6 +130,10 @@ class Lolilic {
                                                 .print(fontm, 49, 867, `Действительна до: ${voidDate}`)
                                                 .write('endoutput.png'); // save
                                             message.channel.send({ files: ['endoutput.png'] });
+                                            othis.Database.writeLog('lolilic', message.author.id, message.guild.name,
+                                                JSON.stringify({
+                                                    Message: `User '${message.author.tag}' watched loli license of user '${userName}'.`
+                                                }));
                                         });
                                     });
                                 });
@@ -155,6 +167,10 @@ class Lolilic {
                                             .print(fontm, 49, 867, `Действительна до: ${voidDate}`)
                                             .write('endoutput.png'); // save
                                         message.channel.send({ files: ['endoutput.png'] });
+                                        othis.Database.writeLog('lolilic', message.author.id, message.guild.name,
+                                            JSON.stringify({
+                                                Message: `User '${message.author.tag}' watched loli license of user '${userName}'.`
+                                            }));
                                     });
                                 });
                             });

@@ -70,6 +70,10 @@ class Hentai {
                                                 .setTitle(`${othis.lng.hentai.page[user.lang]} ${page}/${Math.floor(hentCount / 10) + 1}`)
                                                 .setDescription(out);
                                             message.channel.send(embd);
+                                            othis.Database.writeLog('hentai', message.author.id, message.guild.name,
+                                                JSON.stringify({
+                                                    Message: `User '${message.author.tag}' watched '${page}' page of hentai list.`
+                                            }));
                                             return;
                                         });
                                     } else {
@@ -107,6 +111,10 @@ class Hentai {
                                             };
                                             othis.Database.addHentai(newHent, function() {
                                                 message.channel.send(`${othis.lng.hentai.picAddedAt[user.lang]} **${emptyIndex}**!`);
+                                                othis.Database.writeLog('hentai', message.author.id, message.guild.name,
+                                                    JSON.stringify({
+                                                        Message: `User '${message.author.tag}' added hentai picture with id '${newHent.num}' and url '${newHent.url}'.`
+                                                }));
                                                 return;
                                             });
                                         });
@@ -131,6 +139,10 @@ class Hentai {
                                         }
                                         othis.Database.delHentai(nhent,function () {
                                             message.channel.send(`${othis.lng.hentai.picAtNum[user.lang]} **${nhent}** ${othis.lng.hentai.deleted[user.lang]}!`);
+                                            othis.Database.writeLog('hentai', message.author.id, message.guild.name,
+                                                JSON.stringify({
+                                                    Message: `User '${message.author.tag}' deleted hentai picture with id '${nhent}'.`
+                                            }));
                                             return;
                                         });
                                     } else {
@@ -153,6 +165,10 @@ class Hentai {
                                         othis.Client.users.cache.get('508637328349331462').send(embd);
                                         othis.Client.users.cache.get('373718196794032130').send(embd);
                                         message.channel.send(othis.lng.hentai.picOffered[user.lang]);
+                                        othis.Database.writeLog('hentai', message.author.id, message.guild.name,
+                                            JSON.stringify({
+                                                Message: `User '${message.author.tag}' offered hentai picture with url '${hurl}'.`
+                                        }));
                                         return;
                                     }
                                 } else if (args[1] === "like") {
@@ -175,6 +191,10 @@ class Hentai {
                                                 message.channel.send(`${othis.lng.hentai.youLiked[user.lang]} **${nhent}**!`);
                                                 return;
                                             });
+                                            othis.Database.writeLog('hentai', message.author.id, message.guild.name,
+                                                JSON.stringify({
+                                                    Message: `User '${message.author.tag}' liked hentai picture with id '${nhent.num}' and url '${nhent.url}'.`
+                                            }));
                                         });
                                     }
                                 } else if (args[1] === "stats") {
@@ -198,6 +218,10 @@ class Hentai {
                                                         ${othis.lng.hentai.byViews[user.lang]}: :id:${stats.maxViews.num}ᅠ:eye:${stats.maxViews.views}ᅠ:heart:${stats.maxViews.likes}` },
                                                 ]);
                                             message.channel.send(embd);
+                                            othis.Database.writeLog('hentai', message.author.id, message.guild.name,
+                                                JSON.stringify({
+                                                    Message: `User '${message.author.tag}' watched hentai stats.`
+                                            }));
                                             return;
                                         });
                                     }
@@ -220,6 +244,10 @@ class Hentai {
                                                 user.hent_uses.last = curTS;
                                                 othis.Database.updateUser(user.discord_id, user, function(){
                                                     message.channel.send(emb);
+                                                    othis.Database.writeLog('hentai', message.author.id, message.guild.name,
+                                                        JSON.stringify({
+                                                            Message: `User '${message.author.tag}' watched hentai picture with id '${hent.num}' and url '${hent.url}'.`
+                                                    }));
                                                     return;
                                                 });
                                             });
@@ -238,6 +266,10 @@ class Hentai {
                                         user.hent_uses.last = curTS;
                                         othis.Database.updateUser(user.discord_id, user, function(){
                                             message.channel.send(emb);
+                                            othis.Database.writeLog('hentai', message.author.id, message.guild.name,
+                                                JSON.stringify({
+                                                    Message: `User '${message.author.tag}' watched hentai picture with id '${hent.num}' and url '${hent.url}'.`
+                                            }));
                                             return;
                                         });
                                     });

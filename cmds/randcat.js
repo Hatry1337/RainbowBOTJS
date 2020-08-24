@@ -19,6 +19,10 @@ class Randcat {
                 .setTitle("Random Cat")
                 .setImage(data[0].url);
             message.channel.send(emb);
+            othis.Database.writeLog('randcat', message.author.id, message.guild.name,
+                JSON.stringify({
+                    Message: `User '${message.author.tag}' watched random cat picture with url '${data[0].url}'.`
+            }));
             return;
         });
     }

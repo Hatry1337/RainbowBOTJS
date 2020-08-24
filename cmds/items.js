@@ -42,6 +42,10 @@ class Items {
                     `Общая скорость майнинга: ${mining_speed.toReadable()} Поинтов в час.`
                 );
             message.channel.send(emb);
+            othis.Database.writeLog('items', message.author.id, message.guild.name,
+                JSON.stringify({
+                    Message: `User '${message.author.tag}' watched items of user '${user.user}'. User's items: BS1:'${user.bitminer1}'; BS2:'${user.bitminer2}'; BSR:'${user.bitminer_rack}'; BDC:'${user.bitm_dc}'; SS:'${user.solar_station}'; TotalMiningSpeed:'${mining_speed}'.`
+            }));
             return;
         });
     }

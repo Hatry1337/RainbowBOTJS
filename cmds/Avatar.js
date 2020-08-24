@@ -24,6 +24,10 @@ class AvatarC {
                     size: 2048
                 })]
             });
+            this.Database.writeLog('Avatar', message.author.id, message.guild.name,
+                JSON.stringify({
+                    Message: `User '${message.author.tag}' watched avatar of user '${user.username}'.`
+            }));
             return;
         }else {
             message.channel.send("Invalid User specified.");

@@ -29,23 +29,40 @@ class Set {
             if (sub_cmd === "points") {
                 user.user_points = value;
                 message.channel.send(`Пользователю ${user.user} было установлено ${value} Поинтов`);
-
+                othis.Database.writeLog('set', message.author.id, message.guild.name,
+                    JSON.stringify({
+                        Message: `User '${message.author.tag}' set user '${user.user}' points to '${value}'.`
+                    }));
             } else if (sub_cmd === "lvl") {
                 user.user_lvl = value;
                 message.channel.send(`Пользователю ${user.user} был установлен ${value} Уровень`);
-
+                othis.Database.writeLog('set', message.author.id, message.guild.name,
+                    JSON.stringify({
+                        Message: `User '${message.author.tag}' set user '${user.user}' lvl to '${value}'.`
+                    }));
             } else if (sub_cmd === "xp") {
                 user.user_xp = value;
                 message.channel.send(`Пользователю ${user.user} было установлено ${value} ед. Оптыа`);
-
+                othis.Database.writeLog('set', message.author.id, message.guild.name,
+                    JSON.stringify({
+                        Message: `User '${message.author.tag}' set user '${user.user}' xp to '${value}'.`
+                    }));
             } else if (sub_cmd === "group") {
                 user.user_group = value;
                 message.channel.send(`Пользователю ${user.user} была установлена группа ${value}`);
+                othis.Database.writeLog('set', message.author.id, message.guild.name,
+                    JSON.stringify({
+                        Message: `User '${message.author.tag}' set user '${user.user}' group to '${value}'.`
+                    }));
             }else if (sub_cmd === "dbcol") {
                 if(value2){
                     message.channel.send(`Пользователю ${user.user} был установлен параметр ${value} с "${user[value]}" на "${value2}"`);
                     user[value] = value2;
                     user = othis.Database.parseJsons(user);
+                    othis.Database.writeLog('set', message.author.id, message.guild.name,
+                        JSON.stringify({
+                            Message: `User '${message.author.tag}' set user '${user.user}' ${value} from '${user[value]}' to '${value2}'.`
+                    }));
                 }else{
                     message.channel.send("No Database column value specified");
                     return;

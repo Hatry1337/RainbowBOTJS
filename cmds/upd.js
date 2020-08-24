@@ -6,6 +6,7 @@ function moduleOnLoad(){
 class Upd {
     constructor(Discord, Database, Client, Fs, Utils) {
         this.Discord = Discord;
+        this.Database = Database;
     }
     execute = function (message) {
         var emb = new this.Discord.MessageEmbed()
@@ -31,6 +32,10 @@ class Upd {
                 { name: "**v2.0**, 06.12.2019",              value: "Полный переход на Discord.js\n```Кстати, если хотите чтобы я добавил вашу хентай картинку, пишите !rep <ссылка>. То что понравится обязательно добавлю. Туда же можете присылать свои идеи для бота.```" },
             ]);
         message.channel.send(emb);
+        this.Database.writeLog('upd', message.author.id, message.guild.name,
+            JSON.stringify({
+                Message: `User '${message.author.tag}' watched update log.`
+            }));
     }
 }
 

@@ -35,6 +35,10 @@ class Shop {
                     { name: othis.lng.shop.fields.other.name[user.lang],      value: `7. ${othis.lng.shop.fields.other.pythonFood[user.lang]}` },
                 ]);
             message.channel.send(emb);
+            othis.Database.writeLog('shop', message.author.id, message.guild.name,
+                JSON.stringify({
+                    Message: `User '${message.author.tag}' watched shop.`
+                }));
         });
     }
 }

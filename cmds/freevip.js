@@ -40,6 +40,10 @@ class FreeVIP {
                                 message.channel.send(othis.lng.freevip.youGotVIP[user.lang]);
                                 return;
                             });
+                            othis.Database.writeLog('freevip', message.author.id, message.guild.name,
+                                JSON.stringify({
+                                    Message: `User '${message.author.tag}' taked FreeVIP and 30.000 points.`
+                            }));
                         }
                     }
                 });

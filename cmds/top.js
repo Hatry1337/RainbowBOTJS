@@ -37,6 +37,10 @@ class Top {
                     `\nВы на ${curUserPlace + 1} месте.`
                 );
             message.channel.send(emb);
+            othis.Database.writeLog('top', message.author.id, message.guild.name,
+                JSON.stringify({
+                    Message: `User '${message.author.tag}' watched top. User's place is ${curUserPlace+1}.`
+                }));
         });
     }
 }

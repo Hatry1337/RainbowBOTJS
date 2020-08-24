@@ -53,6 +53,10 @@ class Rhelp {
             ]).setColor(0x8b00ff);
         message.channel.send(emb);
         message.channel.send(emb1);
+        this.Database.writeLog('rhelp', message.author.id, message.guild.name,
+            JSON.stringify({
+                Message: `User '${message.author.tag}' watched rhelp menu.`
+        }));
         return;
     }
 }

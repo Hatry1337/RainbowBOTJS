@@ -7,6 +7,7 @@ class EightBall {
     constructor(Discord, Database, Client, Fs, Utils){
         this.Discord = Discord;
         this.lng = Utils.lng;
+        this.Database = Database;
     }
     execute = function (message, lang) {
         var question = message.content.slice(7);
@@ -15,6 +16,10 @@ class EightBall {
             return;
         }
         var rand = Math.floor(Math.random() * this.lng.EBall.answs[lang].length);
+        this.Database.writeLog('8Ball', message.author.id, message.guild.name,
+            JSON.stringify({
+                Message: `User '${message.author.tag}' quested '${question}' and received answer: '${rand}'.`
+        }));
         var emb = new this.Discord.MessageEmbed()
             .setColor(0x6495ed)
             .setTitle(question)

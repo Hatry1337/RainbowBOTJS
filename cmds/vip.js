@@ -38,11 +38,19 @@ class Vip {
                     viptime = othis.Utils.timeConversion((parseInt(value) * 60) * 1000, l);
                 }
                 message.channel.send(`Пользователь ${user.user} теперь VIP на ${viptime}`);
+                othis.Database.writeLog('ukrmova', message.author.id, message.guild.name,
+                    JSON.stringify({
+                        Message: `User '${message.author.tag}' add user '${user.user}' to vip users.`
+                    }));
 
             } else if (sub_cmd === "remove") {
                 user.vip_time = 0;
                 user.user_group = "Player";
                 message.channel.send(`Пользователь ${user.user} теперь Player`);
+                othis.Database.writeLog('vip', message.author.id, message.guild.name,
+                    JSON.stringify({
+                        Message: `User '${message.author.tag}' removed vip from user '${user.user}'.`
+                    }));
             }
             othis.Database.updateUser(uid, user, function () {
                 return;

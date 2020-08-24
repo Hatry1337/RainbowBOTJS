@@ -217,6 +217,38 @@ class Database {
             if (err) throw err;
             done(rows);
         });
+    };
+    getLogsCustom = function (params, done) {
+        var sql_template = "SELECT * FROM `logs` WHERE 1 ";
+        var template = [];
+        if(params.id){
+            sql_template += "AND `id`=? ";
+            template.push(params.id);
+        }
+        if(params.uid){
+            sql_template += "AND `user`=? ";
+            template.push(params.uid);
+        }
+        if(params.server){
+            sql_template += "AND `server`=? ";
+            template.push(params.server);
+        }
+        if(params.type !== "all"){
+            sql_template += " AND `type`=? ";
+            template.push(params.type);
+        }
+        if(params.from === "last"){
+            sql_template += "ORDER BY `timestamp` DESC ";
+        }else {
+            sql_template += "ORDER BY `timestamp` ";
+        }
+        sql_template += "LIMIT ?";
+        template.push(params.count);
+        var sql = this.mysql.format(sql_template, template);
+        this.connection.query(sql, function (err, rows, fields) {
+            if (err) throw err;
+            done(rows);
+        });
     }
 }
 

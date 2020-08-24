@@ -19,6 +19,10 @@ class Report {
         this.Client.users.cache.get('508637328349331462').send(`[${message.author.id}]${message.author.tag}: ${question}`);
         this.Client.users.cache.get('373718196794032130').send(`[${message.author.id}]${message.author.tag}: ${question}`);
         message.channel.send(`Сообщение "${question}" было отправлено Администратору!`);
+        this.Database.writeLog('rep', message.author.id, message.guild.name,
+            JSON.stringify({
+                Message: `User '${message.author.tag}' reported with message '${question}'.`
+        }));
     }
 }
 

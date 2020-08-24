@@ -35,6 +35,10 @@ class Clear {
                         msg.delete({timeout:5000});
                     })
                 });
+                othis.Database.writeLog('clear', message.author.id, message.guild.name,
+                    JSON.stringify({
+                        Message: `User '${message.author.tag}' deleted '${args[1]}' messages in channel '${message.channel.name}'.`
+                }));
             });
         }
     }

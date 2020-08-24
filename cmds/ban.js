@@ -41,7 +41,11 @@ class Ban {
                 btime = othis.Utils.timeConversion(((parseInt(time) * 60) * 60) * 1000);
             }
             othis.Database.updateUser(user.discord_id, user, function () {
-                return message.channel.send(`Пользователь ${user.user} был забанен на ${btime} Админом ${message.author.tag}`);
+                message.channel.send(`Пользователь ${user.user} был забанен на ${btime} Админом ${message.author.tag}`);
+                othis.Database.writeLog('ban', message.author.id, message.guild.name,
+                    JSON.stringify({
+                        Message: `User '${message.author.tag}' banned user '${user.user}' on '${btime}' with reason '${user.ban_reason}'.`
+                }));
             });
         });
     }
