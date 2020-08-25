@@ -39,7 +39,9 @@ class Ascii {
         }
         var othis = this;
         this.Database.getLogsCustom(params, (logs)=>{
-            logs.reverse();
+            if(params.from === "last"){
+                logs.reverse();
+            }
             var out = "```\n";
             for(var i = 0; i < logs.length; i++){
                 logs[i].data = JSON.parse(logs[i].data);

@@ -234,13 +234,13 @@ class Database {
             template.push(params.server);
         }
         if(params.type !== "all"){
-            sql_template += " AND `type`=? ";
+            sql_template += "AND `type`=? ";
             template.push(params.type);
         }
         if(params.from === "last"){
-            sql_template += "ORDER BY `timestamp` DESC ";
+            sql_template += "ORDER BY `id` DESC ";
         }else {
-            sql_template += "ORDER BY `timestamp` ";
+            sql_template += "ORDER BY `id` ";
         }
         sql_template += "LIMIT ?";
         template.push(params.count);
