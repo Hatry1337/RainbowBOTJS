@@ -4,13 +4,14 @@ function moduleOnLoad(){
 }
 
 class Song{
-    constructor(title, url, dur, thumb, started, isRadio){
+    constructor(title, url, dur, thumb, started, isRadio, lang){
         this.title = title;
         this.url = url;
         this.duration = dur;
         this.thumbnail = thumb;
         this.startedTS = started;
         this.isRadio = isRadio;
+        this.lang = lang;
     }
 }
 class ServerQueue {
@@ -33,16 +34,37 @@ class Music {
         this.Database = Database;
         this.SecDHMS = Utils.secondsToDhms;
         this.Request = Utils.RequestPromise;
-        this.SearchOpts = {
-            maxResults: 1,
-            key: 'AIzaSyB99VVQZPIzMlPWlovUEDwkTHuOzlCNkkw',
-        };
         this.ytdl = require('ytdl-core');
-        this.YTSearch = require('youtube-search');
+        this.ytsr = require('ytsr');
         this.PassThrough = require('stream').PassThrough;
         this.queue = new Map();
         this.lng = Utils.lng;
+
+        this.ytsr.do_warn_deprecate = false;
     }
+    extractURL = async function(raw, callback){
+        var reg1 = /http(s)?:\/\/(www\.)?youtube\.com\/watch\?v=(.*)/g;
+        var reg2 = /http(s)?:\/\/(www\.)?youtu\.be\/(.*)/g;
+        var code;
+        if(raw.match(reg1)){
+            var matches = reg1.exec(raw);
+            code = matches[matches.length-1];
+        }else if(raw.match(reg2)){
+            var matches = reg2.exec(raw);
+            code = matches[matches.length-1];
+        }
+        if(code){
+            await callback("https://www.youtube.com/watch?v="+code);
+        }else {
+            var othis = this;
+            await this.ytsr.getFilters(raw, async function(err, filters) {
+                var filter = filters.get('Type').find(o => o.name === 'Video');
+                await othis.ytsr(raw, {limit: 1, safeSearch: false, nextpageRef: filter.ref}, async function (err, result) {
+                    await callback(result.items[0].link);
+                });
+            });
+        }
+    };
     executePlay = async function (message, serverQueue, lang) {
         const sch_req = message.content.substr(6);
         const voiceChannel = message.member.voice.channel;
@@ -52,31 +74,32 @@ class Music {
         }
         var res = null;
         var othis = this;
-        this.YTSearch(sch_req, this.SearchOpts, async function (err, res) {
-            if (err) return console.log(err);
-            const songInfo = await othis.ytdl.getInfo(res[0].link);
+        await othis.extractURL(sch_req, async function (songUrl) {
+            const songInfo = await othis.ytdl.getInfo(songUrl);
+            console.log(songInfo);
             const song = new Song(
                 songInfo.title,
                 songInfo.video_url,
                 songInfo.length_seconds,
-                res[0].thumbnails.high,
+                songInfo.playerResponse.videoDetails.thumbnail.thumbnails.pop(),
                 new Date(),
-                false
+                false,
+                lang
             );
             if (!serverQueue) {
-                const queueContruct = new ServerQueue(
+                const queueConstruct = new ServerQueue(
                     message.channel,
                     voiceChannel,
                     5,
                     true,
                     false
                 );
-                othis.queue.set(message.guild.id, queueContruct);
-                queueContruct.songs.push(song);
+                othis.queue.set(message.guild.id, queueConstruct);
+                queueConstruct.songs.push(song);
                 try {
                     var connection = await voiceChannel.join();
-                    queueContruct.connection = connection;
-                    await othis.Play(message.guild, queueContruct.songs[0], lang);
+                    queueConstruct.connection = connection;
+                    await othis.Play(message.guild, queueConstruct.songs[0], lang);
                 } catch (err) {
                     console.log(err);
                     othis.queue.delete(message.guild.id);
@@ -91,82 +114,49 @@ class Music {
     };
 
     executePlayList = async function(message, serverQueue, lang) {
-        var gavno = message.content.substr(7).split(";;");
+        var searchRequests = message.content.substr(7).split(";;");
         const voiceChannel = message.member.voice.channel;
         if(!voiceChannel){
             message.channel.send(this.lng.Music.niChannel[lang]);
             return;
         }
-        var res = null;
         var othis = this;
-        this.YTSearch(gavno[0], this.SearchOpts, async function (err, res) {
-            if (err) return console.log(err);
-            const songInfo = await othis.ytdl.getInfo(res[0].link);
-            const song = new Song(
-                songInfo.title,
-                songInfo.video_url,
-                songInfo.length_seconds,
-                res[0].thumbnails.high,
-                new Date(),
+        if (!serverQueue) {
+            const queueContruct = new ServerQueue(
+                message.channel,
+                voiceChannel,
+                5,
+                true,
                 false
             );
-            if (!serverQueue) {
-                const queueContruct = new ServerQueue(
-                    message.channel,
-                    voiceChannel,
-                    5,
-                    true,
-                    false
+            othis.queue.set(message.guild.id, queueContruct);
+            serverQueue = queueContruct;
+        }
+        searchRequests.forEach(async (val, i, arr)=>{
+            await othis.extractURL(val, async function (songUrl) {
+                const songInfo = await othis.ytdl.getInfo(songUrl);
+                const song = new Song(
+                    songInfo.title,
+                    songInfo.video_url,
+                    songInfo.length_seconds,
+                    songInfo.playerResponse.videoDetails.thumbnail.thumbnails.pop(),
+                    new Date(),
+                    false,
+                    lang
                 );
-                othis.queue.set(message.guild.id, queueContruct);
-                queueContruct.songs.push(song);
-                i = 1;
-                while (i < gavno.length) {
-                    othis.YTSearch(gavno[i], othis.SearchOpts, async function (err, res) {
-                        if (err) return console.log(err);
-                        const songInfo = await othis.ytdl.getInfo(res[0].link);
-                        const song = new Song(
-                            songInfo.title,
-                            songInfo.video_url,
-                            songInfo.length_seconds,
-                            res[0].thumbnails.high,
-                            new Date(),
-                            false
-                        );
-                        queueContruct.songs.push(song);
-                    });
-                    i++;
-                }
-                try {
-                    var connection = await voiceChannel.join();
-                    queueContruct.connection = connection;
-                    await othis.Play(message.guild, queueContruct.songs[0], lang);
-                } catch (err) {
-                    console.log(err);
-                    othis.queue.delete(message.guild.id);
-                    return message.channel.send(err);
-                }
-            } else {
                 serverQueue.songs.push(song);
-                var i = 1;
-                while (i < gavno.length) {
-                    othis.YTSearch(gavno[i], othis.SearchOpts, async function (err, res) {
-                        if (err) return console.log(err);
-                        const songInfo = await othis.ytdl.getInfo(res[0].link);
-                        const song = new Song(
-                            songInfo.title,
-                            songInfo.video_url,
-                            songInfo.length_seconds,
-                            res[0].thumbnails.high,
-                            new Date(),
-                            false
-                        );
-                        serverQueue.songs.push(song);
-                    });
-                    i++;
+                if(i === searchRequests.length-1){
+                    try {
+                        var connection = await voiceChannel.join();
+                        serverQueue.connection = connection;
+                        await othis.Play(message.guild, serverQueue.songs[0], lang);
+                    } catch (err) {
+                        console.log(err);
+                        othis.queue.delete(message.guild.id);
+                        return message.channel.send(err);
+                    }
                 }
-                return await othis.ShowQueue(message.channel, serverQueue);
-            }
+            });
         });
     };
 
@@ -186,7 +176,8 @@ class Music {
                 height: 200,
             },
             new Date(),
-            true
+            true,
+            lang
         );
         var othis = this;
         if (!serverQueue) {
@@ -282,8 +273,7 @@ class Music {
             }
         }
         song.startedTS =  new Date();
-        await this.ShowQueue(serverQueue.textChannel, serverQueue, lang);
-        var othis = this;
+        await othis.ShowQueue(serverQueue.textChannel, serverQueue, lang);
         if(song.isRadio){
             var stream = new othis.PassThrough();
             await this.Request(song.url, { forever: true, rejectUnauthorized: false }).pipe(stream);
