@@ -8,7 +8,7 @@ const Utils = new (require("./modules/Utils")).Utils(Discord, Database, client, 
 
 Number.prototype.toReadable = function () {
     return `${this}`.replace(/(\d)(?=(\d\d\d)+([^\d]|$))/g, '$1.')
-}
+};
 
 var utime;
 client.once('ready', () => {
@@ -274,6 +274,39 @@ client.on('message', async message => {
             });
         });
     });
+});
+
+client.on("voiceStateUpdate", async (oldState, newState)=>{
+    if(newState.member.id === client.user.id){return;}
+    if(newState){
+        var channel;
+        if(!newState.channel){
+            channel = oldState.channel;
+        }else {
+            channel = newState.channel;
+        }
+        if(channel){
+            if(!channel.members.has(client.user.id)){return;}
+
+            if(channel.members.size <= 1){
+                setTimeout(async()=>{
+                    if(channel.members.size <= 1){
+                        var serverQueue = Utils.Modules.Music.queue.get(newState.guild.id);
+                        if(!serverQueue){
+                            await channel.leave();
+                            return;
+                        }
+                        var emd = new Discord.MessageEmbed()
+                            .setTitle(Utils.lng.Music.allUsersLeft.en)
+                            .setColor(0x0000FF);
+                        await serverQueue.textChannel.send(emd);
+                        await serverQueue.voiceChannel.leave();
+                        await Utils.Modules.Music.queue.delete(newState.guild.id);
+                    }
+                }, 20000);
+            }
+        }
+    }
 });
 
 

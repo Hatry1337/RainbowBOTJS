@@ -278,13 +278,10 @@ class Music {
             await this.Request(song.url, { forever: true, rejectUnauthorized: false }).pipe(stream);
             serverQueue.connection.play(stream);
             serverQueue.connection.dispatcher.once('finish', async () => {
-                if(serverQueue.repeated){
-                    await othis.Play(guild, serverQueue.songs[0], lang);
-                    return;
-                }else {
+                if(!serverQueue.repeated){
                     serverQueue.songs.shift();
-                    await othis.Play(guild, serverQueue.songs[0], lang);
                 }
+                await othis.Play(guild, serverQueue.songs[0], lang);
             });
         }else {
             serverQueue.connection.play(othis.ytdl(song.url, { filter: 'audioonly' }));
@@ -293,7 +290,9 @@ class Music {
                     await othis.Play(guild, serverQueue.songs[0], lang);
                     return;
                 }else {
-                    serverQueue.songs.shift();
+                    if(!serverQueue.repeated){
+                        serverQueue.songs.shift();
+                    }
                     await othis.Play(guild, serverQueue.songs[0], lang);
                 }
             });

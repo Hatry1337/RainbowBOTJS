@@ -351,6 +351,10 @@
         queueAlyEmpty:{
             ru:"Очередь и так пуста...",
             en:"Queue already empty..."
+        },
+        allUsersLeft:{
+            ru:"Все пользователи вышли из голосового канала, очередь окончена!",
+            en:"All users left from voice channel. Queue ended."
         }
     },
     profile:{
