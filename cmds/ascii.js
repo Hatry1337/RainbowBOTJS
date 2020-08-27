@@ -17,7 +17,7 @@ class Ascii {
              files_ += files[i].replace(".flf", "")+" ";
         }
         return (files_.indexOf(fnt + " ") !== -1);
-    }
+    };
     sendFonts = function (channel, i) {
         var dir = this.Utils.DirName + "/fgfonts/";
         var files_ = "";
@@ -125,12 +125,13 @@ class Ascii {
                 } else {
                     font = 'Doom';
                 }
-                var re = /а|б|в|г|д|е|ё|ж|з|и|ё|к|л|м|н|о|п|р|с|т|у|ф|х|ц|ч|ш|щ|ъ|ы|ь|э|ю|я/gi;
+                var re = /а-я/gi;
                 if (re.test(text.toLowerCase())) {
                     message.channel.send("Error: only english letters available!");
                     return;
                 }
-                await this.Utils.AsciiFont.create(text, font, function (err, res) {
+                var othis = this;
+                await this.Utils.AsciiFont.create(text, font, async function (err, res) {
                     if (err) {
                         console.log(err);
                         return;
