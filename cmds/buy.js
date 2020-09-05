@@ -90,6 +90,10 @@ class Buy {
                     user.user_points = user.user_points - getPrice(parseInt(args[1]));
                     user.user_group = "VIP";
                     othis.Database.updateUser(user.discord_id, user, function () {
+                        othis.Database.writeLog('Buy', message.author.id, message.guild.name,
+                            JSON.stringify({
+                                Message: `User '${message.author.tag}' buyed VIP Group.`
+                        }));
                         return message.channel.send(`Вы успешно купили VIP`);
                     });
                 } else {
