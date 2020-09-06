@@ -89,12 +89,13 @@ class Buy {
                 if (args[1] === "6") {
                     user.user_points = user.user_points - getPrice(parseInt(args[1]));
                     user.user_group = "VIP";
+                    user.vip_time = (new Date() / 1000) + 2520000;
                     othis.Database.updateUser(user.discord_id, user, function () {
                         othis.Database.writeLog('Buy', message.author.id, message.guild.name,
                             JSON.stringify({
-                                Message: `User '${message.author.tag}' buyed VIP Group.`
+                                Message: `User '${message.author.tag}' buyed VIP Group for 30 days.`
                         }));
-                        return message.channel.send(`Вы успешно купили VIP`);
+                        return message.channel.send(`Вы успешно купили VIP на 30 дней!`);
                     });
                 } else {
                     user.user_points = user.user_points - (count * getPrice(parseInt(args[1])));
