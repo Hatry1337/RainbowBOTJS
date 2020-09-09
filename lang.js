@@ -125,10 +125,25 @@
             en: `!ascii <text> <args>
                 text - text to make ascii-art
                 args - arguments: 
-                --font <font name> - draw text with specified font.
+                --font <fontname> - draw text with specified font.
                 --fontlist - list of fonts, <text> not needed.
                 --pic - draw the image, <text> not needed, need to attach the image.
                 --inverted - invert the image, --pic required, <text> not needed, need to attach the image.`,
+        },
+        cowsay: {
+            ru: `!cowsay <text> <args>
+                text - текст для отрисовки символами
+                args - аргументы: 
+                --cow <назв.коровы> - отрисовать выбранную корову.
+                --cowlist - список доступных коровок, <text> не требуется.
+                --thinking - сделать корову задумчивой, <text> не требуется.`,
+
+            en: `!cowsay <text> <args>
+                text - text to make cowsay art
+                args - arguments: 
+                --cow <cowname> - draw selected cow.
+                --cowlist - list of available cows, <text> not needed.
+                --thinking - make cow thinking, <text> not needed.`,
         },
         osuinfo: {
             ru: "Просмотреть профиль игрока osu!",

@@ -242,6 +242,9 @@ client.on('message', async message => {
                         } else if (message.content.startsWith(`!ascii`)) {
                             await Utils.Modules.Ascii.execute(message);
                             return;
+                        } else if (message.content.startsWith(`!cowsay`)) {
+                            await Utils.Modules.Cowsay.execute(message);
+                            return;
                         } else if (message.content.startsWith(`!listen`)) {
                             if (message.author.id === "508637328349331462") {
                                 await Utils.Modules.Listener.execute(message);
