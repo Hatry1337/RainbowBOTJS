@@ -16,6 +16,7 @@ class Utils {
         this.AsciiFont.fontPath = 'fgfonts/';
         this.Braile = require("braille-art");
         this.CowSay = require("cowsay");
+        this.windows1251 = require('windows-1251');
 
     };
     checkLang = function(message, user) {

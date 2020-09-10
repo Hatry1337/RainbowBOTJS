@@ -9,7 +9,7 @@ class EightBall {
         this.lng = Utils.lng;
         this.Database = Database;
     }
-    execute = function (message, lang) {
+    execute = async function (message, lang, pipef) {
         var question = message.content.slice(7);
         if (!(question)) {
             message.channel.send(this.lng.EBall.noQuestion[lang]);
@@ -25,6 +25,9 @@ class EightBall {
             .setTitle(question)
             .setDescription(this.lng.EBall.answs[lang][rand])
             .setThumbnail("https://www.dropbox.com/s/raw/vexrqo811ld5x6u/8-ball-png-9.png");
+        if(pipef){
+            await pipef(this.lng.EBall.answs[lang][rand]);
+        }
         return message.channel.send(emb);
     }
 }

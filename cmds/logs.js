@@ -9,7 +9,7 @@ class Ascii {
         this.Database = Database;
         this.Utils = Utils;
     }
-    execute = async function (message) {
+    execute = async function (message, pipef) {
         var args = message.content.split("--");
         var params = {
             from: "last",
@@ -38,16 +38,20 @@ class Ascii {
             }
         }
         var othis = this;
-        this.Database.getLogsCustom(params, (logs)=>{
+        this.Database.getLogsCustom(params, async (logs)=>{
             if(params.from === "last"){
                 logs.reverse();
             }
-            var out = "```\n";
+            var out = "";
             for(var i = 0; i < logs.length; i++){
                 logs[i].data = JSON.parse(logs[i].data);
                 out += `[${logs[i].timestamp.toLocaleString()}] [${logs[i].type}] ${logs[i].data.Message}\n`
             }
-            message.channel.send(out+"```");
+            if(pipef){
+                await pipef(out);
+            }else {
+                message.channel.send("```\n"+out+"```");
+            }
             othis.Database.writeLog('logs', message.author.id, message.guild.name,
                 JSON.stringify({
                     Message: `User '${message.author.tag}' watched logs.`

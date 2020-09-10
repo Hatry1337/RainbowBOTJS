@@ -9,7 +9,7 @@ class UkrMova {
         this.RandElement = Utils.arrayRandElement;
         this.Database = Database;
     }
-    execute = function (message) {
+    execute = async function (message, pipef) {
         let words = [
             "Гинеколог - пихвозаглядач",
             "Парашютисты - падалки",
@@ -39,6 +39,9 @@ class UkrMova {
             .setTitle(word)
             .setColor(0x42aaff);
         message.channel.send(emb);
+        if(pipef){
+            await pipef(word);
+        }
         this.Database.writeLog('ukrmova', message.author.id, message.guild.name,
             JSON.stringify({
                 Message: `User '${message.author.tag}' watched ukrainian word '${word}'.`

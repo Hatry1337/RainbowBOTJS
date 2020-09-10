@@ -39,7 +39,7 @@ class Ascii {
         channel.send("```Available Fonts:\n" + files_ + "```");
         return;
     };
-    execute = async function (message) {
+    execute = async function (message, pipef, pipet) {
         var args = message.content.split(" ");
         if (args[1]) {
             if (args[1] === "--pic") {
@@ -131,12 +131,19 @@ class Ascii {
                     return;
                 }
                 var othis = this;
+                if(pipet){
+                    text = pipet;
+                }
                 await this.Utils.AsciiFont.create(text, font, async function (err, res) {
                     if (err) {
                         console.log(err);
                         return;
                     }
-                    message.channel.send("```" + res + "```");
+                    if(pipef){
+                        await pipef(res);
+                    }else {
+                        message.channel.send("```" + res + "```");
+                    }
                     othis.Database.writeLog('ascii', message.author.id, message.guild.name,
                         JSON.stringify({
                             Message: `User '${message.author.tag}' drawed text '${text}' with font '${font}'.`
@@ -145,7 +152,11 @@ class Ascii {
                 });
             }
         } else {
-            message.channel.send("```Usage:\n!ascii <arg1> <arg2>\narg1 = text - ascii text art\narg1 = '--pic' - ascii picture art(add picture to the message)\narg1 = '--fontlist' - list of available fonts\n\narg2 = '--font <fontname>' - use selected font on your text```")
+            if(pipef){
+                await pipef("Usage:\n!ascii <arg1> <arg2>\narg1 = text - ascii text art\narg1 = '--pic' - ascii picture art(add picture to the message)\narg1 = '--fontlist' - list of available fonts\n\narg2 = '--font <fontname>' - use selected font on your text");
+            }else {
+                message.channel.send("```Usage:\n!ascii <arg1> <arg2>\narg1 = text - ascii text art\narg1 = '--pic' - ascii picture art(add picture to the message)\narg1 = '--fontlist' - list of available fonts\n\narg2 = '--font <fontname>' - use selected font on your text```")
+            }
             return;
         }
     }

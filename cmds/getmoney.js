@@ -9,12 +9,15 @@ class GetMoney {
         this.Database = Database;
         this.Utils = Utils;
     }
-    execute = function (message) {
+    execute = async function (message, pipef) {
         var othis = this;
-        this.Database.getUserByDiscordID(message.author.id, function (user) {
+        this.Database.getUserByDiscordID(message.author.id, async function (user) {
             if (user.bm1_time === 0) {
                 user.bm1_time = new Date().getTime() / 1000;
-                othis.Database.updateUser(user.discord_id, user, function () {
+                othis.Database.updateUser(user.discord_id, user, async function () {
+                    if(pipef){
+                        await pipef(`Майнинг запущен!`);
+                    }
                     return message.channel.send(`Майнинг запущен!`);
                 });
             } else {
@@ -44,12 +47,18 @@ class GetMoney {
                 user.user_xp = user.user_xp + total_xp;
                 if (!(total_xp === 0)) {
                     message.channel.send(`Ваш доход за ${othis.Utils.timeConversion(diff * 1000, user.lang)}: ${total_points.toReadable()} Поинтов, ${total_xp.toReadable()} ед. Опыта`);
+                    if(pipef){
+                        await pipef(`Ваш доход за ${othis.Utils.timeConversion(diff * 1000, user.lang)}: ${total_points.toReadable()} Поинтов, ${total_xp.toReadable()} ед. Опыта`);
+                    }
                     othis.Database.writeLog('Getmoney', message.author.id, message.guild.name,
                         JSON.stringify({
                             Message: `User '${message.author.tag}' getted ${total_points} points, and ${total_xp} xp.`
                     }));
                 } else {
                     message.channel.send(`Ваш доход за ${othis.Utils.timeConversion(diff * 1000, user.lang)}: ${total_points.toReadable()} Поинтов`);
+                    if(pipef){
+                        await pipef(`Ваш доход за ${othis.Utils.timeConversion(diff * 1000, user.lang)}: ${total_points.toReadable()} Поинтов`);
+                    }
                     othis.Database.writeLog('Getmoney', message.author.id, message.guild.name,
                         JSON.stringify({
                             Message: `User '${message.author.tag}' getted ${total_points} points.`

@@ -8,7 +8,7 @@ class Roll {
         this.Discord = Discord;
         this.Database = Database;
     }
-    execute = function (message) {
+    execute = async function (message, pipef) {
         var args = message.content.split(" ");
         var max_r = 100;
         if (args[1]) {
@@ -23,6 +23,9 @@ class Roll {
             .setColor(0x6495ed)
             .setTitle(`Выпало число ${rand} из ${max_r}`);
         message.channel.send(emb);
+        if(pipef){
+            await pipef(`Выпало число ${rand} из ${max_r}`);
+        }
         this.Database.writeLog('roll', message.author.id, message.guild.name,
             JSON.stringify({
                 Message: `User '${message.author.tag}' rolled the dice. Dice number: '${rand}' of '${max_r}'.`

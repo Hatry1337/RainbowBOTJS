@@ -76,7 +76,7 @@ client.on('message', async message => {
                             return;
 
                         } else if (message.content.startsWith(`!ukrmova`)) {
-                            Utils.Modules.UkrMova.execute(message);
+                            await Utils.Modules.UkrMova.execute(message);
                             return;
 
                         } else if (message.content.startsWith(`!upd`)) {
@@ -84,7 +84,7 @@ client.on('message', async message => {
                             return;
 
                         } else if (message.content.startsWith(`!uptime`)) {
-                            Utils.Modules.Uptime.execute(message, utime, user.lang);
+                            await Utils.Modules.Uptime.execute(message, utime, user.lang);
                             return;
 
                         } else if (message.content.startsWith(`!rstats`)) {
@@ -108,7 +108,7 @@ client.on('message', async message => {
                             return
 
                         } else if (message.content.startsWith(`!getmoney`)) {
-                            Utils.Modules.GetMoney.execute(message);
+                            await Utils.Modules.GetMoney.execute(message);
                             return
 
                         } else if (message.content.startsWith(`!set`)) {
@@ -170,11 +170,11 @@ client.on('message', async message => {
                             return
 
                         } else if (message.content.startsWith(`!roll`)) {
-                            Utils.Modules.Roll.execute(message);
+                            await Utils.Modules.Roll.execute(message);
                             return;
 
                         } else if (message.content.startsWith(`!8ball`)) {
-                            Utils.Modules["8ball"].execute(message, user.lang);
+                            await Utils.Modules["8ball"].execute(message, user.lang);
                             return;
 
                         } else if (message.content.startsWith(`!randcat`)) {
@@ -245,6 +245,9 @@ client.on('message', async message => {
                         } else if (message.content.startsWith(`!cowsay`)) {
                             await Utils.Modules.Cowsay.execute(message);
                             return;
+                        } else if (message.content.startsWith(`!anecdot`)) {
+                            await Utils.Modules.Anecdot.execute(message);
+                            return;
                         } else if (message.content.startsWith(`!listen`)) {
                             if (message.author.id === "508637328349331462") {
                                 await Utils.Modules.Listener.execute(message);
@@ -259,9 +262,12 @@ client.on('message', async message => {
                         }else if (message.content.startsWith(`!clear`)) {
                             await Utils.Modules.Clear.execute(message, user.lang);
                             return;
+                        }else if (message.content.startsWith(`!pipe`)) {
+                            await Utils.Modules.Pipe.execute(message, user, utime);
+                            return;
                         }else if (message.content.startsWith(`!logs`)) {
                             if (user.user_group === "Admin") {
-                                Utils.Modules.Logs.execute(message);
+                                await Utils.Modules.Logs.execute(message);
                                 return;
                             } else {
                                 message.channel.send("У вас нет прав администратора!");

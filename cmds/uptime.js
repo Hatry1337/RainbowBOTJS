@@ -10,7 +10,7 @@ class Uptime {
         this.lng = Utils.lng;
         this.Database = Database;
     }
-    execute = function (message, date, lang) {
+    execute = async function (message, date, lang, pipef) {
         var l = lang;
         let cur_date = new Date();
         let normal = this.Utils.timeConversion(cur_date - date, l);
@@ -18,6 +18,9 @@ class Uptime {
             .setTitle(`${this.lng.uptime.title[l]}: ${normal}`)
             .setColor(0xe6e6e6);
         message.channel.send(emb);
+        if(pipef){
+            await pipef(`${this.lng.uptime.title[l]}: ${normal}`);
+        }
         this.Database.writeLog('uptime', message.author.id, message.guild.name,
             JSON.stringify({
                 Message: `User '${message.author.tag}' watched uptime. Uptime is '${normal}'.`

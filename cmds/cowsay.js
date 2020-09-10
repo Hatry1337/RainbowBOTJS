@@ -9,9 +9,12 @@ class Cowsay {
         this.Database = Database;
         this.Utils = Utils;
     }
-    execute = function (message) {
+    execute = async function (message, pipef, pipet) {
         var args = message.content.split(" ");
         var text = message.content.slice(8);
+        if(pipet){
+            text = pipet;
+        }
         if(text.indexOf("--cowlist") !== -1){
             this.Utils.CowSay.list((err, cows)=>{
                 message.channel.send("```"+cows.toString()+"```");
@@ -35,14 +38,24 @@ class Cowsay {
             text = text.replace("--cow " + cowType, '');
         }
         if(isThinking){
-            message.channel.send("```"+this.Utils.CowSay.think({text : text, f: cowType})+"```");
+            var res = this.Utils.CowSay.think({text : text, f: cowType});
+            if(pipef){
+                await pipef(res);
+            }else {
+                message.channel.send("```"+res+"```");
+            }
             this.Database.writeLog('cowsay', message.author.id, message.guild.name,
                 JSON.stringify({
                     Message: `User '${message.author.tag}' drawed thinking cow with text '${text}'.`
             }));
             return;
         }else{
-            message.channel.send("```"+this.Utils.CowSay.say({text : text, f: cowType})+"```");
+            var res = this.Utils.CowSay.say({text : text, f: cowType});
+            if(pipef){
+                await pipef(res);
+            }else {
+                message.channel.send("```"+res+"```");
+            }
             this.Database.writeLog('cowsay', message.author.id, message.guild.name,
                 JSON.stringify({
                     Message: `User '${message.author.tag}' drawed cow with text '${text}'.`
