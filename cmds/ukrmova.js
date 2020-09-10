@@ -35,12 +35,13 @@ class UkrMova {
             "Гинеколог - пихвозаглядач",
         ];
         var word = this.RandElement(words);
-        var emb = new this.Discord.MessageEmbed()
-            .setTitle(word)
-            .setColor(0x42aaff);
-        message.channel.send(emb);
         if(pipef){
             await pipef(word);
+        }else {
+            var emb = new this.Discord.MessageEmbed()
+                .setTitle(word)
+                .setColor(0x42aaff);
+            message.channel.send(emb);
         }
         this.Database.writeLog('ukrmova', message.author.id, message.guild.name,
             JSON.stringify({

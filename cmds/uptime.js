@@ -14,12 +14,13 @@ class Uptime {
         var l = lang;
         let cur_date = new Date();
         let normal = this.Utils.timeConversion(cur_date - date, l);
-        var emb = new this.Discord.MessageEmbed()
-            .setTitle(`${this.lng.uptime.title[l]}: ${normal}`)
-            .setColor(0xe6e6e6);
-        message.channel.send(emb);
         if(pipef){
             await pipef(`${this.lng.uptime.title[l]}: ${normal}`);
+        }else {
+            var emb = new this.Discord.MessageEmbed()
+                .setTitle(`${this.lng.uptime.title[l]}: ${normal}`)
+                .setColor(0xe6e6e6);
+            message.channel.send(emb);
         }
         this.Database.writeLog('uptime', message.author.id, message.guild.name,
             JSON.stringify({

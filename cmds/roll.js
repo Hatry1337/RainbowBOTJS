@@ -19,12 +19,13 @@ class Roll {
             }
         }
         var rand = Math.floor(Math.random() * max_r);
-        var emb = new this.Discord.MessageEmbed()
-            .setColor(0x6495ed)
-            .setTitle(`Выпало число ${rand} из ${max_r}`);
-        message.channel.send(emb);
         if(pipef){
             await pipef(`Выпало число ${rand} из ${max_r}`);
+        }else {
+            var emb = new this.Discord.MessageEmbed()
+                .setColor(0x6495ed)
+                .setTitle(`Выпало число ${rand} из ${max_r}`);
+            message.channel.send(emb);
         }
         this.Database.writeLog('roll', message.author.id, message.guild.name,
             JSON.stringify({

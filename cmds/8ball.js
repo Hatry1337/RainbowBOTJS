@@ -20,15 +20,16 @@ class EightBall {
             JSON.stringify({
                 Message: `User '${message.author.tag}' quested '${question}' and received answer: '${rand}'.`
         }));
-        var emb = new this.Discord.MessageEmbed()
-            .setColor(0x6495ed)
-            .setTitle(question)
-            .setDescription(this.lng.EBall.answs[lang][rand])
-            .setThumbnail("https://www.dropbox.com/s/raw/vexrqo811ld5x6u/8-ball-png-9.png");
         if(pipef){
             await pipef(this.lng.EBall.answs[lang][rand]);
+        }else {
+            var emb = new this.Discord.MessageEmbed()
+                .setColor(0x6495ed)
+                .setTitle(question)
+                .setDescription(this.lng.EBall.answs[lang][rand])
+                .setThumbnail("https://www.dropbox.com/s/raw/vexrqo811ld5x6u/8-ball-png-9.png");
+            message.channel.send(emb);
         }
-        return message.channel.send(emb);
     }
 }
 

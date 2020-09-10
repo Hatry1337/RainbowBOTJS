@@ -12,9 +12,6 @@ class Cowsay {
     execute = async function (message, pipef, pipet) {
         var args = message.content.split(" ");
         var text = message.content.slice(8);
-        if(pipet){
-            text = pipet;
-        }
         if(text.indexOf("--cowlist") !== -1){
             this.Utils.CowSay.list((err, cows)=>{
                 message.channel.send("```"+cows.toString()+"```");
@@ -36,6 +33,9 @@ class Cowsay {
         if(text.indexOf("--cow ") !== -1){
             cowType = text.slice(text.indexOf("--cow ") + 6);
             text = text.replace("--cow " + cowType, '');
+        }
+        if(pipet){
+            text = pipet;
         }
         if(isThinking){
             var res = this.Utils.CowSay.think({text : text, f: cowType});

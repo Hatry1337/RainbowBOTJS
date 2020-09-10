@@ -27,7 +27,7 @@ class Pipe {
                 await othis.Utils.Modules.Ascii.execute(message, null, text);
                 return;
             } else if (args[1].startsWith(`!cowsay`)) {
-                message.content = `!cowsay t ${args[1].split(" ")[1]}`;
+                message.content = `!cowsay t ${args[1].slice(8)}`;
                 console.log(message.content);
                 await othis.Utils.Modules.Cowsay.execute(message, null, text);
                 return;
@@ -35,7 +35,6 @@ class Pipe {
         };
 
         message.content = args[0];
-        console.log(message.content);
         if (args[0].startsWith(`!ukrmova`)) {
             this.Utils.Modules.UkrMova.execute(message, pipef);
             return;
