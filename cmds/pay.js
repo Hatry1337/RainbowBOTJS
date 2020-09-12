@@ -43,7 +43,7 @@ class Pay {
                     message.channel.send("Такого пользователя не существует, либо он не зарегистрирован!");
                     return;
                 }
-                if(a_user.id === b_user.id){
+                if(a_user.discord_id === b_user.discord_id){
                     message.channel.send("Вы не можете перевести поинты самому себе!");
                     return;
                 }
