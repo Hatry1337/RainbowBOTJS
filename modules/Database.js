@@ -8,7 +8,8 @@ class Database {
             host: "127.0.0.1",
             port: 3306,
             user: "rbot",
-            password: "ILikeLolis800"
+            password: "ILikeLolis800",
+            charset: "utf8mb4_general_ci"
         });
         this.connection.connect(function (err) {
             if (err) throw err;
