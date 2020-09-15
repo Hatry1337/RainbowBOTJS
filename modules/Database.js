@@ -3,7 +3,7 @@ class Database {
         this.mysql = require('mysql');
         this.connection = this.mysql.createConnection({
             //database: 'rbot_dev',
-            //host: "94.103.85.242",
+            //host: "82.146.55.116",
             database: 'rbot',
             host: "127.0.0.1",
             port: 3306,
