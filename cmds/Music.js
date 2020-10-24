@@ -39,6 +39,7 @@ class Music {
         this.PassThrough = require('stream').PassThrough;
         this.queue = new Map();
         this.lng = Utils.lng;
+        this.querystring = require("querystring");
 
         this.ytsr.do_warn_deprecate = false;
     }
@@ -54,15 +55,22 @@ class Music {
             code = matches[matches.length-1];
         }
         if(code){
-            await callback("https://www.youtube.com/watch?v="+code);
+            callback("https://www.youtube.com/watch?v="+code);
         }else {
             var othis = this;
-            await this.ytsr.getFilters(raw, async function(err, filters) {
+            var uri = `http://youtube-scrape.herokuapp.com/api/search?${this.querystring.stringify({q: raw, page: 1})}`;
+            this.Request(uri, (err, data) => {
+                var parsed = JSON.parse(data.body);
+                callback(parsed.results[0].video.url);
+            });
+            /*
+            this.ytsr.getFilters(raw).then(async filters => {
                 var filter = filters.get('Type').find(o => o.name === 'Video');
-                await othis.ytsr(raw, {limit: 1, safeSearch: false, nextpageRef: filter.ref}, async function (err, result) {
-                    await callback(result.items[0].link);
+                othis.ytsr(raw, {limit: 1, safeSearch: false, nextpageRef: filter.ref}).then(async res => {
+                    callback(res.items[0].link);
                 });
             });
+            */
         }
     };
     executePlay = async function (message, serverQueue, lang) {
