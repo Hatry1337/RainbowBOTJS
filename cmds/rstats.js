@@ -32,6 +32,7 @@ class Rstats {
                                 { name: "Пинг", value: `${parseInt(othis.Client.ws.ping)}ms.` },
                                 { name: "Количество серверов", value: `${othis.Client.guilds.cache.size}` },
                                 { name: "Количество юзеров", value: `${usersCount}` },
+                                { name: "Юзеров на всех серверах", value: `${othis.Client.users.cache.size}` },
                                 { name: "Сообщений за этот час", value: `${msgHour}` },
                                 { name: "Сообщений за сегодня", value: `${msgDay}` },
                                 { name: "Сообщений за всё время", value: `${msgAll}` },
