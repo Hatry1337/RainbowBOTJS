@@ -25,6 +25,8 @@ class Rstats {
                 stamp1 = stamp1 / 1000;
                 othis.Database.getCountLogsRange("Command", stamp, stamp + 3600, function (msgHour) {
                     othis.Database.getCountLogsRange("Command", stamp1, stamp1 + 84000, function (msgDay) {
+                        var allServers = 0;
+                        othis.Client.guilds.cache.each(guild => allServers += guild.memberCount);
                         var emb = new othis.Discord.MessageEmbed()
                             .setColor(0x8b00ff)
                             .setTitle("Статистика бота")
@@ -32,7 +34,7 @@ class Rstats {
                                 { name: "Пинг", value: `${parseInt(othis.Client.ws.ping)}ms.` },
                                 { name: "Количество серверов", value: `${othis.Client.guilds.cache.size}` },
                                 { name: "Количество юзеров", value: `${usersCount}` },
-                                { name: "Юзеров на всех серверах", value: `${othis.Client.users.cache.size}` },
+                                { name: "Юзеров на всех серверах", value: `${allServers}` },
                                 { name: "Сообщений за этот час", value: `${msgHour}` },
                                 { name: "Сообщений за сегодня", value: `${msgDay}` },
                                 { name: "Сообщений за всё время", value: `${msgAll}` },

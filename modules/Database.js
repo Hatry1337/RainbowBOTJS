@@ -244,6 +244,7 @@ class Database {
             sql_template += "ORDER BY `id` ";
         }
         sql_template += "LIMIT "+params.count;
+        sql_template += " OFFSET "+params.page*params.count;
         var sql = this.mysql.format(sql_template, template);
         this.connection.query(sql, function (err, rows, fields) {
             if (err) throw err;

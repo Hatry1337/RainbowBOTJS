@@ -14,7 +14,8 @@ class Ascii {
         var params = {
             from: "last",
             count: 10,
-            type: "all"
+            type: "all",
+            page: 0
         };
         for(var i = 0; i < args.length; i++){
             var arg = args[i];
@@ -35,6 +36,9 @@ class Ascii {
             }
             if (arg.startsWith("server")) {
                 params.server = /server ([^']*)?/.exec(arg)[1];
+            }
+            if (arg.startsWith("page")) {
+                params.page = /page ([^']*)?/.exec(arg)[1];
             }
         }
         var othis = this;
