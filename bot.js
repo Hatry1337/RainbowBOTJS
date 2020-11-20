@@ -1,4 +1,4 @@
-﻿const dev_mode = false;
+﻿const dev_mode = true;
 
 const fs = require("fs");
 const Discord = require('discord.js');
@@ -11,7 +11,7 @@ Number.prototype.toReadable = function () {
 };
 
 var utime;
-client.once('ready', () => {
+client.once('ready', async () => {
     console.log('Ready 1!');
     utime = new Date();
     client.user.setActivity('!rhelp', { type: 'WATCHING' });

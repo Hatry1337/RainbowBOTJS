@@ -19,5 +19,8 @@
     "windows-1251": "^1.0.0",
     "ytdl-core": "^3.4.2",
     "ytsr": "^1.0.4"
+  },
+  "devDependencies": {
+    "@types/mysql": "^2.15.15"
   }
 }
