@@ -1,25 +1,26 @@
-class Utils {
-    constructor(Discord, Database, Client, Fs, DirName) {
-        this.Database = Database;
-        this.Discord = Discord;
-        this.Client = Client;
-        this.FS = Fs;
-        this.Modules = {};
-        this.DBL = require("dblapi.js");
-        this.dbl = new this.DBL('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjU3MTk0ODk5MzY0MzU0NDU4NyIsImJvdCI6dHJ1ZSwiaWF0IjoxNTc1NTczMjAyfQ.9OfSSDWcanClZpsqdFsz7U-1gStTb0SwYZWF49FtrNU', this.Client);
-        this.DirName = DirName;
-        this.lng = require(this.DirName+"/lang").lng;
-        this.Jimp = require("jimp");
-        this.Request = require("request");
-        this.RequestPromise = require("request-promise");
-        this.AsciiFont = require('ascii-art-font');
-        this.AsciiFont.fontPath = 'fgfonts/';
-        this.Braile = require("braille-art");
-        this.CowSay = require("cowsay");
-        this.windows1251 = require('windows-1251');
+const Discord = require("discord.js");
+const RainbowBOT = require("./RainbowBOT");
+const User = require("./User");
+const fs = require("fs");
 
+class Utils {
+    /**
+     * 
+     * @param {RainbowBOT} rbot RainbowBOT object
+     */
+    constructor(rbot) {
+        /**
+         * @type {RainbowBOT}
+         */
+        this.rbot = rbot;
     };
-    checkLang = function(message, user) {
+
+
+    /**
+     * @param {Discord.Message} message 
+     * @param {User} user 
+     */
+    checkLang(message, user) {
         if (user.lang == null) {
             return message.channel.send(
                 new this.Discord.MessageEmbed()
@@ -28,7 +29,12 @@ class Utils {
             );
         }
     };
-    langChange = function(message, user) {
+
+    /**
+     * @param {Discord.Message} message 
+     * @param {User} user 
+     */
+    langChange(message, user) {
         var args = message.content.split(" ");
         if (args[1] === "en") {
             user.lang = "en";
@@ -48,158 +54,176 @@ class Utils {
             );
         }
     };
-    fetchLang = function(message, user, done){
-        if(user.lang === "ru" || user.lang === "en"){
-            done(user);
-            return;
-        }
-        if(message.guild.region === "russia"){
-            user.lang = "ru";
-            var othis = this;
-            this.Database.updateUser(message.author.id, user, function () {
-                if(message.author.dmChannel){
-                    message.author.dmChannel.send(
+
+    /**
+     * @param {Discord.Message} message 
+     * @param {User} user 
+     * @returns {Promise<User>}
+     */
+    fetchLang(message, user){
+        return new Promise(async (resolve, reject) => {
+            if(user.lang === "ru" || user.lang === "en"){
+                resolve(user);
+                return;
+            }
+            if(message.guild.region === "russia"){
+                await user.setLang("ru");
+                message.author.createDM().then(channel => {
+                    channel.send(
                         new othis.Discord.MessageEmbed()
                             .setColor(0xFF0000)
                             .setTitle("Selected Russian language, you can change them by command !lang\nУстановлен русский язык, Вы можете сменить его с помощью команды !lang")
                     );
-                }else {
-                    message.author.createDM().then(function (channel) {
-                        channel.send(
-                            new othis.Discord.MessageEmbed()
-                                .setColor(0xFF0000)
-                                .setTitle("Selected Russian language, you can change them by command !lang\nУстановлен русский язык, Вы можете сменить его с помощью команды !lang")
-                        );
-                    });
-                }
-                done(user);
-            });
-        }else {
-            user.lang = "en";
-            var othis = this;
-            this.Database.updateUser(message.author.id, user, function () {
-                if(message.author.dmChannel){
-                    message.author.dmChannel.send(
+                });
+            }else {
+                await user.setLang("en");
+                message.author.createDM().then(channel => {
+                    channel.send(
                         new othis.Discord.MessageEmbed()
                             .setColor(0xFF0000)
                             .setTitle("Selected English language, you can change them by command !lang\nУстановлен английский язык, Вы можете сменить его с помощью команды !lang")
                     );
-                }else {
-                    message.author.createDM().then(function (channel) {
-                        channel.send(
-                            new othis.Discord.MessageEmbed()
-                                .setColor(0xFF0000)
-                                .setTitle("Selected English language, you can change them by command !lang\nУстановлен английский язык, Вы можете сменить его с помощью команды !lang")
-                        );
-                    });
-                }
-                done(user);
-            });
-        }
+                });
+            }
+            resolve(user);
+        });
     };
-    saveMessage = function(message) {
+
+    /**
+     * @param {Discord.Message} message 
+     */
+    saveMessage(message) {
         var toWrite =
             `sv[${message.channel.guild.name}]\n
             ch[${message.channel.name}]\n
             ${message.createdAt}\n
             ci[${message.channel.id}] ai[${message.author.id}] an[${message.author.tag}] mc[${message.content}]`;
-        this.FS.appendFile("/var/www/html/msgs/index.txt", `\n${toWrite}\n`, function () { });
+        fs.appendFile("/var/www/html/msgs/index.txt", `\n${toWrite}\n`, function () { });
     };
-    updateUserName = function(message, user){
+
+    /**
+     * @param {Discord.Message} message
+     * @param {User} user  
+     */
+    updateUserName(message, user){
         if(message.author.tag !== user.user){
-            user.user = message.author.tag;
-            this.Database.updateUser(message.author.id, user, function () {
-            });
+            user.setTag(message.author.tag);
         }
     };
-    checkVip = function(message, user, done) {
-        var othis = this;
-        if (user.user_group === "VIP") {
-            var curTS = new Date().getTime() / 1000;
-            var diff;
-            if (user.vip_time === "inf") {
-                done();
-                return;
+
+    /**
+     * @param {Discord.Message} message
+     * @param {User} user  
+     * @returns {Promise<User>}
+     */
+    checkVip(message, user) {
+        return new Promise(async (resolve, reject) => {
+            if (user.group === "VIP") {
+                var curTS = new Date().getTime() / 1000;
+                var diff;
+                if (user.vip_ts === "inf") {
+                    resolve(user);
+                } else {
+                    diff = user.vip_time - curTS;
+                }
+                if (diff <= 0) {
+                    user.vip_time = 0;
+                    await user.setGroup("Player");
+                    resolve(user);
+                } else {
+                    resolve(user);
+                }
             } else {
-                diff = user.vip_time - curTS;
-            }
-            if (diff <= 0) {
-                user.vip_time = 0;
-                user.user_group = "Player";
-                othis.Database.updateUser(message.author.id, user, function () {
-                    done();
-                    return;
-                });
-            } else {
-                done();
-                return;
-            }
-        } else {
-            done();
-            return;
-        }
-    };
-    checkLvl = function(message, user, done){
-        if(user.user_xp !== 0 ){
-            var lvls = Math.floor(user.user_xp / 1000);
-            user.user_xp -= (lvls*1000);
-            user.user_lvl += lvls;
-            this.Database.updateUser(user.discord_id, user, function(){
-                done();
-            });
-        }else {
-            done();
-        }
-    };
-    checkBan = function(message, user, done) {
-        var othis = this;
-        if (user.user_group === "Banned") {
-            var ban_time;
-            var curTS = new Date().getTime() / 1000;
-            var diff;
-            if (user.ban_time === "inf") {
-                ban_time = "никогда, лол)";
-            } else {
-                diff = user.ban_time - curTS;
-                ban_time = othis.timeConversion(diff * 1000);
-            }
-            if (diff <= 0) {
-                user.ban_time = 0;
-                user.user_group = "Player";
-                othis.Database.updateUser(message.author.id, user, function () {
-                    done();
-                    return;
-                });
-            } else {
-                return message.channel.send(`Вы забанены! Причина: ${user.ban_reason}, Бан истекает через: ${ban_time}`);
-            }
-        } else {
-            done();
-            return;
-        }
-    };
-    checkReg = function(message, done) {
-        var othis = this;
-        this.Database.getUserByDiscordID(message.author.id, function (user) {
-            if (!user) {
-                othis.Database.registerUser(message, function (nuser) {
-                    othis.Database.writeLog('Register', message.author.id, message.guild.name,
-                        JSON.stringify({
-                            Author: message.author.tag,
-                            MContent: message.content,
-                            SVID: message.guild.id,
-                            CHName: message.channel.name,
-                            Message: `User '${message.author.tag}' has been registered.`
-                    }));
-                    done(nuser);
-                });
-            } else {
-                done(user);
-                return;
+                resolve(user);
             }
         });
     };
-    timeConversion = function(ms, l) {
+
+    /**
+     * @param {Discord.Message} message
+     * @param {User} user  
+     * @returns {Promise<User>}
+     */
+    checkLvl(message, user){
+        return new Promise(async (resolve, reject) => {
+            if(user.xp !== 0 ){
+                var lvls = Math.floor(user.xp / 1000);
+                user.xp -= (lvls*1000);
+                user.lvl += lvls;
+                await user.sync()
+                resolve(user);
+            }else {
+                resolve(user);
+            }
+        });
+    };
+
+    /**
+     * @param {Discord.Message} message
+     * @param {User} user  
+     * @returns {Promise<User>}
+     */
+    checkBan(message, user) {
+        /**
+         * @type {Utils}
+         */
+        var othis = this;
+        return new Promise(async (resolve, reject) => {
+            if (user.group === "Banned") {
+                var ban_time;
+                var curTS = new Date().getTime() / 1000;
+                var diff;
+                if (user.ban_ts === "inf") {
+                    ban_time = "никогда, лол)";
+                } else {
+                    diff = user.ban_ts - curTS;
+                    ban_time = othis.timeConversion(diff * 1000, user.lang);
+                }
+                if (diff <= 0) {
+                    user.ban_ts = 0;
+                    await user.setGroup("Player");
+                    resolve(user);
+                } else {
+                    reject(message.channel.send(`Вы забанены! Причина: ${user.ban_reason}, Бан истекает через: ${ban_time}`));
+                }
+            } else {
+                resolve(user);
+            }
+        });
+    };
+
+    /**
+     * @param {Discord.Message} message
+     * @returns {Promise<User>}
+     */
+    checkReg(message) {
+        /**
+         * @type {Utils}
+         */
+        var othis = this;
+        return new Promise(async (resolve, reject) => {
+            var user = await othis.rbot.Database.getUser(message.author.id);
+            if (!user) {
+                user = await othis.rbot.Database.registerUser(message);
+                othis.rbot.Database.writeLog('Register', message.author.id, message.guild.name,
+                    JSON.stringify({
+                        Author: message.author.tag,
+                        MContent: message.content,
+                        SVID: message.guild.id,
+                        CHName: message.channel.name,
+                        Message: `User '${message.author.tag}' has been registered.`
+                }));
+            }
+            resolve(user);
+        });
+    };
+
+    /**
+     * @param {number} ms
+     * @param {string} l Language to convert ("ru" || "en")
+     * @returns {string}
+     */
+    timeConversion(ms, l) {
         if(!l){
             l = "en";
         }
@@ -219,7 +243,12 @@ class Utils {
         }
         return stime;
     };
-    secondsToDhms = function(seconds) {
+
+    /**
+     * @param {number} seconds 
+     * @returns {string}
+     */
+    secondsToDhms(seconds) {
         seconds = Number(seconds);
         var d = Math.floor(seconds / (3600 * 24));
         var h = Math.floor(seconds % (3600 * 24) / 3600);
@@ -227,7 +256,13 @@ class Utils {
         var s = Math.floor(seconds % 60);
         return `**${d}:${h}:${m}:${s}**`;
     };
-    getFiles = function (dir, files_) {
+
+    /**
+     * @param {string} dir 
+     * @param {string[]} files_ 
+     * @returns {string[]}
+     */
+    getFiles(dir, files_) {
 
         files_ = files_ || [];
         var files = this.FS.readdirSync(dir);
@@ -241,30 +276,35 @@ class Utils {
         }
         return files_;
     };
-    loadModules = function(modules) {
-        var othis = this;
-        modules.forEach(function(item, i, arr) {
-            item = item.substring(0, item.length - 3);
-            var mod = require(item);
-            othis.Modules[mod.info.name] = new mod.class(othis.Discord, othis.Database, othis.Client, othis.FS, othis);
-            mod.info.onLoad();
-        });
-    };
-    getRandomInt = function(max) {
+
+    /**
+     * @param {number} max 
+     * @returns {number}
+     */
+    getRandomInt(max) {
         return Math.floor(Math.random() * Math.floor(max));
     };
-    arrayRandElement = function (arr) {
+
+    /**
+     * @param {Array<any>} arr 
+     */
+    arrayRandElement(arr) {
         var rand = Math.floor(Math.random() * arr.length);
         return arr[rand];
     };
-    clearImageCache = function () {
+
+    clearImageCache() {
         var files = this.FS.readdirSync(this.DirName + "/tempimg/");
         var i = 0;
         for (i in files) {
             this.FS.unlinkSync(this.DirName + "/tempimg/" + files[i]);
         }
     };
-    parseID = function (raw_data) {
+
+    /**
+     * @returns {string}
+     */
+    parseID(raw_data) {
         raw_data = raw_data.toString();
         if (raw_data.startsWith("<<@")) {
             return raw_data.split(">")[1];
@@ -282,4 +322,4 @@ class Utils {
     };
 }
 
-module.exports.Utils = Utils;
+module.exports = Utils;

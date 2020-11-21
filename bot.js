@@ -2,30 +2,30 @@
 
 const fs = require("fs");
 const Discord = require('discord.js');
-const client = new Discord.Client();
-const Database = new (require('./modules/Database')).Database();
-const Utils = new (require("./modules/Utils")).Utils(Discord, Database, client, fs, __dirname);
+const Database = new (require('./modules/Database'))();
+const rbot = new (require("./modules/RainbowBOT"))(Database, new Discord.Client());
+const Utils = new (require("./modules/Utils"))(rbot);
+const Request = require("request");
 
 Number.prototype.toReadable = function () {
     return `${this}`.replace(/(\d)(?=(\d\d\d)+([^\d]|$))/g, '$1.')
 };
 
 var utime;
-client.once('ready', async () => {
+rbot.Client.once('ready', async () => {
     console.log('Ready 1!');
     utime = new Date();
-    client.user.setActivity('!rhelp', { type: 'WATCHING' });
-    Utils.loadModules(Utils.getFiles(__dirname + "/cmds"));
+    rbot.Client.user.setActivity('!rhelp', { type: 'WATCHING' });
     Database.writeLog('System-Up', "System", "System", `{"Message":"System is up!"}`);
     if (!dev_mode) {
         setInterval(function () {
-            Utils.Request({
+            Request({
                 method: 'POST',
                 uri: 'https://rainbowbot.xyz/apissl/rainbowbot/stats/push',
                 rejectUnauthorized: false,
                 body: {
-                    servers: client.guilds.cache.size,
-                    ping: client.ws.ping,
+                    servers: rbot.Client.guilds.cache.size,
+                    ping: rbot.Client.ws.ping,
                     secret: "EbalYaVasVsehVRotNahoooy"
                 },
                 json: true // Automatically stringifies the body to JSON
@@ -38,28 +38,28 @@ client.once('ready', async () => {
     //Utils.clearImageCache();
 });
 
-client.once('reconnecting', () => {
+rbot.Client.once('reconnecting', () => {
     console.log('Reconnecting!');
     Database.writeLog('System-Reconn', "System", "System", `{"Message":"System is reconnecting!"}`);
 });
 
-client.once('disconnect', () => {
+rbot.Client.once('disconnect', () => {
     console.log('Disconnect!');
     Database.writeLog('System-Disconn', "System", "System", `{"Message":"System is disconnected!"}`);
 });
 
-client.on('message', async message => {
-    if(message.author.id === Utils.Client.user.id){return}
+rbot.Client.on('message', async message => {
+    if(message.author.id === rbot.Client.user.id){return}
     if (message.channel.type === "dm") { message.channel.send("Команды в личных сообщениях не поддерживаются :cry:"); return; }
     Utils.saveMessage(message);
     if (message.author.bot) return;
     if (!message.content.startsWith("!")) return;
-    const serverQueue = Utils.Modules.Music.queue.get(message.guild.id);
-    Utils.checkReg(message, async function (user) {
+    //const serverQueue = Utils.Modules.Music.queue.get(message.guild.id);
+    Utils.checkReg(message).then(async (user) => {
         Utils.updateUserName(message, user);
-        Utils.fetchLang(message, user, function () {
-            Utils.checkLang(message, user);
-            Utils.checkBan(message, user, async function () {
+        Utils.fetchLang(message, user).then(async (user) => {
+            await Utils.checkLang(message, user);
+            Utils.checkBan(message, user).then(async (user) => {
                 Database.writeLog('Command', message.author.id, message.guild.name,
                     JSON.stringify({
                         Author: message.author.tag,
@@ -69,10 +69,10 @@ client.on('message', async message => {
                         Message: `User '${message.author.tag}' typed '${message.content}' in '${message.channel.name}' on '${message.guild.name}'.`
                     })
                 );
-                Utils.checkVip(message, user, async function () {
-                    Utils.checkLvl(message, user, async function () {
+                Utils.checkVip(message, user).then(async (user) => {
+                    Utils.checkLvl(message, user).then(async (user) => {
                         if (message.content.startsWith(`!rhelp`)) {
-                            await Utils.Modules.Rhelp.execute(message, user.lang);
+                            await rbot.Commands.Rhelp.execute(message, user.lang);
                             return;
 
                         } else if (message.content.startsWith(`!ukrmova`)) {
@@ -174,7 +174,7 @@ client.on('message', async message => {
                             return;
 
                         } else if (message.content.startsWith(`!8ball`)) {
-                            await Utils.Modules["8ball"].execute(message, user.lang);
+                            await rbot.Commands.EightBall.execute(message, user.lang);
                             return;
 
                         } else if (message.content.startsWith(`!randcat`)) {
@@ -285,7 +285,7 @@ client.on('message', async message => {
     });
 });
 
-client.on("voiceStateUpdate", async (oldState, newState)=>{
+rbot.Client.on("voiceStateUpdate", async (oldState, newState)=>{
     if(newState.member.id === client.user.id){return;}
     if(newState){
         var channel;
@@ -320,9 +320,23 @@ client.on("voiceStateUpdate", async (oldState, newState)=>{
 
 
 if (dev_mode) {
-    client.login("NjI3NDkyMTQyMjk3NjQ1MDU2.Xh3pBg.xnRTvNixn_ubf4i25azaCt4vJ1w");
+    rbot.Client.login("NjI3NDkyMTQyMjk3NjQ1MDU2.Xh3pBg.xnRTvNixn_ubf4i25azaCt4vJ1w");
 } else {
-    client.login("NTcxOTQ4OTkzNjQzNTQ0NTg3.Xh3o8A.Gt82pQ_AhmSlC0ZDI0waSTHewkw");
+    rbot.Client.login("NTcxOTQ4OTkzNjQzNTQ0NTg3.Xh3o8A.Gt82pQ_AhmSlC0ZDI0waSTHewkw");
 }
 
+/*
+this.Modules = {};
+this.DBL = require("dblapi.js");
+this.dbl = new this.DBL('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjU3MTk0ODk5MzY0MzU0NDU4NyIsImJvdCI6dHJ1ZSwiaWF0IjoxNTc1NTczMjAyfQ.9OfSSDWcanClZpsqdFsz7U-1gStTb0SwYZWF49FtrNU', this.Client);
+this.DirName = DirName;
+this.lng = require(this.DirName+"/lang").lng;
+this.Jimp = require("jimp");
+this.RequestPromise = require("request-promise");
+this.AsciiFont = require('ascii-art-font');
+this.AsciiFont.fontPath = 'fgfonts/';
+this.Braile = require("braille-art");
+this.CowSay = require("cowsay");
+this.windows1251 = require('windows-1251');
 
+*/

@@ -1,7 +1,13 @@
-const Collection = require("discord.js").Collection;
+const Discord = require("discord.js");
+const User = require("./User");
+const RainbowBOT = require("./RainbowBOT");
 
 class Database {
     constructor() {
+        /**
+         * @type {RainbowBOT}
+         */
+        this.rbot;
         this.mysql = require('mysql');
         this.connection = this.mysql.createConnection({
             //database: 'rbot_dev',
@@ -18,6 +24,10 @@ class Database {
             console.log("Connected to Database!");
         });
     };
+    /**
+     * @param {object} user
+     * @returns {object}
+     */
     parseJsons(user){
         if(user){
             if(user.lolilic && typeof user.lolilic === "string"){
@@ -29,13 +39,15 @@ class Database {
         }
         return user;
     };
-    getDBLength = function(done) {
-        this.connection.query(`SELECT COUNT(*) FROM \`users_info\` WHERE 1`, function (err, rows, fields) {
-            if (err) throw err;
-            done(rows[0]["COUNT(*)"]);
-        });
-    };
-    registerUser = function(message, done) {
+
+    /**
+     * @param {Discord.Message} message
+     * @returns {Promise<User>}
+     */
+    registerUser = function(message) {
+        /**
+         * @type {Database}
+         */
         var othis = this;
         return new Promise((resolve, reject) => {
             var loli = `{"create_d":0,"void_d":0,"pid":"undefined"}`;
@@ -52,6 +64,9 @@ class Database {
     };
 
     update(table, col, value, where_col, where_val){
+        /**
+         * @type {Database}
+         */
         var othis = this;
         return new Promise((resolve, reject) => {
             var sql_template = "UPDATE ? SET ?=? WHERE ?=?";
@@ -63,10 +78,16 @@ class Database {
             });
         });
     }
+    /**
+     * @returns {Promise<Discord.Collection<string, User>>}
+     */
     getAllUsers(){
+        /**
+         * @type {Database}
+         */
         var othis = this;
         return new Promise((resolve, reject) => {
-            var coll = new Collection();
+            var coll = new Discord.Collection();
             var sql_template = "SELECT * FROM `users_info`";
             var replaces = [];
             var sql = this.mysql.format(sql_template, replaces);
@@ -107,7 +128,16 @@ class Database {
             });
         });
     };
+    /**
+     * 
+     * @param {string} resolvable Discord ID or Discord Tag
+     * @param {number} resolvable User ID
+     * @returns {Promise<User>}
+     */
     getUser(resolvable) {
+        /**
+         * @type {Database}
+         */
         var othis = this;
         return new Promise((resolve, reject) => {
             var sql_template;
@@ -156,9 +186,9 @@ class Database {
                         hent_uses: rw_usr.hent_uses,
                         lang: rw_usr.lang
                     };
-                    resolve(new RBotUser(params, othis));
+                    resolve(new User(params, othis.rbot));
                 }else {
-                    reject(new Error("User not found in database"));
+                    resolve(null);
                 }
             });
         });
@@ -318,228 +348,13 @@ class Database {
             done(rows);
         });
     }
-}
-
-class RBotUser{
-    constructor(opts, db) {
-        this.db = db;
-        this.id = opts.id || -1;
-        this.discord_id = opts.discord_id || "-1";
-        this.tag = opts.tag || "Empty#0000";
-        this.group = opts.group || "Player";
-        this.points = opts.points || 0;
-        this.lvl = opts.lvl || 1;
-        this.xp = opts.xp || 0;
-        this.miners = opts.miners || {
-            bitminer1: 0,
-            bitminer2: 0,
-            bitminer_rack: 0,
-            bitm_dc: 0,
-            solarStation: 0
-        };
-        this.miners_ts = opts.miners_ts || 0;
-        this.ban_reason = opts.ban_reason || 0;
-        this.ban_ts = opts.ban_ts || 0;
-        this.vip_ts = opts.vip_ts || 0;
-        this.isNewsSubbed = opts.isNewsSubbed || true;
-        this.damage = opts.damage || 1;
-        if(opts.lolilic){
-            if(typeof  opts.lolilic === "string"){
-                this.lolilic = JSON.parse(opts.lolilic);
-            }else {
-                this.lolilic = opts.lolilic;
-            }
-        }
-        if(opts.hent_uses){
-            if(typeof  opts.hent_uses === "string"){
-                this.hent_uses = JSON.parse(opts.hent_uses);
-            }else {
-                this.hent_uses = opts.hent_uses;
-            }
-        }
-        this.lang = opts.lang || "en";
-    };
-
-    sync(){
-        var othis = this;
-        return new Promise((resolve, reject) => {
-            var sql_template = "UPDATE `users_info` SET `user`=?,`user_points`=?,`user_group`=?,`user_lvl`=?,`user_xp`=?,`bitminer1`=?,`bitminer2`=?,`bitminer_rack`=?,`bitm_dc`=?,`solar_station`=?,`bm1_time`=?,`bm2_time`=?,`bmr_time`=?,`bitm_dc_time`=?,`ss_time`=?,`ban_reason`=?,`ban_time`=?,`vip_time`=?,`discord_id`=?,`news_sub`=?,`damage`=?,`lolilic`=?,`hent_uses`=?,`lang`=? WHERE `discord_id`=?";
-            var hent = JSON.stringify(othis.hent_uses);
-            var loli = JSON.stringify(othis.lolilic);
-            var replaces = [othis.tag, othis.points, othis.group, othis.lvl, othis.xp, othis.miners.bitminer1, othis.miners.bitminer2, othis.miners.bitminer_rack, othis.miners.bitm_dc, othis.miners.solar_station, othis.miners_ts, 0, 0, 0, 0, othis.ban_reason, othis.ban_ts, othis.vip_ts, othis.discord_id, othis.news_sub, othis.damage, loli, hent, othis.lang, othis.discord_id];
-            var sql = othis.db.mysql.format(sql_template, replaces);
-            othis.db.connection.query(sql, function (err, rows, fields) {
-                if (err) reject(err);
-                resolve(othis);
-            });
-        });
-    }
-
-    setTag(tag, noSync){
-        var othis = this;
-        return new Promise((resolve, reject) => {
-            othis.tag = tag;
-            if (!noSync) {
-                othis.sync().then(usr => resolve(usr));
-            }else {
-                resolve(othis);
-            }
-        });
-    };
-    setGroup(group, noSync){
-        var othis = this;
-        return new Promise((resolve, reject) => {
-            othis.group = group;
-            if (!noSync) {
-                othis.sync().then(usr => resolve(usr));
-            }else {
-                resolve(othis);
-            }
-        });
-    };
-    setPoints(points, noSync){
-        var othis = this;
-        return new Promise((resolve, reject) => {
-            othis.points = points;
-            if (!noSync) {
-                othis.sync().then(usr => resolve(usr));
-            }else {
-                resolve(othis);
-            }
-        });
-    };
-    setLvl(lvl, noSync){
-        var othis = this;
-        return new Promise((resolve, reject) => {
-            othis.lvl = lvl;
-            if (!noSync) {
-                othis.sync().then(usr => resolve(usr));
-            }else {
-                resolve(othis);
-            }
-        });
-    };
-    setXp(xp, noSync){
-        var othis = this;
-        return new Promise((resolve, reject) => {
-            othis.xp = xp;
-            if (!noSync) {
-                othis.sync().then(usr => resolve(usr));
-            }else {
-                resolve(othis);
-            }
-        });
-    };
-    setBitm1(count, noSync){
-        var othis = this;
-        return new Promise((resolve, reject) => {
-            othis.bitminer1 = count;
-            if (!noSync) {
-                othis.sync().then(usr => resolve(usr));
-            }else {
-                resolve(othis);
-            }
-        });
-    };
-    setBitm2(count, noSync){
-        var othis = this;
-        return new Promise((resolve, reject) => {
-            othis.bitminer2 = count;
-            if (!noSync) {
-                othis.sync().then(usr => resolve(usr));
-            }else {
-                resolve(othis);
-            }
-        });
-    };
-    setBitmRack(count, noSync){
-        var othis = this;
-        return new Promise((resolve, reject) => {
-            othis.bitminer_rack = count;
-            if (!noSync) {
-                othis.sync().then(usr => resolve(usr));
-            }else {
-                resolve(othis);
-            }
-        });
-    };
-    setBitmDC(count, noSync){
-        var othis = this;
-        return new Promise((resolve, reject) => {
-            othis.bitm_dc = count;
-            if (!noSync) {
-                othis.sync().then(usr => resolve(usr));
-            }else {
-                resolve(othis);
-            }
-        });
-    };
-    setSolars(count, noSync){
-        var othis = this;
-        return new Promise((resolve, reject) => {
-            othis.solarStations = count;
-            if (!noSync) {
-                othis.sync().then(usr => resolve(usr));
-            }else {
-                resolve(othis);
-            }
-        });
-    };
-
-    fetch(){
-        var othis = this;
-        return new Promise((resolve, reject) => {
-
-            var sql_template;
-            var replaces;
-            if(othis.id !== -1){
-                sql_template = "SELECT * FROM `users_info` WHERE `num` = ?";
-                replaces= [othis.id];
-            }else if(othis.discord_id !== "-1") {
-                sql_template = "SELECT * FROM `users_info` WHERE `discord_id` = ?";
-                replaces= [othis.discord_id];
-            }else if(othis.tag !== "Empty#0000"){
-                sql_template = "SELECT * FROM `users_info` WHERE `user` = ?";
-                replaces= [othis.tag];
-            }else {
-                reject(new Error("No valid parameter to search found"));
-            }
-
-            var sql = othis.db.mysql.format(sql_template, replaces);
-            othis.db.connection.query(sql, function (err, rows, fields) {
-                if (err) reject(err);
-                if(rows[0]){
-                    var user = othis.parseJsons(rows[0]);
-                    othis.id = user.num;
-                    othis.discord_id = user.discord_id;
-                    othis.tag = user.user;
-                    othis.group = user.user_group;
-                    othis.points = user.user_points;
-                    othis.lbl = user.user_lvl;
-                    othis.xp = user_xp;
-                    othis.miners = {
-                        bitminer1: user.bitminer1,
-                        bitminer2: user.bitminer2,
-                        bitminer_rack: user.bitminer_rack,
-                        bitm_dc: user.bitm_dc,
-                        solarStation: user.solarStation
-                    };
-                    othis.miners_ts = user.bm1_time;
-                    othis.ban_reason = user.ban_reason;
-                    othis.ban_ts = user.ban_time;
-                    othis.vip_ts = user.vip_time;
-                    othis.isNewsSubbed = user.news_sub === "True";
-                    othis.damage = user.damage;
-                    othis.lolilic = user.lolilic;
-                    othis.hent_uses = user.hent_uses;
-                    othis.lang = user.lang;
-                    resolve(othis);
-                }else {
-                    reject(new Error("User not found in database"));
-                }
-            });
+    getDBLength = function(done) {
+        this.connection.query(`SELECT COUNT(*) FROM \`users_info\` WHERE 1`, function (err, rows, fields) {
+            if (err) throw err;
+            done(rows[0]["COUNT(*)"]);
         });
     };
 }
 
-module.exports.Database = Database;
+
+module.exports = Database;
