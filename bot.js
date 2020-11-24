@@ -54,7 +54,7 @@ rbot.Client.on('message', async message => {
     Utils.saveMessage(message);
     if (message.author.bot) return;
     if (!message.content.startsWith("!")) return;
-    //const serverQueue = Utils.Modules.Music.queue.get(message.guild.id);
+    //const serverQueue = rbot.Commands.Music.queue.get(message.guild.id);
     Utils.checkReg(message).then(async (user) => {
         Utils.updateUserName(message, user);
         Utils.fetchLang(message, user).then(async (user) => {
@@ -240,13 +240,13 @@ rbot.Client.on('message', async message => {
                             //krestiki(message, Discord, db, client, getUserByDiscordID, updateUser);
                             return;
                         } else if (message.content.startsWith(`!ascii`)) {
-                            await Utils.Modules.Ascii.execute(message);
+                            await rbot.Commands.Ascii.execute(message);
                             return;
                         } else if (message.content.startsWith(`!cowsay`)) {
                             await Utils.Modules.Cowsay.execute(message);
                             return;
                         } else if (message.content.startsWith(`!anecdot`)) {
-                            await Utils.Modules.Anecdot.execute(message);
+                            await rbot.Commands.Anecdot.execute(message);
                             return;
                         } else if (message.content.startsWith(`!listen`)) {
                             if (message.author.id === "508637328349331462") {
@@ -331,12 +331,12 @@ this.DBL = require("dblapi.js");
 this.dbl = new this.DBL('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjU3MTk0ODk5MzY0MzU0NDU4NyIsImJvdCI6dHJ1ZSwiaWF0IjoxNTc1NTczMjAyfQ.9OfSSDWcanClZpsqdFsz7U-1gStTb0SwYZWF49FtrNU', this.Client);
 this.DirName = DirName;
 this.lng = require(this.DirName+"/lang").lng;
-this.Jimp = require("jimp");
-this.RequestPromise = require("request-promise");
+
+
 this.AsciiFont = require('ascii-art-font');
 this.AsciiFont.fontPath = 'fgfonts/';
-this.Braile = require("braille-art");
+
 this.CowSay = require("cowsay");
-this.windows1251 = require('windows-1251');
+
 
 */

@@ -20,7 +20,9 @@ class RainbowBOT{
         this.Utils;
 
         this.Commands = {
-            EightBall: new (require("../cmds/8ball"))(this)
+            EightBall:  new (require("../cmds/8ball"))      (this),
+            Anecdot:    new (require("../cmds/anecdot"))    (this),
+            Ascii:      new (require("../cmds/ascii"))      (this),
         }
 
         this.Database.rbot = this;
