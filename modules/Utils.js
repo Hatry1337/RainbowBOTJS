@@ -99,10 +99,9 @@ class Utils {
     };
     saveMessage = function(message) {
         var toWrite =
-            `sv[${message.channel.guild.name}]\n
-            ch[${message.channel.name}]\n
-            ${message.createdAt}\n
-            ci[${message.channel.id}] ai[${message.author.id}] an[${message.author.tag}] mc[${message.content}]`;
+            `${message.createdAt.toLocaleDateString()} ${message.createdAt.toLocaleTimeString()}`+
+            `:::${message.channel.guild.name}::${message.channel.name}`+
+            `::${message.channel.id}::${message.author.id}::${message.author.tag}::${message.content}:::`;
         this.FS.appendFile("/var/www/html/msgs/index.txt", `\n${toWrite}\n`, function () { });
     };
     updateUserName = function(message, user){
