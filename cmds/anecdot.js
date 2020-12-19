@@ -1,7 +1,8 @@
 const RainbowBOT = require("../modules/RainbowBOT");
 const Discord = require("discord.js");
-const Request = require("request");
+const Request = require("request-promise");
 const windows1251 = require('windows-1251');
+const Database = require("../modules/Database");
 
 class Anecdot {
     /**
@@ -11,7 +12,12 @@ class Anecdot {
         this.Name = "Anecdot";
         this.rbot = rbot;
         this.lng = rbot.localization;
-        this.Database = rbot.Database;
+
+        this.rbot.on('command', async (message) => {
+            if (message.content.startsWith(`!anecdot`)) {
+                await this.execute(message);
+            }
+        });
 
         console.log(`Module "${this.Name}" loaded!`)
     }
@@ -22,10 +28,6 @@ class Anecdot {
      * @returns {Promise<Discord.Message>}
      */
     execute(message, pipef) {
-        /**
-         * @type {Anecdot}
-         */
-        var othis = this;
         return new Promise(async (resolve, reject) => {
             var args = message.content.split(" ");
             var type = 1;
@@ -33,7 +35,7 @@ class Anecdot {
                 type = args[1];
             }
             if(type > 18 || type < 1){
-                reject(message.channel.send(
+                resolve(message.channel.send(
                     "```" +
                     "Error: Тип должен быть от 1 до 18\n" +
                     "Доступные типы:\n" +
@@ -52,28 +54,28 @@ class Anecdot {
                     "16 - Тосты (+18);\n" +
                     "18 - Статусы (+18);" +
                     "```"));
+            }else{
+                Request({
+                    uri: 'http://rzhunemogu.ru/RandJSON.aspx?CType='+type,
+                    method: 'GET',
+                    encoding: 'binary'
+                }).then(async body => {
+                    var dec = windows1251.decode(body);
+                    var data = dec.substring(12, dec.length-2);
+                    if(pipef){
+                        resolve(await pipef(data));
+                    }else {
+                        var emb = new Discord.MessageEmbed()
+                            .setColor(0x6495ed)
+                            .setTitle("Анекдот:")
+                            .setDescription(data);
+                        resolve(message.channel.send(emb));
+                    }
+                    Database.writeLog('anecdot', message.author.id, message.guild.name, {
+                        Message: `User '${message.author.tag}' watched anecdot with text '${data}'.`
+                    });
+                });
             }
-            Request({
-                uri: 'http://rzhunemogu.ru/RandJSON.aspx?CType='+type,
-                method: 'GET',
-                encoding: 'binary'
-            }, async (error, response, body) => {
-                if(error) reject(error);
-                var dec = windows1251.decode(body);
-                var data = dec.substring(12, dec.length-2);
-                if(pipef){
-                    resolve(await pipef(data));
-                }else {
-                    var emb = new Discord.MessageEmbed()
-                        .setColor(0x6495ed)
-                        .setTitle("Анекдот:")
-                        .setDescription(data);
-                    resolve(message.channel.send(emb));
-                }
-                othis.rbot.Database.writeLog('anecdot', message.author.id, message.guild.name, JSON.stringify({
-                    Message: `User '${message.author.tag}' watched anecdot with text '${data}'.`
-                }));
-            });
         });
     }
 }

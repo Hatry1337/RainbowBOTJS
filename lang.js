@@ -182,6 +182,10 @@
         ru: "дней",
         en: "days"
     },
+    year: {
+        ru: "лет",
+        en: "years"
+    },
 
 
     hentai:{
@@ -381,9 +385,9 @@
             ru:"Профиль",
             en:"Profile"
         },
-        poinCoun:{
-            ru:"Количество Поинтов",
-            en:"Count of Points"
+        money:{
+            ru:"Количество денег",
+            en:"Count of money"
         },
         whoAreYou:{
             ru:"Кто такой вообще",
@@ -410,58 +414,42 @@
             en: `Shop`
         },
         description:{
-            ru: `!buy <номер предмета> <количество>`,
-            en: "!buy <item number> <count>"
+            ru: `!buy <id предмета>`,
+            en: "!buy <item id>"
         },
         fields:{
-            bitminers:{
+            videocards:{
                 name:{
-                    ru: "Битмайнеры:",
-                    en: "Bitminers:"
+                    ru: "Видеокарты:",
+                    en: "Videocards:"
                 },
-                datacenter:{
-                    ru: "Датацентр с битмайнерами",
-                    en: "Datacenter with Bitminers"
+                test_card:{
+                    ru: "Тестовая Видеокарта",
+                    en: "Test Videocard"
                 }
             },
-            businesses:{
+            cases:{
                 name:{
-                    ru: "Бизнессы:",
-                    en: "Businesses:"
-                },
-                solarStation:{
-                    ru:"Солнечная электростанция - 21.6 опыта в час + 10.080 Поинтов в час. Цена",
-                    en:"Solar Station - 21.6 Xp. per hour + 10.080 Points per hour. Price"
-                }
-            },
-            privileges:{
-                name:{
-                    ru:"Привилегии:",
-                    en:"Privileges:"
-                },
-                VIP:{
-                    ru:"VIP - Будут доступны плюшки на некоторых серверах, хентай. Цена 100.000.000(100млн) Поинтов",
-                    en:"VIP - Special features on some servers, hentai :3. Price 100.000.000(100m) Points"
-                }
-            },
-            other:{
-                name:{
-                    ru:"Другое:",
-                    en:"Other:"
-                },
-                pythonFood:{
-                    ru:"Корм для питона - +1 к скорости перехода на js. Цена 10.000 Поинтов",
-                    en:"Food for python - +1 to speed for migrating on JavaScript. Price 10.000 Points"
+                    ru: "Корпуса:",
+                    en: "Cases:"
                 }
             }
         },
-        pointsPerHour:{
-            ru: "Поинтов в час. Цена:",
-            en: "Points per hour. Price:"
+        cost: {
+            ru: "Цена",
+            en: "Cost"
         },
-        points:{
-            ru: "Поинтов",
-            en: "Points"
+        speed:{
+            ru: "Скорость",
+            en: "Speed"
+        },
+        hour:{
+            ru: "час",
+            en: "hour"
+        },
+        slots:{
+            ru: "слотов",
+            en: "slots"
         }
     },
     clear:{
@@ -493,5 +481,37 @@
             ru: "сообщений",
             en: "messages"
         }
+    },
+    Buy: {
+        errors:{
+            InvID: {
+                ru: "ID предмета должен быть положительным целым числом не менее 1!",
+                en: "Item ID must be an positive integer, not 0!"
+            },
+            NoID: {
+                ru: "Вы не указали ID предмета!",
+                en: "You didn't specify item ID!"
+            },
+            UnknItem:{
+                ru: "Предмета с таким ID не существует, либо он был удалён.",
+                en: "Item with this ID not exists."
+            },
+            NotSellable:{
+                ru: "Этот предмет не продаётся.",
+                en: "This item is not for sale."
+            }
+        },
+        buyedSuc: {
+            ru: "Вы успешно купили",
+            en: "You successfully purchased"
+        },
+        buyedFor: {
+            ru: "за",
+            en: "for"
+        },
+        notEnoughMoney: {
+            ru: "Вам не хватает денег для покупки. Нужно еще",
+            en: "You don't have enogh money. Need another"
+        },
     }
 };

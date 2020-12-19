@@ -1,43 +1,54 @@
-var moduleName = "AvatarC";
-function moduleOnLoad(){
-    console.log(`Module "${this.name}" loaded!`)
-}
+const RainbowBOT = require("../modules/RainbowBOT");
+const Database = require("../modules/Database");
+const Discord = require("discord.js");
 
-class AvatarC {
-    constructor(Discord, Database, Client, Fs, Utils) {
-        this.Discord = Discord;
-        this.Database = Database;
-        this.Utils = Utils;
-        this.Client = Client;
+
+class Avatar {
+    /**
+     * @param {RainbowBOT} rbot 
+     */
+    constructor(rbot){
+        this.Name = "Avatar";
+        this.rbot = rbot;
+        this.lng = rbot.localization;
+
+        this.rbot.on('command', async (message) => {
+            if (message.content.startsWith(`!avatar`)) {
+                await this.execute(message);
+            }
+        });
+
+        console.log(`Module "${this.Name}" loaded!`)
     }
-    execute = async function (message) {
-        var args = message.content.split(" ");
-        if (args[1]) {
-            args[1] = this.Utils.parseID(args[1]);
-        } else {
-            args[1] = message.author.id;
-        }
-        var user = this.Client.users.cache.get(args[1]);
-        if(user){
-            message.channel.send(user.username+"'s Avatar:",{
-                files: [user.avatarURL({
-                    size: 2048
-                })]
-            });
-            this.Database.writeLog('Avatar', message.author.id, message.guild.name,
-                JSON.stringify({
+
+    /**
+     * 
+     * @param {Discord.Message} message Discord Message object
+     * @returns {Promise<Discord.Message>}
+     */
+    execute(message) {
+        return new Promise(async (resolve, reject) => {
+            var args = message.content.split(" ");
+            if (args[1]) {
+                args[1] = this.rbot.Utils.parseID(args[1]);
+            } else {
+                args[1] = message.author.id;
+            }
+            var user = await this.rbot.Client.users.fetch(args[1]);
+            if(user){
+                resolve(message.channel.send(user.username+"'s Avatar:",{
+                    files: [user.avatarURL({
+                        size: 2048
+                    })]
+                }));
+                Database.writeLog('Avatar', message.author.id, message.guild.name, {
                     Message: `User '${message.author.tag}' watched avatar of user '${user.username}'.`
-            }));
-            return;
-        }else {
-            message.channel.send("Invalid User specified.");
-            return;
-        }
+                });
+            }else {
+                resolve(message.channel.send("No user found with this id."));
+            }
+        });
     }
 }
 
-module.exports.info = {
-    name: moduleName,
-    onLoad: moduleOnLoad
-};
-module.exports.class = AvatarC;
+module.exports = Avatar;

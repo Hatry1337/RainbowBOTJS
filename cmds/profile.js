@@ -1,62 +1,75 @@
-﻿var moduleName = "Profile";
-function moduleOnLoad(){
-    console.log(`Module "${this.name}" loaded!`)
-}
+﻿const RainbowBOT = require("../modules/RainbowBOT");
+const Database = require("../modules/Database");
+const Discord = require("discord.js");
+
 
 class Profile {
-    constructor(Discord, Database, Client, Fs, Utils) {
-        this.Discord = Discord;
-        this.Database = Database;
-        this.lng = Utils.lng;
-        this.Utils = Utils;
+    /**
+     * @param {RainbowBOT} rbot 
+     */
+    constructor(rbot){
+        this.Name = "Profile";
+        this.rbot = rbot;
+        this.lng = rbot.localization;
+
+        this.rbot.on('command', async (message) => {
+            if (message.content.startsWith(`!profile`)) {
+                await this.execute(message);
+            }
+        });
+
+        console.log(`Module "${this.Name}" loaded!`)
     }
-    execute = function (message, lang) {
-        var args = message.content.split(" ");
-        var id = message.author.id;
-        if (args[1]) {
-            id = this.Utils.parseID(args[1]);
-        }
-        var othis = this;
-        this.Database.getUserByDiscordID(id, function (user) {
-            if (!(user)) {
-                message.channel.send(othis.lng.profile.notReged[lang]);
-                return;
+
+    /**
+     * 
+     * @param {Discord.Message} message Discord Message object
+     * @returns {Promise<Discord.Message>}
+     */
+    execute(message) {
+        return new Promise(async (resolve, reject) => {
+            var args = message.content.split(" ");
+            var id = message.author.id;
+            if (args[1]) {
+                id = this.rbot.Utils.parseID(args[1]);
             }
-            var emb = new othis.Discord.MessageEmbed()
-                .setTitle(`${othis.lng.profile.profile[lang]} ${user.user}:`)
-                .setColor(0x8b00ff);
+            var user = await Database.getUser(id, this.rbot);
+            
+            if (user) {
+                var emb = new Discord.MessageEmbed()
+                    .setTitle(`${this.lng.profile.profile[user.lang]} ${user.tag}:`)
+                    .setColor(0x8b00ff);
 
+                emb.addFields([{
+                    name: `${this.lng.profile.money[user.lang]}: `, value: `${parseInt(user.money).toReadable()}$`
+                }]);
 
-            emb.addFields([{
-                name: `${othis.lng.profile.poinCoun[lang]}: `, value: parseInt(user.user_points).toReadable()
-            }]);
-            if (user.user_group === "Banned") {
+                if (user.group === "Banned") {
+                    emb.addFields([
+                        { name: `${this.lng.profile.whoAreYou[user.lang]}: `, value: `Banned\n${this.lng.profile.reason[user.lang]}: ${user.meta.ban.reason}` },
+                    ]);
+                }else {
+                    emb.addFields([
+                        { name: `${this.lng.profile.whoAreYou[user.lang]}: `, value: user.group },
+                    ]);
+                }
+
                 emb.addFields([
-                    { name: `${othis.lng.profile.whoAreYou[lang]}: `, value: `Banned\n${othis.lng.profile.reason[lang]}: ${user.ban_reason}` },
+                    { name: `${this.lng.profile.level[user.lang]}: `,     value: user.lvl },
+                    { name: `${this.lng.profile.exp[user.lang]}: `,       value: `${user.xp}/1000`},
+                    { name: "ID: ",                                       value: user.id },
                 ]);
-            }else {
-                emb.addFields([
-                    { name: `${othis.lng.profile.whoAreYou[lang]}: `, value: user.user_group },
-                ]);
-            }
-            emb.addFields([
-                { name: `${othis.lng.profile.level[lang]}: `,     value: user.user_lvl },
-                { name: `${othis.lng.profile.exp[lang]}: `,       value: `${user.user_xp}/1000`},
-                { name: "ID: ",                                   value: user.num },
-            ]);
 
-            message.channel.send(emb);
-            othis.Database.writeLog('profile', message.author.id, message.guild.name,
-                JSON.stringify({
+                resolve(message.channel.send(emb));
+                Database.writeLog('profile', message.author.id, message.guild.name, {
                     Message: `User '${message.author.tag}' watched profile of user '${user.user}'.`
-            }));
-            return;
+                });
+
+            }else{
+                resolve(message.channel.send(this.lng.profile.notReged[user.lang]));
+            }
         });
     }
 }
 
-module.exports.info = {
-    name: moduleName,
-    onLoad: moduleOnLoad
-};
-module.exports.class = Profile;
+module.exports = Profile;

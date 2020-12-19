@@ -1,5 +1,6 @@
 const Discord = require("discord.js");
 const RainbowBOT = require("./RainbowBOT");
+const Database = require("./Database");
 const User = require("./User");
 const fs = require("fs");
 
@@ -13,16 +14,22 @@ class Utils {
          * @type {RainbowBOT}
          */
         this.rbot = rbot;
+        this.lng = rbot.localization;
     };
 
+    itemTypes = {
+        VideoCard: 1,
+        Case: 2,
+        Farm: 3
+    };
 
     /**
      * @param {Discord.Message} message 
      * @param {User} user 
      */
     checkLang(message, user) {
-        if (user.lang == null) {
-            return message.channel.send(
+        if (user.lang === null) {
+            message.channel.send(
                 new this.Discord.MessageEmbed()
                     .setColor(0xFF0000)
                     .setTitle("Select your language/Выберите свой язык\n```!lang en - English Language (Английский Язык)\n!lang ru - Russian Language (Русский Язык)```")
@@ -64,13 +71,11 @@ class Utils {
         return new Promise(async (resolve, reject) => {
             if(user.lang === "ru" || user.lang === "en"){
                 resolve(user);
-                return;
-            }
-            if(message.guild.region === "russia"){
+            }else if(message.guild.region === "russia"){
                 await user.setLang("ru");
                 message.author.createDM().then(channel => {
                     channel.send(
-                        new othis.Discord.MessageEmbed()
+                        new Discord.MessageEmbed()
                             .setColor(0xFF0000)
                             .setTitle("Selected Russian language, you can change them by command !lang\nУстановлен русский язык, Вы можете сменить его с помощью команды !lang")
                     );
@@ -79,7 +84,7 @@ class Utils {
                 await user.setLang("en");
                 message.author.createDM().then(channel => {
                     channel.send(
-                        new othis.Discord.MessageEmbed()
+                        new Discord.MessageEmbed()
                             .setColor(0xFF0000)
                             .setTitle("Selected English language, you can change them by command !lang\nУстановлен английский язык, Вы можете сменить его с помощью команды !lang")
                     );
@@ -106,7 +111,7 @@ class Utils {
      * @param {User} user  
      */
     updateUserName(message, user){
-        if(message.author.tag !== user.user){
+        if(message.author.tag !== user.tag){
             user.setTag(message.author.tag);
         }
     };
@@ -120,22 +125,13 @@ class Utils {
         return new Promise(async (resolve, reject) => {
             if (user.group === "VIP") {
                 var curTS = new Date().getTime() / 1000;
-                var diff;
-                if (user.vip_ts === "inf") {
-                    resolve(user);
-                } else {
-                    diff = user.vip_time - curTS;
+                if(user.meta.vip && user.meta.vip.endsAt){
+                    if (user.meta.vip.endsAt - curTS <= 0) {
+                        await user.setGroup("Player");
+                    }
                 }
-                if (diff <= 0) {
-                    user.vip_time = 0;
-                    await user.setGroup("Player");
-                    resolve(user);
-                } else {
-                    resolve(user);
-                }
-            } else {
-                resolve(user);
             }
+            resolve(user);
         });
     };
 
@@ -148,9 +144,8 @@ class Utils {
         return new Promise(async (resolve, reject) => {
             if(user.xp !== 0 ){
                 var lvls = Math.floor(user.xp / 1000);
-                user.xp -= (lvls*1000);
-                user.lvl += lvls;
-                await user.sync()
+                await user.setXp(user.xp - (lvls*1000));
+                await user.setLvl(user.lvl += lvls);
                 resolve(user);
             }else {
                 resolve(user);
@@ -164,27 +159,18 @@ class Utils {
      * @returns {Promise<User>}
      */
     checkBan(message, user) {
-        /**
-         * @type {Utils}
-         */
-        var othis = this;
         return new Promise(async (resolve, reject) => {
             if (user.group === "Banned") {
-                var ban_time;
                 var curTS = new Date().getTime() / 1000;
-                var diff;
-                if (user.ban_ts === "inf") {
-                    ban_time = "никогда, лол)";
-                } else {
-                    diff = user.ban_ts - curTS;
-                    ban_time = othis.timeConversion(diff * 1000, user.lang);
-                }
+                var diff = user.meta.ban.unbannedAt - curTS;
+                var ban_time = this.timeConversion(diff * 1000, "ru");
+                
                 if (diff <= 0) {
-                    user.ban_ts = 0;
-                    await user.setGroup("Player");
+                    await user.unban("Banned time is over.", "System");
                     resolve(user);
                 } else {
-                    reject(message.channel.send(`Вы забанены! Причина: ${user.ban_reason}, Бан истекает через: ${ban_time}`));
+                    message.channel.send(`Вы забанены! Причина: ${user.meta.ban.reason}, Бан истекает через: ${ban_time}`);
+                    resolve(null);
                 }
             } else {
                 resolve(user);
@@ -197,26 +183,22 @@ class Utils {
      * @returns {Promise<User>}
      */
     checkReg(message) {
-        /**
-         * @type {Utils}
-         */
-        var othis = this;
         return new Promise(async (resolve, reject) => {
-            var user = await othis.rbot.Database.getUser(message.author.id);
+            var user = await Database.getUser(message.author.id, this.rbot);
             if (!user) {
-                user = await othis.rbot.Database.registerUser(message);
-                othis.rbot.Database.writeLog('Register', message.author.id, message.guild.name,
-                    JSON.stringify({
-                        Author: message.author.tag,
-                        MContent: message.content,
-                        SVID: message.guild.id,
-                        CHName: message.channel.name,
-                        Message: `User '${message.author.tag}' has been registered.`
-                }));
+                user = await Database.registerUser(message, this.rbot);
+                Database.writeLog('Register', message.author.id, message.guild.name, {
+                    Author: message.author.tag,
+                    MContent: message.content,
+                    SVID: message.guild.id,
+                    CHName: message.channel.name,
+                    Message: `User '${message.author.tag}' has been registered.`
+                });
             }
             resolve(user);
         });
     };
+
 
     /**
      * @param {number} ms
@@ -229,8 +211,9 @@ class Utils {
         }
         var seconds = parseInt(ms / 1000);
         var minutes = parseInt(ms / (1000 * 60));
-        var hours = parseInt(ms / (1000 * 60 * 60));
-        var days = parseInt(ms / (1000 * 60 * 60 * 24));
+        var hours =   parseInt(ms / (1000 * 60 * 60));
+        var days =    parseInt(ms / (1000 * 60 * 60 * 24));
+        var years =   parseInt(ms / (1000 * 60 * 60 * 24 * 365));
         var stime;
         if (seconds < 60) {
             stime = `${seconds} ${this.lng.sec[l]}`;
@@ -238,8 +221,10 @@ class Utils {
             stime = `${minutes} ${this.lng.min[l]}, ${seconds - minutes * 60} ${this.lng.sec[l]}`;
         } else if (hours < 24) {
             stime = `${hours} ${this.lng.hur[l]}, ${minutes - hours * 60} ${this.lng.min[l]}, ${seconds - minutes * 60} ${this.lng.sec[l]}`;
-        } else {
+        } else if (days < 365){
             stime = `${days} ${this.lng.day[l]}, ${hours - days * 24} ${this.lng.hur[l]}, ${minutes - hours * 60} ${this.lng.min[l]}, ${seconds - minutes * 60} ${this.lng.sec[l]}`;
+        }else{
+            stime = `${years} ${this.lng.year[l]}, ${days - years * 365} ${this.lng.day[l]}, ${hours - days * 24} ${this.lng.hur[l]}, ${minutes - hours * 60} ${this.lng.min[l]}, ${seconds - minutes * 60} ${this.lng.sec[l]}`;
         }
         return stime;
     };
