@@ -13,7 +13,7 @@ class As {
         this.lng = rbot.localization;
 
         this.rbot.on('command', async (message, user) => {
-            if (message.content.startsWith(`!as`)) {
+            if (message.content.startsWith(`!as `)) {
                 if (user.group === "Admin") {
                     await this.execute(message);
                 } else {
