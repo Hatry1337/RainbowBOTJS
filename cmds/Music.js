@@ -241,6 +241,32 @@ class Player extends EventEmitter{
     }
 
     /**
+     * @param {Array<Track>} tracks
+     * @returns {Promise<void>}
+     */
+    QueueAddTracks(tracks){
+        return new Promise(async (resolve, reject) => {
+            var manager = await MusicManager.findOne({
+                where: {
+                    id: this.id
+                }
+            });
+            var q = manager.get("queue");
+            for(var tr of tracks){
+                q.push(tr.toObject());
+            }
+            await MusicManager.update({
+                queue: q
+            },{
+                where:{
+                    id: this.id
+                }
+            });
+            resolve();
+        });
+    }
+
+    /**
      * @returns {Promise<void>}
      */
     QueueClear(){
@@ -506,6 +532,13 @@ class Music {
                 };
 
                 case "🔀":{
+                    await plr.QueueShuffle();
+                    await this.update_queue(manager);
+                    await reaction.users.remove(member.id);
+                    break;
+                };
+
+                case "igniblprpl":{
                     await plr.QueueShuffle();
                     await this.update_queue(manager);
                     await reaction.users.remove(member.id);
