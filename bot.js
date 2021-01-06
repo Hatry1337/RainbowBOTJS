@@ -285,6 +285,7 @@ rbot.Client.on('message', async message => {
     });
 });
 
+/*
 rbot.Client.on("voiceStateUpdate", async (oldState, newState)=>{
     if(newState.member.id === client.user.id){return;}
     if(newState){
@@ -317,7 +318,7 @@ rbot.Client.on("voiceStateUpdate", async (oldState, newState)=>{
         }
     }
 });
-
+*/
 
 if (process.env.dev_mode) {
     rbot.Client.login("NjI3NDkyMTQyMjk3NjQ1MDU2.Xh3pBg.xnRTvNixn_ubf4i25azaCt4vJ1w");

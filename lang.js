@@ -480,6 +480,10 @@
         messages:{
             ru: "сообщений",
             en: "messages"
+        },
+        bulkDelErr: {
+            ru: "Вы можете множественно удалять только те сообщения, которым менее 14 дней.",
+            en: "You can only bulk delete messages that are under 14 days old."
         }
     },
     Buy: {

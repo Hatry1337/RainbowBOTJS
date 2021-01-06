@@ -239,7 +239,7 @@ class Utils {
         var h = Math.floor(seconds % (3600 * 24) / 3600);
         var m = Math.floor(seconds % 3600 / 60);
         var s = Math.floor(seconds % 60);
-        return `**${d}:${h}:${m}:${s}**`;
+        return `${d}:${h}:${m}:${s}`;
     };
 
     /**

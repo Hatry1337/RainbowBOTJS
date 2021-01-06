@@ -1,5 +1,5 @@
 const { Sequelize, DataTypes, Model } = require('sequelize');
-const sequelize = new Sequelize('postgres://rbot:t6V-b7y-a26-64j@82.146.55.116:5432/rbot')
+const sequelize = new Sequelize('postgres://rbot:t6V-b7y-a26-64j@127.0.0.1:5432/rbot')
 
 class User extends Model {}
 
@@ -160,7 +160,59 @@ Log.init({
 	modelName: 'Log'
 });
 
+class MusicManager extends Model {}
 
+MusicManager.init({
+	id: {
+		type: DataTypes.INTEGER,
+		primaryKey: true,
+		autoIncrement: true,
+		allowNull: false
+	},
+	guild_id: {
+		type: DataTypes.STRING,
+		allowNull: false
+	},
+	music_message_id: {
+		type: DataTypes.STRING,
+		allowNull: false
+	},
+	music_channel_id: {
+		type: DataTypes.STRING,
+		allowNull: false
+	},
+	queue_message_id: {
+		type: DataTypes.STRING,
+		allowNull: false
+	},
+	dj_role_id: {
+		type: DataTypes.STRING,
+		allowNull: false
+	},
+	is_playing: {
+		type: DataTypes.BOOLEAN,
+		allowNull: false
+	},
+	is_repeated: {
+		type: DataTypes.BOOLEAN,
+		allowNull: false
+	},
+	playing_channel_id: {
+		type: DataTypes.STRING,
+		allowNull: true
+	},
+	current_track: {
+		type: DataTypes.JSON,
+		allowNull: true
+	},
+	queue: {
+		type: DataTypes.ARRAY(DataTypes.JSON),
+		allowNull: false
+	}
+}, {
+	sequelize,
+	modelName: 'MusicManager'
+});
 
 //sequelize.sync({force: true});
 
@@ -168,5 +220,6 @@ module.exports = {
 	User,
 	Item,
 	ItemInstance,
-	Log
+	Log,
+	MusicManager
 }

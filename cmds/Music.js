@@ -1,359 +1,712 @@
-var moduleName = "Music";
-function moduleOnLoad(){
-    console.log(`Module "${this.name}" loaded!`)
+const RainbowBOT = require("../modules/RainbowBOT");
+const Database = require("../modules/Database");
+const Discord = require("discord.js");
+const User = require("../modules/User");
+const { MusicManager } = require("../modules/Models");
+const ytdl = require('ytdl-core');
+const ytsr = require('ytsr');
+const PassThrough = require('stream').PassThrough;
+const querystring = require("querystring");
+const Request = require("request-promise");
+const { EventEmitter } = require("events");
+
+class Track{
+    /**
+     * @param {object} options
+     */
+    constructor(options){
+        /**
+         * @type {string}
+         */
+        this.title = options.title;
+        /**
+         * @type {string}
+         */
+        this.url = options.url;
+        /**
+         * @type {number}
+         */
+        this.duration = options.duration || options.length;
+        this.thumbnail = {
+            /**
+             * @type {string}
+             */
+            url: options.thumbnail.url,
+            /**
+             * @type {number}
+             */
+            width: options.thumbnail.width,
+            /**
+             * @type {number}
+             */
+            height: options.thumbnail.height,
+        };
+        this.timestamp = new Date();
+        /**
+         * @type {boolean}
+         */
+        this.isRadio = options.isRadio;
+    }
+
+    static Create(options) {
+        if(!options || !options.title){
+            return null;
+        }
+        return new Track(options);
+    }
+
+    toObject(){
+        return {
+            title: this.title,
+            url: this.url,
+            duration: this.duration,
+            thumbnail: {
+                url: this.thumbnail.url,
+                width: this.thumbnail.width,
+                height: this.thumbnail.height
+            },
+            timestamp: this.timestamp,
+            isRadio: this.isRadio
+        }
+    }
 }
 
-class Song{
-    constructor(title, url, dur, thumb, started, isRadio, lang){
-        this.title = title;
-        this.url = url;
-        this.duration = dur;
-        this.thumbnail = thumb;
-        this.startedTS = started;
-        this.isRadio = isRadio;
-        this.lang = lang;
+
+class Player extends EventEmitter{
+    /**
+     * @param {MusicManager} music_manager 
+     * @param {RainbowBOT} rbot 
+     */
+    constructor(music_manager, rbot){
+        super();
+        /**
+         * @type {RainbowBOT}
+         */
+        this.rbot = rbot;
+        /**
+         * @type {number}
+         */
+        this.id = music_manager.get("id");
+        /**
+         * @type {Discord.Guild}
+         */
+        this.Guild = null;
+        /**
+         * @type {Discord.TextChannel}
+         */
+        this.TextChannel = null;
+        /**
+         * @type {Discord.Message}
+         */
+        this.PlayerMessage = null;
+        /**
+         * @type {Discord.Message}
+         */
+        this.QueueMessage = null;
+        /**
+         * @type {Discord.Role}
+         */
+        this.DJRole = null;
+        /**
+         * @type {Discord.VoiceConnection}
+         */
+        this.VoiceConnection = null;
+        /**
+         * @type {boolean}
+         */
+        this.isPlaying = music_manager.get("is_playing");
+        /**
+         * @type {boolean}
+         */
+        this.isRepeated = music_manager.get("is_repeated")
+    }
+
+    /**
+     * @returns {Promise<void>}
+     */
+    Init(){
+        return new Promise(async (resolve, reject) => {
+            var mm = await MusicManager.findOne({
+                where:{
+                    id: this.id
+                }
+            });
+            this.Guild = await this.rbot.Client.guilds.fetch(mm.get("guild_id"));
+            this.TextChannel = await this.Guild.channels.resolve(mm.get("music_channel_id"));
+            this.PlayerMessage = await this.TextChannel.messages.fetch(mm.get("music_message_id"));
+            this.QueueMessage = await this.TextChannel.messages.fetch(mm.get("queue_message_id"));
+            this.DJRole = await this.Guild.roles.fetch(mm.get("dj_role_id"));
+            resolve();
+        });
+    }
+
+    /**
+     * @returns {Promise<Array<Track>>}
+     */
+    GetQueue(){
+        return new Promise(async (resolve, reject) => {
+            var manager = await MusicManager.findOne({
+                where: {
+                    id: this.id
+                }
+            });
+            var q = manager.get("queue");
+            var queue = [];
+            for(var i in q){
+                queue.push(Track.Create(q[i]));
+            }
+            resolve(queue);
+        });
+    }
+
+    /**
+     * @returns {Promise<Track>}
+     */
+    GetCurrentTrack(){
+        return new Promise(async (resolve, reject) => {
+            var manager = await MusicManager.findOne({
+                where: {
+                    id: this.id
+                }
+            });
+            resolve(Track.Create(manager.get("current_track")));
+        });
+    }
+
+    /**
+     * @param {Track} track
+     * @returns {Promise<void>}
+     */
+    SetCurrentTrack(track){
+        return new Promise(async (resolve, reject) => {
+            var trw;
+            track ? trw = track.toObject() : trw = null;
+
+            await MusicManager.update({
+                current_track: trw
+            }, {
+                where: {
+                    id: this.id
+                }
+            });
+            resolve();
+        });
+    }
+
+    /**
+     * @returns {Promise<Track>}
+     */
+    QueueShift(){
+        return new Promise(async (resolve, reject) => {
+            var manager = await MusicManager.findOne({
+                where: {
+                    id: this.id
+                }
+            });
+            var q = manager.get("queue");
+            var t = q.shift();
+            await MusicManager.update({
+                queue: q
+            },{
+                where:{
+                    id: this.id
+                }
+            });
+            resolve(Track.Create(t));
+        });
+    }
+
+    /**
+     * @param {Track} track
+     * @returns {Promise<void>}
+     */
+    QueueAdd(track){
+        return new Promise(async (resolve, reject) => {
+            var manager = await MusicManager.findOne({
+                where: {
+                    id: this.id
+                }
+            });
+            var q = manager.get("queue");
+            q.push(track.toObject());
+            await MusicManager.update({
+                queue: q
+            },{
+                where:{
+                    id: this.id
+                }
+            });
+            resolve();
+        });
+    }
+
+    /**
+     * @returns {Promise<void>}
+     */
+    QueueClear(){
+        return new Promise(async (resolve, reject) => {
+            await MusicManager.update({
+                queue: []
+            },{
+                where:{
+                    id: this.id
+                }
+            });
+            resolve();
+        });
+    }
+
+    /**
+     * @returns {Promise<void>}
+     */
+    QueueShuffle(){
+        return new Promise(async (resolve, reject) => {
+            var manager = await MusicManager.findOne({
+                where: {
+                    id: this.id
+                }
+            });
+            var array = manager.get("queue");
+            var copy = [], n = array.length, i;
+            while (n) {
+                i = Math.floor(Math.random() * n--);
+                copy.push(array.splice(i, 1)[0]);
+            }
+            await MusicManager.update({
+                queue: copy
+            },{
+                where:{
+                    id: this.id
+                }
+            });
+            resolve();
+        });
+    }
+
+    /**
+     * @param {boolean} state
+     * @returns {Promise<void>}
+     */
+    ChangeState(state){
+        return new Promise(async (resolve, reject) => {
+            this.isPlaying = state;
+            await MusicManager.update({
+                is_playing: this.isPlaying
+            },{
+                where:{
+                    id: this.id
+                }
+            });
+            resolve();
+        });
+    }
+
+    /**
+     * @param {boolean} state
+     * @returns {Promise<void>}
+     */
+    Repeat(state){
+        return new Promise(async (resolve, reject) => {
+            this.isRepeated = state;
+            await MusicManager.update({
+                is_repeated: this.isRepeated
+            },{
+                where:{
+                    id: this.id
+                }
+            });
+            resolve();
+        });
+    }
+
+    /**
+     * 
+     * @param {Track} track 
+     * @param {Discord.VoiceChannel} voiceChannel
+     * @returns {Promise<void>}
+     */
+    Play(track, voiceChannel){
+        return new Promise(async (resolve, reject) => {
+            if(!voiceChannel){
+                resolve();
+                return;
+            }
+
+            if(!track){
+                track = await this.QueueShift();
+                console.log(track);
+                if(!track){
+                    await this.Stop(voiceChannel);
+                    resolve();
+                    return;
+                }
+            }
+
+            if(!this.VoiceConnection){
+                this.VoiceConnection = await voiceChannel.join();
+            }
+
+            await this.SetCurrentTrack(track);
+            await this.ChangeState(true);
+      
+            if(track.isRadio){
+                var stream = new PassThrough();
+                await Request(track.url, { forever: true }).pipe(stream);
+                this.VoiceConnection.play(stream);
+            }else {
+                this.VoiceConnection.play(ytdl(track.url, { filter: "audioonly" }));
+            }
+            this.emit("started");
+            this.VoiceConnection.dispatcher.once('finish', async () => {
+                if(!this.isRepeated){
+                    track = await this.QueueShift();
+                }
+                this.emit("finished");
+                this.Play(track, voiceChannel);
+            });
+            resolve();
+        });
+    }
+
+    /**
+     * @param {Discord.VoiceChannel} voiceChannel
+     * @returns {Promise<void>}
+     */
+    Pause(voiceChannel){
+        return new Promise(async (resolve, reject) => {
+            if(!voiceChannel){
+                resolve();
+                return;
+            }
+
+            if(this.VoiceConnection){
+                this.VoiceConnection.channel.leave();
+                this.VoiceConnection.disconnect();
+                this.VoiceConnection = null;
+            }
+            await this.ChangeState(false);
+            
+            this.emit("paused");
+            resolve();
+        });
+    }
+
+    /**
+     * @param {Discord.VoiceChannel} voiceChannel
+     * @returns {Promise<void>}
+     */
+    Stop(voiceChannel){
+        return new Promise(async (resolve, reject) => {
+            if(!voiceChannel){
+                resolve();
+                return;
+            }
+
+            if(this.VoiceConnection){
+                this.VoiceConnection.channel.leave();
+                this.VoiceConnection.disconnect();
+                this.VoiceConnection = null;
+            }
+            await this.SetCurrentTrack(null);
+            await this.QueueClear();
+            await this.ChangeState(false);
+            
+            this.emit("stopped");
+            resolve();
+        });
+    }
+
+    /**
+     * @param {Discord.VoiceChannel} voiceChannel
+     * @returns {Promise<void>}
+     */
+    Skip(voiceChannel){
+        return new Promise(async (resolve, reject) => {
+            if(!voiceChannel){
+                resolve();
+                return;
+            }
+            
+            this.Play(null, voiceChannel);
+            resolve();
+        });
     }
 }
-class ServerQueue {
-    constructor(textc, voicec, volume, playing, repeated) {
-        this.textChannel = textc;
-        this.voiceChannel = voicec;
-        this.connection = null;
-        this.songs = [];
-        this.current = null;
-        this.volume = volume;
-        this.playing = playing;
-        this.repeated = repeated;
-    }
-}
+
+
 
 
 class Music {
-    constructor(Discord, Database, Client, Fs, Utils) {
-        this.Discord = Discord;
-        this.Database = Database;
-        this.SecDHMS = Utils.secondsToDhms;
-        this.Request = Utils.RequestPromise;
-        this.ytdl = require('ytdl-core');
-        this.ytsr = require('ytsr');
-        this.PassThrough = require('stream').PassThrough;
-        this.queue = new Map();
-        this.lng = Utils.lng;
-        this.querystring = require("querystring");
+    /**
+     * @param {RainbowBOT} rbot 
+     */
+    constructor(rbot){
+        this.Name = "Music";
+        this.rbot = rbot;
+        this.lng = rbot.localization;
+        /**
+         * @type {Map<string, Player>}
+         */
+        this.Players = new Map();
 
-        this.ytsr.do_warn_deprecate = false;
-    }
-    extractURL = async function(raw, callback){
-        var reg1 = /http(s)?:\/\/(www\.)?youtube\.com\/watch\?v=(.*)/g;
-        var reg2 = /http(s)?:\/\/(www\.)?youtu\.be\/(.*)/g;
-        var code;
-        if(raw.match(reg1)){
-            var matches = reg1.exec(raw);
-            code = matches[matches.length-1];
-        }else if(raw.match(reg2)){
-            var matches = reg2.exec(raw);
-            code = matches[matches.length-1];
-        }
-        if(code){
-            callback("https://www.youtube.com/watch?v="+code);
-        }else {
-            var othis = this;
-            var uri = `http://youtube-scrape.herokuapp.com/api/search?${this.querystring.stringify({q: raw, page: 1})}`;
-            this.Request(uri, (err, data) => {
-                var parsed = JSON.parse(data.body);
-                callback(parsed.results[0].video.url);
-            });
-            /*
-            this.ytsr.getFilters(raw).then(async filters => {
-                var filter = filters.get('Type').find(o => o.name === 'Video');
-                othis.ytsr(raw, {limit: 1, safeSearch: false, nextpageRef: filter.ref}).then(async res => {
-                    callback(res.items[0].link);
+        this.rbot.on('command', async (message, user) => {
+            if (message.content.startsWith(`!music`)) {
+                if (message.content.startsWith(`!music setup`)) {
+                    if(message.member.permissions.has("ADMINISTRATOR")){
+                        await this.exec_setup(message, user);
+                    }else{
+                        await message.channel.send("You don't have permissions to do this.");
+                        return;
+                    }
+                }
+            }
+        });
+
+        this.rbot.on("music_reaction", async (member, reaction, manager) => {
+            var plr = this.Players.get(reaction.message.guild.id);
+            if(!plr){
+                plr = new Player(manager, this.rbot);
+                await plr.Init();
+                plr.on("started", async () => {
+                    await this.update_queue(manager);
                 });
-            });
-            */
-        }
-    };
-    executePlay = async function (message, serverQueue, lang) {
-        const sch_req = message.content.substr(6);
-        const voiceChannel = message.member.voice.channel;
-        if(!voiceChannel){
-            message.channel.send(this.lng.Music.niChannel[lang]);
-            return;
-        }
-        var res = null;
-        var othis = this;
-        await othis.extractURL(sch_req, async function (songUrl) {
-            const songInfo = await othis.ytdl.getInfo(songUrl);
-            const song = new Song(
-                songInfo.title,
-                songInfo.video_url,
-                songInfo.length_seconds,
-                songInfo.playerResponse.videoDetails.thumbnail.thumbnails.pop(),
-                new Date(),
-                false,
-                lang
-            );
-            if (!serverQueue) {
-                const queueConstruct = new ServerQueue(
-                    message.channel,
-                    voiceChannel,
-                    5,
-                    true,
-                    false
-                );
-                othis.queue.set(message.guild.id, queueConstruct);
-                queueConstruct.songs.push(song);
-                try {
-                    var connection = await voiceChannel.join();
-                    queueConstruct.connection = connection;
-                    await othis.Play(message.guild, queueConstruct.songs[0], lang);
-                } catch (err) {
-                    console.log(err);
-                    othis.queue.delete(message.guild.id);
-                    return message.channel.send(err);
-                }
-            } else {
-                serverQueue.songs.push(song);
-                return await othis.ShowQueue(message.channel, serverQueue, lang)
+                this.Players.set(reaction.message.guild.id, plr);
             }
+            switch(reaction.emoji.name){
+                case "⏯":{
+                    if(plr.isPlaying){
+                        await plr.Pause(member.voice.channel);
+                    }else{
+                        await plr.Play(await plr.GetCurrentTrack(), member.voice.channel);
+                    }
+                    await this.update_queue(manager);
+                    await reaction.users.remove(member.id);
+                    break;
+                };
 
+                case "⏹":{
+                    await plr.Stop(member.voice.channel);
+                    await this.update_queue(manager);
+                    await reaction.users.remove(member.id);
+                    break;
+                };
+
+                case "⏭":{
+                    await plr.Skip(member.voice.channel);
+                    await this.update_queue(manager);
+                    await reaction.users.remove(member.id);
+                    break;
+                };
+
+                case "🔂":{
+                    await plr.Repeat(!plr.isRepeated);
+                    await this.update_queue(manager);
+                    await reaction.users.remove(member.id);
+                    break;
+                };
+
+                case "🔀":{
+                    await plr.QueueShuffle();
+                    await this.update_queue(manager);
+                    await reaction.users.remove(member.id);
+                    break;
+                };
+            }
         });
-    };
 
-    executePlayList = async function(message, serverQueue, lang) {
-        var searchRequests = message.content.substr(7).split(";;");
-        const voiceChannel = message.member.voice.channel;
-        if(!voiceChannel){
-            message.channel.send(this.lng.Music.niChannel[lang]);
-            return;
-        }
-        var othis = this;
-        if (!serverQueue) {
-            const queueContruct = new ServerQueue(
-                message.channel,
-                voiceChannel,
-                5,
-                true,
-                false
-            );
-            othis.queue.set(message.guild.id, queueContruct);
-            serverQueue = queueContruct;
-        }
-        searchRequests.forEach(async (val, i, arr)=>{
-            await othis.extractURL(val, async function (songUrl) {
-                const songInfo = await othis.ytdl.getInfo(songUrl);
-                const song = new Song(
-                    songInfo.title,
-                    songInfo.video_url,
-                    songInfo.length_seconds,
-                    songInfo.playerResponse.videoDetails.thumbnail.thumbnails.pop(),
-                    new Date(),
-                    false,
-                    lang
-                );
-                serverQueue.songs.push(song);
-                if(i === searchRequests.length-1){
-                    try {
-                        var connection = await voiceChannel.join();
-                        serverQueue.connection = connection;
-                        await othis.Play(message.guild, serverQueue.songs[0], lang);
-                    } catch (err) {
-                        console.log(err);
-                        othis.queue.delete(message.guild.id);
-                        return message.channel.send(err);
-                    }
-                }
-            });
+        this.rbot.on("music_message", async (member, message, manager) => {
+            await this.exec_add_track(message, manager);
         });
-    };
 
-    executeRadio = async function(message, serverQueue, lang) {
-        var voiceChannel = message.member.voice.channel;
-        if(!voiceChannel){
-            message.channel.send(this.lng.Music.niChannel[lang]);
-            return;
-        }
-        const song = new Song(
-            "RainbowFM",
-            "https://air.rainbowbot.xyz",
-            36000,
-            {
-                url: "https://media.discordapp.net/attachments/612222713716801537/722382264427610154/rbfm200.png",
-                width: 200,
-                height: 200,
-            },
-            new Date(),
-            true,
-            lang
-        );
-        var othis = this;
-        if (!serverQueue) {
-            const queueContruct = new ServerQueue(
-                message.channel,
-                voiceChannel,
-                5,
-                true,
-                false
-            );
-            this.queue.set(message.guild.id, queueContruct);
-            queueContruct.songs.push(song);
-            try {
-                var connection = await voiceChannel.join();
-                queueContruct.connection = connection;
-                await othis.Play(message.guild, queueContruct.songs[0], lang);
-            } catch (err) {
-                console.log(err);
-                othis.queue.delete(message.guild.id);
-                return message.channel.send(err);
-            }
-        } else {
-            serverQueue.songs.push(song);
-            return await othis.ShowQueue(message.channel, serverQueue, lang);
-        }
-    };
-
-    ShowQueue = async function(channel, serverQueue, lang) {
-        var othis = this;
-        if (!serverQueue) {
-            var emd = new this.Discord.MessageEmbed()
-                .setTitle(othis.lng.Music.emptyQueue[lang])
-                .setColor(0x0000FF);
-            channel.send(emd);
-            return;
-        }
-        let songs = serverQueue.songs;
-        if (!songs) {
-            var emd = new this.Discord.MessageEmbed()
-                .setTitle(othis.lng.Music.queueEnded[lang])
-                .setColor(0x0000FF);
-            serverQueue.textChannel.send(emd);
-            serverQueue.voiceChannel.leave();
-            this.queue.delete(guild.id);
-            return;
-        }
-        let queue = "";
-        if (!(songs === [])) {
-            let i = 0;
-            while (i < (songs.length)) {
-                if (i === 0) {
-                    var dur = this.SecDHMS(songs[0].duration);
-                    var cdur = this.SecDHMS((new Date() - songs[0].startedTS)/1000);
-                    if(serverQueue.repeated){
-                        queue = `${othis.lng.Music.currentTrack[lang]}: :repeat: _${songs[0].title}_ **${cdur}**/**${dur}**\n\n${othis.lng.Music.next[lang]}:`;
-                    }else {
-                        queue = `${othis.lng.Music.currentTrack[lang]}: _${songs[0].title}_ **${cdur}**/**${dur}**\n\n${othis.lng.Music.next[lang]}:`;
-                    }
-                } else {
-                    var dur = this.SecDHMS(songs[i].duration);
-                    queue = queue + "\n" + i.toString() + ". " + songs[i].title + " " + dur;
-                }
-                i++;
-            }
-        }
-        var embed = new this.Discord.MessageEmbed();
-        if (songs[0]) {
-            embed
-                .setTitle(`${othis.lng.Music.playingQueue[lang]}:`)
-                .setColor(0x0000FF)
-                .setDescription(queue)
-                .setThumbnail(songs[0].thumbnail.url);
-        } else {
-            embed
-                .setTitle(othis.lng.Music.emptyQueue[lang])
-                .setColor(0x0000FF);
-        }
-        channel.send(embed);
-    };
-
-    Play = async function(guild, song, lang) {
-        const serverQueue = this.queue.get(guild.id);
-        var othis = this;
-        if (!song) {
-            if(serverQueue){
-                var emd = new this.Discord.MessageEmbed()
-                    .setTitle(othis.lng.Music.queueEnded[lang])
-                    .setColor(0x0000FF);
-                serverQueue.textChannel.send(emd);
-                serverQueue.voiceChannel.leave();
-                this.queue.delete(guild.id);
-                return;
-            }
-        }
-        song.startedTS =  new Date();
-        await othis.ShowQueue(serverQueue.textChannel, serverQueue, lang);
-        if(song.isRadio){
-            var stream = new othis.PassThrough();
-            await this.Request(song.url, { forever: true, rejectUnauthorized: false }).pipe(stream);
-            serverQueue.connection.play(stream);
-            serverQueue.connection.dispatcher.once('finish', async () => {
-                if(!serverQueue.repeated){
-                    serverQueue.songs.shift();
-                }
-                await othis.Play(guild, serverQueue.songs[0], lang);
-            });
-        }else {
-            serverQueue.connection.play(othis.ytdl(song.url, { filter: 'audioonly' }));
-            serverQueue.connection.dispatcher.once('finish', async () => {
-                if(serverQueue.repeated){
-                    await othis.Play(guild, serverQueue.songs[0], lang);
-                    return;
-                }else {
-                    if(!serverQueue.repeated){
-                        serverQueue.songs.shift();
-                    }
-                    await othis.Play(guild, serverQueue.songs[0], lang);
-                }
-            });
-        }
-    };
-    Skip = async function(message, serverQueue, lang) {
-        if (!message.member.voice.channel) return message.channel.send(this.lng.Music.niChannel[lang]);
-        if (!serverQueue) return message.channel.send(this.lng.Music.noTrackSkip[lang]);
-        if (!serverQueue.connection.dispatcher) {
-            try {
-                serverQueue.connection = await serverQueue.voiceChannel.join();
-            } catch{
-                serverQueue.voiceChannel.leave();
-                this.queue.delete(serverQueue.textChannel.guild.id);
-                return;
-            }
-        } else {
-            serverQueue.connection.dispatcher.destroy();
-        }
-        serverQueue.songs.shift();
-        await this.Play(message.guild, serverQueue.songs[0], lang);
-        return;
-    };
-
-    Stop = async function(message, serverQueue, lang) {
-        if (!message.member.voice.channel) return message.channel.send(this.lng.Music.niChannel[lang]);
-        if (!serverQueue) return message.channel.send(this.lng.Music.queueAlyEmpty[lang]);
-        if (!serverQueue.connection.dispatcher) {
-            try {
-                serverQueue.connection = await serverQueue.voiceChannel.join();
-            } catch{
-                serverQueue.voiceChannel.leave();
-                this.queue.delete(serverQueue.textChannel.guild.id);
-                return;
-            }
-        } else {
-            serverQueue.connection.dispatcher.destroy();
-        }
-        serverQueue.songs = [];
-        await this.Play(message.guild, serverQueue.songs[0], lang);
-        return;
-    };
-    Repeat = async function(message, serverQueue, lang){
-        if (!message.member.voice.channel) return message.channel.send(this.lng.Music.niChannel[lang]);
-        if (!serverQueue) return message.channel.send(this.lng.Music.emptyQueue[lang]);
-        serverQueue.repeated = !serverQueue.repeated;
-        await this.ShowQueue(serverQueue.textChannel, serverQueue, lang);
-        return;
+        console.log(`Module "${this.Name}" loaded!`)
     }
+
+    /**
+     * 
+     * @param {Discord.Message} message Discord Message object
+     * @param {User} user RainbowBOT User object
+     * @returns {Promise<Discord.Message>}
+     */
+    exec_setup(message, user) {
+        return new Promise(async (resolve, reject) => {
+            var manager = await MusicManager.findOne({
+                where: {
+                    guild_id: message.guild.id
+                }
+            });
+
+            if(!manager){
+                var role = await message.guild.roles.create({
+                    data: {
+                        name: 'Rainbow DJ',
+                        color: 0xFF00FF,
+                      },
+                    reason: 'We need new DJ Role'
+                });
+                var channel = await message.guild.channels.create("RainbowBOT Music", { 
+                    type: "text",
+                    topic: "⏯ - play/pause\n⏹ - stop player and clear queue\n⏭ - skip current track\n🔂 - repeat current track\n🔀 - shuffle current playlist\n<:igniblprpl:727513115633123415> - Add tracks from RainbowBOT Chart\n\nTo add track in playlist you need to send youtube URI in this channel.",
+                    permissionOverwrites: [
+                        {
+                            id: message.guild.roles.everyone.id,
+                            deny: "SEND_MESSAGES"
+                        },
+                        {
+                            id: role.id,
+                            allow: "SEND_MESSAGES"
+                        }
+                    ]
+                });
+                var embd = new Discord.MessageEmbed({
+                    title: "RainbowBOT Music Player",
+                    color: 0x00a7ff
+                }).setImage("https://cdn.discordapp.com/attachments/575271861643116555/796329363305922610/-1.png");
+
+                
+                var react_message = await channel.send(embd);
+                await react_message.react("⏯");
+                await react_message.react("⏹");
+                await react_message.react("⏭");
+                await react_message.react("🔂");
+                await react_message.react("🔀");
+                await react_message.react("igniblprpl:727513115633123415");
+                var queue_message = await channel.send("Next Tracks:\n`Empty`")
+
+                manager = await MusicManager.create({
+                    guild_id: message.guild.id,
+                    music_message_id: react_message.id,
+                    music_channel_id: channel.id,
+                    queue_message_id: queue_message.id,
+                    dj_role_id: role.id,
+                    is_playing: false,
+                    is_repeated: false,
+                    queue: []
+                });
+            }
+        });
+    }
+
+    /**
+     * 
+     * @param {string} raw String with any youtube link, or with search query
+     * @returns {Promise<string>}
+     */
+    extractURL(raw){
+        return new Promise(async (resolve, reject) => {
+            var reg1 = /http(s)?:\/\/(www\.)?youtube\.com\/watch\?v=(.*)/g;
+            var reg2 = /http(s)?:\/\/(www\.)?youtu\.be\/(.*)/g;
+            var code;
+            if(raw.match(reg1)){
+                var matches = reg1.exec(raw);
+                code = matches[matches.length-1];
+            }else if(raw.match(reg2)){
+                var matches = reg2.exec(raw);
+                code = matches[matches.length-1];
+            }
+            if(code){
+                resolve("https://www.youtube.com/watch?v="+code);
+            }else {
+                var filters = await ytsr.getFilters(raw);
+                var filter = filters.get('Type').get('Video');
+                var res = await ytsr(filter.url, {
+                    limit: 1, 
+                    safeSearch: false, 
+                    //nextpageRef: filter.ref
+                });
+                resolve(res.items[0].url);
+            }
+        });
+    }
+
+
+    /**
+     * @param {MusicManager} manager
+     * @returns {Promise<Discord.Message>}
+     */
+    update_queue(manager) {
+        return new Promise(async (resolve, reject) => {
+            var plr = this.Players.get(manager.get("guild_id"));
+            if(!plr){
+                plr = new Player(manager, this.rbot);
+                await plr.Init();
+                this.Players.set(reaction.message.guild.id, plr);
+            }
+
+            var queue = await plr.GetQueue();
+            var qstr = "Next Tracks:\n";
+            if(queue.length === 0){
+                qstr += "`Empty`";
+            }else{
+                for(var i in queue){
+                    qstr += `${i}. ${queue[i].title} \`${this.rbot.Utils.secondsToDhms(queue[i].duration)}\`\n`;
+                }
+            }
+
+            var curr = await plr.GetCurrentTrack();
+            if(curr){
+                var embd = new Discord.MessageEmbed({
+                    title: `RainbowBOT Music Player ${plr.isPlaying ? "▶" : "⏸"} ${plr.isRepeated ? "🔂" : ""}`,
+                    color: 0x00a7ff
+                })
+                    .setImage(curr.thumbnail.url)
+                    .setDescription(`[${curr.title}](${curr.url}) ${this.rbot.Utils.secondsToDhms(curr.duration)}`);
+                await plr.PlayerMessage.edit(embd);
+            }else{
+                var embd = new Discord.MessageEmbed({
+                    title: `RainbowBOT Music Player ${plr.isPlaying ? "▶" : "⏸"} ${plr.isRepeated ? "🔂" : ""}`,
+                    color: 0x00a7ff
+                }).setImage("https://cdn.discordapp.com/attachments/575271861643116555/796329363305922610/-1.png");
+                await plr.PlayerMessage.edit(embd);
+            }
+            resolve (await plr.QueueMessage.edit(qstr));
+        });
+    }
+
+    /**
+     * 
+     * @param {Discord.Message} message Discord Message object
+     * @param {MusicManager} manager MusicManager object
+     * @returns {Promise<Discord.Message>}
+     */
+    exec_add_track(message, manager) {
+        return new Promise(async (resolve, reject) => {
+            const voiceChannel = message.member.voice.channel;
+            if(!voiceChannel){
+                var ms = await message.channel.send(this.lng.Music.niChannel["en"]);
+                await message.delete({timeout: 5000});
+                resolve(await ms.delete({timeout: 5000}));
+                return;
+            }
+            var url = await this.extractURL(message.content);
+            var songInfo = await ytdl.getInfo(url);
+            var song = {
+                title: songInfo.videoDetails.title,
+                url: songInfo.videoDetails.video_url,
+                length: parseInt(songInfo.videoDetails.lengthSeconds),
+                thumbnail: songInfo.videoDetails.thumbnails.pop(),
+                timestamp: new Date(),
+                isRadio: false
+            }
+
+            var plr = this.Players.get(message.guild.id);
+            if(!plr){
+                plr = new Player(manager, this.rbot);
+                await plr.Init();
+                plr.on("started", async () => {
+                    await this.update_queue(manager);
+                });
+                this.Players.set(message.guild.id, plr);
+            }
+            
+            await plr.QueueAdd(Track.Create(song));
+            if(!plr.isPlaying){
+                plr.Play(null, voiceChannel);
+            }
+            await message.delete();
+            resolve(await this.update_queue(manager));
+        });
+    }
+
 }
 
-module.exports.info = {
-    name: moduleName,
-    onLoad: moduleOnLoad
-};
-module.exports.class = Music;
+module.exports = Music;

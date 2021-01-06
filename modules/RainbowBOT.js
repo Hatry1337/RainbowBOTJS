@@ -3,6 +3,7 @@ const DBL = require("dblapi.js");
 const Utils = require("./Utils");
 const EventEmitter = require("events");
 const Database = require("../modules/Database");
+const { MusicManager } = require("../modules/Models");
 
 /**
  * RainbowBOT Main Class
@@ -38,14 +39,33 @@ class RainbowBOT extends EventEmitter{
             Farm:       new (require("../cmds/farm"))       (this),
             Pinggg:     new (require("../cmds/pinggg"))     (this),
             As:         new (require("../cmds/as"))         (this),
+            Clear:      new (require("../cmds/clear"))      (this),
+            CowSay:     new (require("../cmds/cowsay"))     (this),
+            Pipe:       new (require("../cmds/pipe"))       (this),
+            Music:      new (require("../cmds/Music"))      (this),
 
 
 
 
         }
 
-        this.Client.once('ready', () => {
+        this.Client.once('ready', async () => {
             this.startTimestamp = new Date();
+
+            console.log("Caching music channels...")
+            var managers = await MusicManager.findAll();
+            for(var i in managers){
+                var ch = await this.Client.channels.fetch(managers[i].get("music_channel_id")).catch(async e => {
+                    if(e && e.code === 10003){
+                        console.log(`[${managers[i].get("music_channel_id")}] Channel not found. Deleting manager`)
+                        await managers[i].destroy();
+                    }
+                });
+                if(ch){
+                    await ch.messages.fetch();
+                    console.log(`${parseInt(i)+1}/${managers.length}`);
+                }
+            }
         });
 
         this.Client.on('message', async message => {
@@ -79,6 +99,41 @@ class RainbowBOT extends EventEmitter{
             });                
         });
 
+
+
+        //Music Events
+        this.Client.on("messageReactionAdd", async (reaction, user) => {
+            if(user.id === this.Client.user.id){return}
+            var manager = await MusicManager.findOne({
+                where: {
+                    music_message_id: reaction.message.id
+                }
+            });
+            if(manager){
+                var member = reaction.message.guild.member(user.id);
+                if(member.roles.cache.get(manager.get("dj_role_id"))){
+                    this.emit("music_reaction", member, reaction, manager);
+                }else{
+                    await reaction.users.remove(user.id);
+                }
+            }
+        });
+
+        this.Client.on('message', async message => {
+            if(message.author.id === this.Client.user.id){return}
+            var manager = await MusicManager.findOne({
+                where: {
+                    music_channel_id: message.channel.id
+                }
+            });
+            if(manager){
+                if(message.member.roles.cache.get(manager.get("dj_role_id"))){
+                    this.emit("music_message", message.member, message, manager);
+                }else{
+                    await message.delete();
+                }
+            }
+        });
     }
 
     /**

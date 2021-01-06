@@ -21,8 +21,8 @@
     "request-promise": "^4.2.6",
     "sequelize": "^6.3.5",
     "windows-1251": "^1.0.0",
-    "ytdl-core": "^3.4.2",
-    "ytsr": "^1.0.4"
+    "ytdl-core": "^4.4.0",
+    "ytsr": "^3.2.1"
   },
   "devDependencies": {
     "@types/mysql": "^2.15.15"

@@ -62,13 +62,12 @@ class Ascii {
         await channel.send("```Available Fonts:\n" + files_ + "```");
     };
 
-        /**
+    /**
      * @param {Discord.Message} message Discord Message object
-     * @param {Function} pipef Pipe callback function for !pipe command
-     * @param {string} pipet
+     * @param {boolean} raw
      * @returns {Promise<Discord.Message>}
      */
-    execute(message, pipef, pipet) {
+    execute(message, raw) {
         /**
          * @type {Ascii}
          */
@@ -100,7 +99,11 @@ class Ascii {
                                     for (const line of strimage) {
                                         out += `${line.join('').trimRight()}\n`;
                                     }
-                                    resolve(message.channel.send("```" + out + "```"));
+                                    if(raw){
+                                        resolve(out);
+                                    }else{
+                                        resolve(message.channel.send("```" + out + "```"));
+                                    }
                                     Database.writeLog('ascii', message.author.id, message.guild.name, {
                                         Message: `User '${message.author.tag}' drawed inverted image. Cached image path: '${imgpath}'.`
                                     });
@@ -122,7 +125,11 @@ class Ascii {
                                         for (const line of strimage) {
                                             out += `${line.join('').trimRight()}\n`;
                                         }
-                                        resolve(message.channel.send("```" + out + "```"));
+                                        if(raw){
+                                            resolve(out);
+                                        }else{
+                                            resolve(message.channel.send("```" + out + "```"));
+                                        }
                                         Database.writeLog('ascii', message.author.id, message.guild.name, {
                                             Message: `User '${message.author.tag}' drawed image. Cached image path: '${imgpath}'.`
                                         });
@@ -133,13 +140,23 @@ class Ascii {
                             }
                         });
                     } else {
-                        resolve(message.channel.send("Error: No image specified"));
+                        if(raw){
+                            resolve("Error: No image specified");
+                        }else{
+                            resolve(message.channel.send("Error: No image specified"));
+                        }
+                        return;
                     }
                 } else if (args[1] === "--fontlist") {
-                    resolve(await this.sendFonts(message.channel));
+                    if(raw){
+                        resolve("Error: Can't send fonts list to pipe!");
+                    }else{
+                        resolve(await this.sendFonts(message.channel));
+                    }
                     Database.writeLog('ascii', message.author.id, message.guild.name, {
                             Message: `User '${message.author.tag}' watched list of available ascii fonts.`
                     });
+                    return;
                 }else {
                     var text = message.content.slice(7);
                     var font = text.indexOf("--font ");
@@ -147,23 +164,30 @@ class Ascii {
                         font = text.slice(font + 7);
                         text = text.replace("--font " + font, '');
                         if (!othis.fontExist(font)) {
-                            resolve(message.channel.send("Error: Unknown font '" + font + "'"));
+                            if(raw){
+                                resolve("Error: Unknown font '" + font + "'");
+                            }else{
+                                resolve(message.channel.send("Error: Unknown font '" + font + "'"));
+                            }
+                            return;
                         }
                     } else {
                         font = 'Doom';
                     }
                     var re = /а-я/gi;
                     if (re.test(text.toLowerCase())) {
-                        resolve(message.channel.send("Error: only english letters available!"));
-                    }
-                    if(pipet){
-                        text = pipet;
+                        if(raw){
+                            resolve("Error: only english letters available!");
+                        }else{
+                            resolve(message.channel.send("Error: only english letters available!"));
+                        }
+                        return;
                     }
                     await AsciiFont.create(text, font, async (err, res) => {
                         if (err) reject(err)      
-                        if (pipef){
-                            resolve(await pipef(res));
-                        }else {
+                        if(raw){
+                            resolve(res);
+                        }else{
                             res.replace(/`/g, "\\`");
                             resolve(message.channel.send("```" + res + "```"));
                         }
@@ -173,12 +197,72 @@ class Ascii {
                     });
                 }
             } else {
-                if(pipef){
-                    resolve(await pipef("Usage:\n!ascii <arg1> <arg2>\narg1 = text - ascii text art\narg1 = '--pic' - ascii picture art(add picture to the message)\narg1 = '--fontlist' - list of available fonts\n\narg2 = '--font <fontname>' - use selected font on your text"));
-                }else {
+                if(raw){
+                    resolve("Usage:\n!ascii <arg1> <arg2>\narg1 = text - ascii text art\narg1 = '--pic' - ascii picture art(add picture to the message)\narg1 = '--fontlist' - list of available fonts\n\narg2 = '--font <fontname>' - use selected font on your text");
+                }else{
                     resolve(message.channel.send("```Usage:\n!ascii <arg1> <arg2>\narg1 = text - ascii text art\narg1 = '--pic' - ascii picture art(add picture to the message)\narg1 = '--fontlist' - list of available fonts\n\narg2 = '--font <fontname>' - use selected font on your text```"));
                 }
-                return;
+            }
+        });
+    }
+
+
+    /**
+     * @param {Discord.Message} message Discord Message object
+     * @returns {Promise<Discord.Message>}
+     */
+    exec_pipe_in(message, ptext) {
+        /**
+         * @type {Ascii}
+         */
+        var othis = this;
+        return new Promise(async (resolve, reject) => {
+            var args = message.content.split(" ");
+            if (args[1]) {
+                var text = message.content.slice(7);
+                var font = text.indexOf("--font ");
+                if (font !== -1) {
+                    font = text.slice(font + 7);
+                    text = text.replace("--font " + font, '');
+                    if (!othis.fontExist(font)) {
+                        if(raw){
+                            resolve("Error: Unknown font '" + font + "'");
+                        }else{
+                            resolve(message.channel.send("Error: Unknown font '" + font + "'"));
+                        }
+                        return;
+                    }
+                } else {
+                    font = 'Doom';
+                }
+
+                var re = /а-я/gi;
+                if (re.test(ptext.toLowerCase())) {
+                    if(raw){
+                        resolve("Error: only english letters available!");
+                    }else{
+                        resolve(message.channel.send("Error: only english letters available!"));
+                    }
+                }
+
+                await AsciiFont.create(ptext, font, async (err, res) => {
+                    if (err) reject(err)      
+                    if(raw){
+                        resolve(res);
+                    }else{
+                        res.replace(/`/g, "\\`");
+                        resolve(message.channel.send("```" + res + "```"));
+                    }
+                    Database.writeLog('ascii', message.author.id, message.guild.name, {
+                            Message: `User '${message.author.tag}' drawed text '${ptext}' with font '${font}'.`
+                    });
+                });
+            } else {
+                if(raw){
+                    resolve("Usage:\n!ascii <arg1> <arg2>\narg1 = text - ascii text art\narg1 = '--pic' - ascii picture art(add picture to the message)\narg1 = '--fontlist' - list of available fonts\n\narg2 = '--font <fontname>' - use selected font on your text");
+                }else{
+                    resolve(message.channel.send("```Usage:\n!ascii <arg1> <arg2>\narg1 = text - ascii text art\narg1 = '--pic' - ascii picture art(add picture to the message)\narg1 = '--fontlist' - list of available fonts\n\narg2 = '--font <fontname>' - use selected font on your text```"));
+                }
             }
         });
     }
