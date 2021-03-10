@@ -91,7 +91,11 @@ client.on('message', async message => {
                             Utils.Modules.Rstats.execute(message, utime, user.lang);
                             return;
 
-                        } else if (message.content.startsWith(`!hentai`)) {
+                        } else if (message.content.startsWith(`!color`)) {
+                            Utils.Modules.Color.execute(message);
+                            return;
+
+                        }else if (message.content.startsWith(`!hentai`)) {
                             Utils.Modules.Hentai.execute(message);
                             return;
 
