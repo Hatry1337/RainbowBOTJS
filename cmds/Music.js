@@ -490,7 +490,7 @@ class Music {
         });
 
         this.rbot.Client.on("voiceStateUpdate", async (oldState, newState)=>{
-            if(newState.member.id === client.user.id){return;}
+            if(newState.member.id === this.rbot.Client.user.id){return;}
             if(newState.channel){
                 if(!newState.channel.members.has(client.user.id)){return;}
                 if(newState.channel.members.size <= 1){
