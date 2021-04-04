@@ -779,7 +779,7 @@ class Music {
                     isRadio: false
                 }
                 await plr.QueueAdd(Track.Create(song));
-                if(ctr / 5 === 0){
+                if(ctr % 5 === 0){
                     await this.update_queue(manager)
                 }
                 ctr++;
