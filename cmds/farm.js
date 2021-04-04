@@ -36,10 +36,43 @@ class Farm {
                 switch(args[1].toLowerCase()){
                     case "build":{
                         if(args[2]){
-                            
+                            await ItemInstanceModel.create({
+                                owner_id: user.id,
+                                item_id: 6,
+                                meta: {
+                                    case: parseInt(args[2]),
+                                    slots: []
+                                }
+                            });
+                            resolve(await message.channel.send("Farm successfully builded!"));
                         }else{
-                            resolve(message.channel.send("Case ID not specified."));
+                            resolve(message.channel.send("Command use:\n!farm build <case_id>"));
                         }
+                        break;
+                    }
+                    case "addcard":{
+                        if(args[2] && args[3]){
+                            var farm = await ItemInstanceModel.findOne({
+                                where:{
+                                    id: args[2]
+                                }
+                            });
+                            if(farm.get("owner_id" === user.id)){
+                                var fmeta = farm.get("meta");
+                                fmeta.slots.push(args[3]);
+                                await ItemInstanceModel.update({
+                                    meta: fmeta
+                                }, {
+                                    where: {
+                                        id: farm.get("id")
+                                    }
+                                });
+                            }
+                            resolve(await message.channel.send("Card successfully added!"));
+                        }else{
+                            resolve(message.channel.send("Command use:\n!farm addcard <farm_id> <card_id>"));
+                        }
+                        break;
                     }
                 }
             }else{

@@ -24,18 +24,34 @@ class Item {
 
     /**
      * 
+     * @param {number} id item id 
+     */
+    static get(id){
+        return new Promise(async (res, rej) => {
+            var instance = await ItemInstanceModel.findOne({
+                where:{
+                    id: id
+                }
+            });
+            //var item =
+        });
+    }
+
+    /**
+     * 
      * @param {number} id 
      * @returns {Promise<Item>}
      */
     transfer(id){
         return new Promise(async (res, rej) => {
-            await ItemModel.update({
+            await ItemInstanceModel.update({
                 owner_id: id
             },{
                 where:{
                     id: this.id
                 }
             });
+            this.owner_id = id;
             res(this);
         });
     }

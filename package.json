@@ -1,10 +1,10 @@
 {
   "name": "rainbow-bot-js",
-  "version": "0.0.0",
+  "version": "2.0.0",
   "description": "RainbowBOT JS",
   "main": "bot.js",
   "author": {
-    "name": ""
+    "name": "Hatry1337"
   },
   "dependencies": {
     "@discordjs/opus": "^0.3.2",
@@ -14,6 +14,7 @@
     "cowsay": "^1.4.0",
     "dblapi.js": "^2.4.1",
     "discord.js": "^12.3.1",
+    "ffmpeg-static": "^4.3.0",
     "jimp": "^0.16.0",
     "mysql": "^2.18.1",
     "pg": "^8.5.1",
@@ -21,8 +22,9 @@
     "request-promise": "^4.2.6",
     "sequelize": "^6.3.5",
     "windows-1251": "^1.0.0",
-    "ytdl-core": "^4.4.0",
-    "ytsr": "^3.2.1"
+    "ytdl-core": "^4.5.0",
+    "ytpl": "^2.1.0",
+    "ytsr": "^3.4.0"
   },
   "devDependencies": {
     "@types/mysql": "^2.15.15"

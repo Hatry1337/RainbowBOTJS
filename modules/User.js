@@ -3,6 +3,10 @@ const {User: UserModel, Item: ItemModel, ItemInstance: ItemInstanceModel} = requ
 const Item = require("./Item");
 const Discord = require("discord.js");
 
+class Inventory{
+    
+}
+
 class User{
     /**
      * 

@@ -5,6 +5,7 @@ const User = require("../modules/User");
 const { MusicManager } = require("../modules/Models");
 const ytdl = require('ytdl-core');
 const ytsr = require('ytsr');
+const ytpl = require('ytpl');
 const PassThrough = require('stream').PassThrough;
 const querystring = require("querystring");
 const Request = require("request-promise");
@@ -639,14 +640,40 @@ class Music {
             if(code){
                 resolve("https://www.youtube.com/watch?v="+code);
             }else {
-                var filters = await ytsr.getFilters(raw);
+                var filters = await ytsr.getFilters(raw).catch(console.log);
                 var filter = filters.get('Type').get('Video');
                 var res = await ytsr(filter.url, {
                     limit: 1, 
                     safeSearch: false, 
                     //nextpageRef: filter.ref
-                });
+                }).catch(console.log);
                 resolve(res.items[0].url);
+            }
+        });
+    }
+    /**
+     * 
+     * @param {string} url String with youtube playlist link
+     * @returns {Promise<string[]>}
+     */
+    extractPlaylist(url){
+        return new Promise(async (resolve, reject) => {
+            var reg1 = /http(s)?:\/\/(www\.)?youtube\.com\/playlist\?list=(.*)/g;
+            var matches = reg1.exec(url);
+            if(matches){
+                var code = matches[matches.length-1];
+                if(code){
+                    var playlist = await ytpl(code);
+                    var urls = [];
+                    for(var vid of playlist.items){
+                        urls.push(vid.url);
+                    }
+                    resolve(urls);
+                }else{
+                    resolve(null);
+                }
+            }else{
+                resolve(null);
             }
         });
     }
@@ -671,7 +698,12 @@ class Music {
                 qstr += "`Empty`";
             }else{
                 for(var i in queue){
-                    qstr += `${i}. ${queue[i].title} \`${this.rbot.Utils.secondsToDhms(queue[i].duration)}\`\n`;
+                    if((qstr + `${i}. ${queue[i].title} \`${this.rbot.Utils.secondsToDhms(queue[i].duration)}\`\n`).length < 1950){
+                        qstr += `${i}. ${queue[i].title} \`${this.rbot.Utils.secondsToDhms(queue[i].duration)}\`\n`;
+                    }else{
+                        qstr += "And some other tracks...";
+                        break;
+                    }
                 }
             }
 
@@ -710,15 +742,10 @@ class Music {
                 resolve(await ms.delete({timeout: 5000}));
                 return;
             }
-            var url = await this.extractURL(message.content);
-            var songInfo = await ytdl.getInfo(url);
-            var song = {
-                title: songInfo.videoDetails.title,
-                url: songInfo.videoDetails.video_url,
-                length: parseInt(songInfo.videoDetails.lengthSeconds),
-                thumbnail: songInfo.videoDetails.thumbnails.pop(),
-                timestamp: new Date(),
-                isRadio: false
+            
+            var urls = await this.extractPlaylist(message.content);
+            if(!urls){
+                urls = [await this.extractURL(message.content)];
             }
 
             var plr = this.Players.get(message.guild.id);
@@ -728,10 +755,34 @@ class Music {
                 plr.on("started", async () => {
                     await this.update_queue(manager);
                 });
+                plr.on("stopped", async () => {
+                    await this.update_queue(manager);
+                });
                 this.Players.set(message.guild.id, plr);
             }
             
-            await plr.QueueAdd(Track.Create(song));
+            var q = await plr.GetQueue();
+            var ctr = q.length;
+            for(var vid of urls){
+                if(ctr >= 50){
+                    var ms = await message.channel.send("Max tracks in queue - 50!");
+                    resolve(await ms.delete({timeout: 5000}));
+                    break;
+                }
+                var songInfo = await ytdl.getInfo(vid);
+                var song = {
+                    title: songInfo.videoDetails.title,
+                    url: songInfo.videoDetails.video_url,
+                    length: parseInt(songInfo.videoDetails.lengthSeconds),
+                    thumbnail: songInfo.videoDetails.thumbnails.pop(),
+                    timestamp: new Date(),
+                    isRadio: false
+                }
+                await plr.QueueAdd(Track.Create(song));
+                await this.update_queue(manager)
+                ctr++;
+            }
+
             if(!plr.isPlaying){
                 plr.Play(null, voiceChannel);
             }
