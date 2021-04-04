@@ -489,6 +489,23 @@ class Music {
             }
         });
 
+        this.rbot.Client.on("voiceStateUpdate", async (oldState, newState)=>{
+            if(newState.member.id === client.user.id){return;}
+            if(newState.channel){
+                if(!newState.channel.members.has(client.user.id)){return;}
+                if(newState.channel.members.size <= 1){
+                    setTimeout(async()=>{
+                        if(newState.channel.members.size <= 1){
+                            var plr = this.Players.get(channel.guild.id);
+                            if(plr.isPlaying){
+                                await plr.Pause(newState.channel);
+                            }
+                        }
+                    }, 20000);
+                }
+            }
+        });
+
         this.rbot.on("music_reaction", async (member, reaction, manager) => {
             var plr = this.Players.get(reaction.message.guild.id);
             if(!plr){
@@ -764,8 +781,8 @@ class Music {
             var q = await plr.GetQueue();
             var ctr = q.length;
             for(var vid of urls){
-                if(ctr >= 50){
-                    var ms = await message.channel.send("Max tracks in queue - 50!");
+                if(ctr >= 100){
+                    var ms = await message.channel.send("Max tracks in queue - 100!");
                     resolve(await ms.delete({timeout: 5000}));
                     break;
                 }
