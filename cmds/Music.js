@@ -491,18 +491,22 @@ class Music {
 
         this.rbot.Client.on("voiceStateUpdate", async (oldState, newState)=>{
             if(newState.member.id === this.rbot.Client.user.id){return;}
-            if(newState.channel){
-                if(!newState.channel.members.has(this.rbot.Client.user.id)){return;}
-                if(newState.channel.members.size <= 1){
-                    setTimeout(async()=>{
-                        if(newState.channel.members.size <= 1){
-                            var plr = this.Players.get(newState.channel.guild.id);
-                            if(plr.isPlaying){
-                                await plr.Pause(newState.channel);
-                            }
+            if(!oldState.channel.members.has(this.rbot.Client.user.id)){return;}
+            if(oldState.channel.members.size <= 1){
+                setTimeout(async()=>{
+                    if(oldState.channel.members.size <= 1){
+                        var plr = this.Players.get(oldState.channel.guild.id);
+                        if(plr && plr.isPlaying){
+                            await plr.Pause(oldState.channel);
+                            var manager = await MusicManager.findOne({
+                                where: {
+                                    guild_id: oldState.channel.guild.id
+                                }
+                            });
+                            this.update_queue(manager);
                         }
-                    }, 20000);
-                }
+                    }
+                }, 20000);
             }
         });
 
@@ -659,12 +663,15 @@ class Music {
             }else {
                 var filters = await ytsr.getFilters(raw).catch(console.log);
                 var filter = filters.get('Type').get('Video');
-                var res = await ytsr(filter.url, {
+                await ytsr(filter.url, {
                     limit: 1, 
                     safeSearch: false, 
                     //nextpageRef: filter.ref
-                }).catch(console.log);
-                resolve(res.items[0].url);
+                }).then((res) => {
+                    resolve(res.items[0].url);
+                }).catch(() => {
+                    resolve(null)
+                });
             }
         });
     }
@@ -680,12 +687,16 @@ class Music {
             if(matches){
                 var code = matches[matches.length-1];
                 if(code){
-                    var playlist = await ytpl(code);
-                    var urls = [];
-                    for(var vid of playlist.items){
-                        urls.push(vid.url);
-                    }
-                    resolve(urls);
+                    ytpl(code).then((playlist) => {
+                        var urls = [];
+                        for(var vid of playlist.items){
+                            urls.push(vid.url);
+                        }
+                        resolve(urls);
+                    }).catch(() => {
+                        resolve(null);
+                        return;
+                    });
                 }else{
                     resolve(null);
                 }
@@ -786,20 +797,22 @@ class Music {
                     resolve(await ms.delete({timeout: 5000}));
                     break;
                 }
-                var songInfo = await ytdl.getInfo(vid);
-                var song = {
-                    title: songInfo.videoDetails.title,
-                    url: songInfo.videoDetails.video_url,
-                    length: parseInt(songInfo.videoDetails.lengthSeconds),
-                    thumbnail: songInfo.videoDetails.thumbnails.pop(),
-                    timestamp: new Date(),
-                    isRadio: false
+                if(vid){
+                    var songInfo = await ytdl.getInfo(vid);
+                    var song = {
+                        title: songInfo.videoDetails.title,
+                        url: songInfo.videoDetails.video_url,
+                        length: parseInt(songInfo.videoDetails.lengthSeconds),
+                        thumbnail: songInfo.videoDetails.thumbnails.pop(),
+                        timestamp: new Date(),
+                        isRadio: false
+                    }
+                    await plr.QueueAdd(Track.Create(song));
+                    if(ctr % 5 === 0){
+                        await this.update_queue(manager)
+                    }
+                    ctr++;
                 }
-                await plr.QueueAdd(Track.Create(song));
-                if(ctr % 5 === 0){
-                    await this.update_queue(manager)
-                }
-                ctr++;
             }
 
             if(!plr.isPlaying){

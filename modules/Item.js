@@ -9,40 +9,54 @@ class Item {
      * @param {RainbowBOT} rbot 
      */
     constructor(opts, rbot){
-        this.rbot         =   rbot;
+        /**
+         * @type {number} Item's ID
+         */
         this.id           =   opts.id;
-        this.owner_id     =   opts.owner_id;
-        this.type_id      =   opts.type_id;
-        this.ctype        =   opts.ctype;
-        this.name         =   opts.name;
-        this.description  =   opts.description;
-        this.cost         =   opts.cost;
+        /**
+         * @type {number} Item's Prototype ID
+         */
+        this.ProtoID      =   opts.proto_id;
+         /**
+         * @type {number} Item's Owner ID
+         */
+        this.OwnerID      =   opts.owner_id;
+        /**
+         * @type {string} Item's Name
+         */
+        this.Name         =   opts.name;
+        /**
+         * @type {string} Item's Description
+         */
+        this.Description  =   opts.description;
+        /**
+         * @type {number} Item's Cost
+         */
+        this.Cost         =   opts.cost;
+        /**
+         * @type {boolean} Is Item Sellable
+         */
         this.isSellable   =   opts.isSellable;
-        this.itemMeta     =   opts.itemMeta;
-        this.instMeta     =   opts.instMeta;
+        /**
+         * @type {object} Item's Metadata
+         */
+        this.Meta          =   opts.instMeta;
+        /**
+         * @type {object} Item's Prototype Metadata
+         */
+        this.ProtoMeta     =   opts.itemMeta;
+        /**
+         * @type {RainbowBOT} RainbowBOT 
+         */
+        this.rbot          =   rbot;
     }
 
     /**
      * 
-     * @param {number} id item id 
-     */
-    static get(id){
-        return new Promise(async (res, rej) => {
-            var instance = await ItemInstanceModel.findOne({
-                where:{
-                    id: id
-                }
-            });
-            //var item =
-        });
-    }
-
-    /**
-     * 
-     * @param {number} id 
+     * @param {number} id User ID
      * @returns {Promise<Item>}
      */
-    transfer(id){
+    setOwner(id){
         return new Promise(async (res, rej) => {
             await ItemInstanceModel.update({
                 owner_id: id
@@ -53,6 +67,22 @@ class Item {
             });
             this.owner_id = id;
             res(this);
+        });
+    }
+
+    /**
+     * 
+     * @returns {Promise<void>}
+     */
+    destroy(){
+        return new Promise(async (res, rej) => {
+            await ItemInstanceModel.destroy({
+                where:{
+                    id: this.id
+                }
+            });
+            delete this;
+            res();
         });
     }
 }
