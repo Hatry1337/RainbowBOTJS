@@ -492,11 +492,11 @@ class Music {
         this.rbot.Client.on("voiceStateUpdate", async (oldState, newState)=>{
             if(newState.member.id === this.rbot.Client.user.id){return;}
             if(newState.channel){
-                if(!newState.channel.members.has(client.user.id)){return;}
+                if(!newState.channel.members.has(this.rbot.Client.user.id)){return;}
                 if(newState.channel.members.size <= 1){
                     setTimeout(async()=>{
                         if(newState.channel.members.size <= 1){
-                            var plr = this.Players.get(channel.guild.id);
+                            var plr = this.Players.get(newState.channel.guild.id);
                             if(plr.isPlaying){
                                 await plr.Pause(newState.channel);
                             }
