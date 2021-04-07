@@ -1,4 +1,5 @@
 const { Sequelize, DataTypes, Model } = require('sequelize');
+
 const sequelize = new Sequelize('postgres://rbot:t6V-b7y-a26-64j@127.0.0.1:5432/rbot')
 
 class User extends Model {}

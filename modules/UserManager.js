@@ -3,20 +3,24 @@ const Item = require("./Items/Item");
 const RainbowBOT = require("./RainbowBOT");
 
 const {User: UserModel, Item: ItemModel, Log: LogModel, ItemInstance: ItemInstanceModel} = require("./Models");
-const { Message } = require("discord.js");
+const Discord = require("discord.js");
 
-module.exports = {
+
+class UserManager {
+    /**
+     * @param {RainbowBOT} rbot 
+     */
+    constructor(rbot){
+        this.rbot = rbot;
+    }
+
     /**
      * 
-     * @param {string} resolvable Discord ID or Discord Tag
-     * @param {number} resolvable User ID
-     * @param {RainbowBOT} rbot RainbowBOT Object 
+     * @param {string | number} resolvable User resolvable
      * @returns {Promise<User>}
      */
-    getUser(resolvable, rbot) {
+    FetchUser(resolvable){
         return new Promise(async (resolve, reject) => {
-            if(!rbot) reject(new Error("No RainbowBOT object provided."));
-
             var usr;
             if(typeof resolvable === "string"){
                 if(/.*#....$/.test(resolvable)){
@@ -56,56 +60,19 @@ module.exports = {
                     meta:           usr.get("meta"),
                     lang:           usr.get("lang")
                 };
-                resolve(new User(params, rbot));
+                resolve(new User(params, this.rbot));
             }else {
                 resolve(null);
             }
         });
-    },
+    }
+
     /**
      * 
-     * @param {number} id Item ID
-     * @param {RainbowBOT} rbot RainbowBOT Object 
-     * @returns {Promise<Item>}
-     */
-    getItem(id, rbot) {
-        return new Promise(async (resolve, reject) => {
-            var item_instance = await ItemInstanceModel.findOne({
-                where: {
-                    id: parseInt(id)
-                }
-            });
-            if(item_instance){
-                var item = await ItemModel.findOne({
-                    where:{
-                        id: item_instance.get("item_id")
-                    }
-                });
-                var params = {
-                    id:             item_instance.get("id"),
-                    owner_id:       item_instance.get("owner_id"),
-                    type_id:        item_instance.get("item_id"),
-                    ctype:          item.get("type"),
-                    name:           item.get("name"),
-                    description:    item.get("description"),
-                    cost:           item.get("cost"),
-                    isSellable:     item.get("is_sellable"),
-                    itemMeta:       item.get("meta"),
-                    instMeta:       item_instance.get("meta"),
-                }
-                resolve(new Item(params, rbot));
-            }else {
-                resolve(null);
-            }
-        });
-    },
-    /**
-     * 
-     * @param {Message} id Message
-     * @param {RainbowBOT} rbot RainbowBOT Object 
+     * @param {Discord.User} user Discord user
      * @returns {Promise<User>}
      */
-    registerUser(message, rbot) {
+    RegisterUser(user){
         return new Promise(async (resolve, reject) => {
             var meta = {
                 lolilic: {
@@ -117,25 +84,23 @@ module.exports = {
                     last:0,
                     count:0
                 },
-                isNewsSubbed: true
+                isNewsSubbed: true,
+                mining: {
+                    btc: 0,
+                    eth: 0,
+                    power: 0,
+                    power_enabled: true
+                }
             }
 
             await UserModel.create({
-                discord_id: message.author.id,
-                tag: message.author.tag,
+                discord_id: user.id,
+                tag: user.tag,
                 meta: meta
-            })
-            resolve(await this.getUser(message.author.id, rbot));
+            });
+            resolve(await this.FetchUser(user.id, this.rbot));
         });
-    },
-    async writeLog(type, user, server, data) {
-        await LogModel.create({
-            type: type,
-            user: user,
-            server: server,
-            data: data,
-            timestamp: new Date(),
-            unixtime: Math.floor((new Date()) / 1000)
-        })
     }
 }
+
+module.exports = UserManager;

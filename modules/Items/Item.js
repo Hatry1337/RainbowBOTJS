@@ -1,6 +1,6 @@
-const { Item: ItemModel, User: UserModel, ItemInstance: ItemInstanceModel } = require("./Models");
-const Database = require("./Database");
-const RainbowBOT = require("./RainbowBOT");
+const { Item: ItemModel, User: UserModel, ItemInstance: ItemInstanceModel } = require("../Models");
+const Database = require("../Database");
+const RainbowBOT = require("../RainbowBOT");
 
 class Item {
     /**
@@ -21,6 +21,10 @@ class Item {
          * @type {number} Item's Owner ID
          */
         this.OwnerID      =   opts.owner_id;
+         /**
+         * @type {number} Item Type
+         */
+        this.Type         =   opts.type;
         /**
          * @type {string} Item's Name
          */
@@ -44,7 +48,7 @@ class Item {
         /**
          * @type {object} Item's Prototype Metadata
          */
-        this.ProtoMeta     =   opts.itemMeta;
+        this.ProtoMeta     =   opts.protoMeta;
         /**
          * @type {RainbowBOT} RainbowBOT 
          */

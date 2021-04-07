@@ -1,7 +1,7 @@
 const { Item: ItemModel, User: UserModel, ItemInstance: ItemInstanceModel } = require("../Models");
 const Database = require("../Database");
 const RainbowBOT = require("../RainbowBOT");
-const Item = require("../Item");
+const Item = require("./Item");
 
 /**
  * @extends {Item}

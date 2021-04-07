@@ -4,6 +4,9 @@ const Utils = require("./Utils");
 const EventEmitter = require("events");
 const Database = require("../modules/Database");
 const { MusicManager } = require("../modules/Models");
+const ItemManager = require("./ItemManager");
+const UserManager = require("./UserManager");
+
 
 /**
  * RainbowBOT Main Class
@@ -20,6 +23,14 @@ class RainbowBOT extends EventEmitter{
          * @type {Utils}
          */
         this.Utils = new Utils(this);
+        /** 
+         * @type {ItemManager}
+         */
+        this.ItemManager = new ItemManager(this);
+        /** 
+         * @type {UserManager}
+         */
+        this.UserManager = new UserManager(this);
         /** 
          * @type {Date}
          */

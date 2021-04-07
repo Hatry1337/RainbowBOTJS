@@ -1,7 +1,7 @@
 const { Item: ItemModel, User: UserModel, ItemInstance: ItemInstanceModel } = require("../Models");
 const Database = require("../Database");
 const RainbowBOT = require("../RainbowBOT");
-const Item = require("../Item");
+const Item = require("./Item");
 const VideoCard = require("./VideoCard");
 const Case = require("./Case");
 
@@ -27,23 +27,25 @@ class Farm extends Item{
     }
 
     /**
-     * 
-     * @param {number} id Farm item ID
-     * @returns {Promise<Farm>} 
+     * @returns {number}
      */
-    static Fetch(id){
-        return new Promise(async (resolve, reject) => {
-            var opts = {
-                
-            }
-            var farm = await ItemInstanceModel.findOne({
-                where: {
-                    id: id
-                }
-            });
-            
-        });
+    GetMiningRate(){
+        var summ = 0;
+        for(var c of this.Slots){
+            c += c.MiningRate;
+        }
     }
+
+    /**
+     * @returns {number}
+     */
+    GetPowerUsage(){
+        var summ = 0;
+        for(var c of this.Slots){
+            c += c.MiningRate;
+        }
+    }
+
 }
 
-module.exports = Case;
+module.exports = Farm;

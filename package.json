@@ -19,14 +19,18 @@
     "mysql": "^2.18.1",
     "pg": "^8.5.1",
     "pg-hstore": "^2.3.3",
+    "reflect-metadata": "^0.1.13",
     "request-promise": "^4.2.6",
-    "sequelize": "^6.3.5",
+    "sequelize": "^6.6.2",
     "windows-1251": "^1.0.0",
     "ytdl-core": "^4.5.0",
     "ytpl": "^2.1.0",
     "ytsr": "^3.4.0"
   },
   "devDependencies": {
-    "@types/mysql": "^2.15.15"
+    "@types/mysql": "^2.15.15",
+    "@types/node": "^14.14.37",
+    "@types/sequelize": "^4.28.9",
+    "@types/validator": "^13.1.3"
   }
 }

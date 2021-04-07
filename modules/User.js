@@ -1,11 +1,9 @@
 const rb = require("./RainbowBOT");
 const {User: UserModel, Item: ItemModel, ItemInstance: ItemInstanceModel} = require("./Models");
-const Item = require("./Item");
+const Item = require("./Items/Item");
+const Farm = require("./Items/Farm");
 const Discord = require("discord.js");
-
-class Inventory{
-    
-}
+const Inventory = require("./Inventory");
 
 class User{
     /**
@@ -62,6 +60,12 @@ class User{
          */
         this.xp = opts.xp || 0;
 
+
+        /** 
+         * @type {Inventory}
+         * @param Inventory User's Inventory
+         */
+        this.Inventory = opts.inventory || new Inventory();
 
         /** 
          * @type {object}
@@ -259,9 +263,9 @@ class User{
     };
     
     /**
-     * @returns {Promise<Discord.Collection<number, Item>>}
+     * @returns {Promise<Inventory>}
      */
-    getItems(){
+    getInventory(){
         return new Promise(async (resolve, reject) => {
             /**
              * @type {Discord.Collection<number, Item>}
