@@ -86,7 +86,7 @@ class Buy {
             var end_cost = (getPrice(parseInt(args[1])) * (Math.pow(1.2, count))) / 1.2 - 1;
 
             if (user.user_points < end_cost) {
-                return message.channel.send(`Недостаточно Поинтов! Нужно: ${Math.floor(end_cost.toReadable())}, у Вас: ${user.user_points.toReadable()}.`);
+                return message.channel.send(`Недостаточно Поинтов! Нужно: ${Math.floor(end_cost).toReadable()}, у Вас: ${user.user_points.toReadable()}.`);
             } else {
                 if (args[1] === "6") {
                     user.user_points -= end_cost;
