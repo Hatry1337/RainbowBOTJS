@@ -330,6 +330,7 @@ class User{
                 });
             }else {
                 reject(new Error("No valid parameter to search found"));
+                return;
             }
             if(usr){
                 this.id =           usr.get("id");
