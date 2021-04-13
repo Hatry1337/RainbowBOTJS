@@ -124,6 +124,15 @@ client.on('message', async message => {
                                 return;
                             }
 
+                        } else if (message.content.startsWith(`!rid`)) {
+                            if (user.user_group === "Admin") {
+                                Utils.Modules.Rid.execute(message);
+                                return;
+                            } else {
+                                message.channel.send("У вас нет прав администратора!");
+                                return;
+                            }
+
                         } else if (message.content.startsWith(`!ban`)) {
                             if (user.user_group === "Admin") {
                                 Utils.Modules.Ban.execute(message);
