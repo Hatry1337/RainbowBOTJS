@@ -17,6 +17,7 @@ class Shop {
             var br_pr = 200000 * Math.pow(1.2, user.bitminer_rack);
             var brd_pr = 1200000 * Math.pow(1.2, user.bitm_dc);
             var ss_pr = 12000000 * Math.pow(1.2, user.solar_station);
+            
             var emb = new othis.Discord.MessageEmbed()
                 .setTitle(othis.lng.shop.name[user.lang])
                 .setColor(0xFFFF00)
