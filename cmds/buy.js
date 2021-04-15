@@ -83,7 +83,7 @@ class Buy {
                 return message.channel.send("Количество не может быть 0 или меньше.");
             }
 
-            var end_cost = (getPrice(parseInt(args[1])) * (Math.pow(1.2, count))) / 1.2 - 1;
+            var end_cost = (getPrice(parseInt(args[1])) * (Math.pow(1.2, count)-1)) / (1.2 - 1);
 
             if (user.user_points < end_cost) {
                 return message.channel.send(`Недостаточно Поинтов! Нужно: ${Math.floor(end_cost).toReadable()}, у Вас: ${user.user_points.toReadable()}.`);
