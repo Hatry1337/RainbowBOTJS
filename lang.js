@@ -450,8 +450,8 @@
                     en:"Other:"
                 },
                 pythonFood:{
-                    ru:"Корм для питона - +1 к скорости перехода на js. Цена 10.000 Поинтов",
-                    en:"Food for python - +1 to speed for migrating on JavaScript. Price 10.000 Points"
+                    ru:"Корм для жабы - -1 к лени кодера. Цена 10.000 Поинтов",
+                    en:"Food for frog - -1 to the laziness of the coder. Price 10.000 Points"
                 }
             }
         },
