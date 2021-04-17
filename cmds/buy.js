@@ -66,7 +66,7 @@ class Buy {
                     case 6:
                         return "VIP";
                     case 7:
-                        return "Корм для питона";
+                        return "Корм для жабы";
                     default:
                         return "invalid id";
                 }
