@@ -3,7 +3,7 @@ const Database = require("../modules/Database");
 const Discord = require("discord.js");
 const User = require("../modules/User");
 const {Item: ItemModel, ItemInstance: ItemInstanceModel} = require("../modules/Models");
-
+const Item = require("../modules/Items/Item");
 
 class Items {
     /**
@@ -44,10 +44,12 @@ class Items {
             var user = await Database.getUser(id, this.rbot);
 
             if (user) {
-                var items = await user.getItems();
-
+                var inventory = await user.getInventory();
+                
                 var output = "";
-                items.each(item => {
+                for(var i in inventory.RegularSlots){
+                    var item = inventory.RegularSlots[i];
+
                     output += `\`\`\`yaml\n[${item.id}] ${item.name}\n`;
                     switch(item.ctype){
                         case 1:
@@ -59,7 +61,7 @@ class Items {
                             break;
                     }
                     output += "\`\`\`\n"
-                });
+                }
                 var emb = new Discord.MessageEmbed()
                     .setTitle(`Предметы игрока ${user.tag}:`)
                     .setColor(0x228b22)

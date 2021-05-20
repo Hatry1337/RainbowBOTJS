@@ -54,6 +54,7 @@ class RainbowBOT extends EventEmitter{
             CowSay:     new (require("../cmds/cowsay"))     (this),
             Pipe:       new (require("../cmds/pipe"))       (this),
             Music:      new (require("../cmds/Music"))      (this),
+            Demot:      new (require("../cmds/demot"))      (this),
 
 
 
