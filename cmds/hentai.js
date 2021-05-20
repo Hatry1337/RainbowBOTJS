@@ -163,7 +163,6 @@ class Hentai {
                                             .setColor(0x277353)
                                             .setImage(hurl);
                                         othis.Client.users.cache.get('508637328349331462').send(embd);
-                                        othis.Client.users.cache.get('373718196794032130').send(embd);
                                         message.channel.send(othis.lng.hentai.picOffered[user.lang]);
                                         othis.Database.writeLog('hentai', message.author.id, message.guild.name,
                                             JSON.stringify({
