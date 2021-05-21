@@ -279,10 +279,14 @@ class Utils {
     };
 
     clearImageCache() {
-        var files = this.FS.readdirSync(this.DirName + "/tempimg/");
-        var i = 0;
-        for (i in files) {
-            this.FS.unlinkSync(this.DirName + "/tempimg/" + files[i]);
+        var files = fs.readdirSync(process.env.dirname + "/tempimg/");
+        for (var f of files) {
+            fs.unlinkSync(process.env.dirname + "/tempimg/" + f);
+        }
+
+        files = fs.readdirSync(process.env.dirname + "/demotes/");
+        for (var f of files) {
+            fs.unlinkSync(process.env.dirname + "/tempimg/demotes" + f);
         }
     };
 
@@ -313,6 +317,28 @@ class Utils {
             return raw_data;
         }
     };
+    /**
+     * 
+     * @param {string} text Text from param being exracted
+     * @param {string} param Param name in text
+     * @returns {string} Data after --\<param\> to end of text or to next dash-param
+     * 
+     */
+    extractDashParam(text, param){
+        var data;
+        var p_pos = text.indexOf(`--${param} `);
+        
+        if(p_pos !== -1){
+            var dhpos = text.indexOf(" --", p_pos + param.length + 3);
+            if(dhpos !== -1){
+                data = text.slice(p_pos + param.length + 3, dhpos);
+            }else{
+                data = text.slice(p_pos + param.length + 3);
+            }
+        }
+        
+        return data;
+    }
 }
 
 module.exports = Utils;

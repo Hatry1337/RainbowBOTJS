@@ -17,6 +17,7 @@ Number.prototype.toReadable = function () {
 
 
 rbot.Client.once('ready', async () => {
+    rbot.Utils.clearImageCache();
     console.log('RainbowBOT Started!');
     rbot.Client.user.setActivity('!rhelp', { type: 'WATCHING' });
     setInterval(() => {
@@ -40,10 +41,6 @@ rbot.Client.once('ready', async () => {
         }, 25000);
     }
     
-
-    /*client.channels.cache.get("662657721266339853").createInvite({ temporary: true})
-        .then(invite => console.log(invite.url))
-        .catch(console.error);*/
     //Utils.clearImageCache();
 });
 
