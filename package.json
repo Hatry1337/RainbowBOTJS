@@ -17,7 +17,7 @@
     "mysql": "^2.18.1",
     "request-promise": "^4.2.6",
     "windows-1251": "^1.0.0",
-    "ytdl-core": "^3.4.2",
-    "ytsr": "^1.0.4"
+    "ytdl-core": "^4.8.3",
+    "ytsr": "^3.5.0"
   }
 }
