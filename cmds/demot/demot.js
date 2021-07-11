@@ -1,7 +1,8 @@
-const RainbowBOT = require("../modules/RainbowBOT");
+const RainbowBOT = require("../../modules/RainbowBOT");
 const Discord = require("discord.js");
 const fs = require("fs");
 const nodeHtmlToImage = require('node-html-to-image');
+const template = require("./html_template");
 
 class Demot {
     /**
@@ -37,22 +38,20 @@ class Demot {
                 if(header || label){
                     var imgs = message.attachments.array();
                     if (imgs.length !== 0) {
-                        await message.channel.send("Ok. Wait a little, demotivator creation process started.");
-                        fs.readFile(process.env.dirname + "/demot_template.html", async (err, data) => {
-                            await nodeHtmlToImage({
-                                output: process.env.dirname + "/tempimg/demotes/" + imgs[0].id + imgs[0].name,
-                                html: data.toString(),
-                                content: {
-                                    IMAGE_URL: imgs[0].proxyURL,
-                                    TITLE_F_SIZE: htx_size + "px" || "72px",
-                                    TEXT_F_SIZE:  ltx_size + "px" || "25px",
-                                    TITLE_TEXT: header,
-                                    TEXT_TEXT: label,
-                                }
-                            });
-                            resolve(await message.channel.send("Done.", { files: [process.env.dirname + "/tempimg/demotes/" + imgs[0].id + imgs[0].name] }));
-                            return;
+                        await message.channel.send("Ok. Pls wait, demotivator creation process started.");
+                        await nodeHtmlToImage({
+                            output: process.env.dirname + "/tempimg/demotes/" + imgs[0].id + imgs[0].name,
+                            html: template,
+                            content: {
+                                IMAGE_URL: imgs[0].proxyURL,
+                                TITLE_F_SIZE: htx_size + "px" || "72px",
+                                TEXT_F_SIZE:  ltx_size + "px" || "25px",
+                                TITLE_TEXT: header,
+                                TEXT_TEXT: label,
+                            }
                         });
+                        resolve(await message.channel.send("Done.", { files: [process.env.dirname + "/tempimg/demotes/" + imgs[0].id + imgs[0].name] }));
+                        return;
                     }else{
                         resolve(await message.channel.send("Error: No image provided."));
                         return;

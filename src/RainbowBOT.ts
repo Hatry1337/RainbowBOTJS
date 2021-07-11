@@ -1,40 +1,33 @@
-const Discord = require("discord.js");
-const DBL = require("dblapi.js");
-const Utils = require("./Utils");
-const EventEmitter = require("events");
-const Database = require("../modules/Database");
-const { MusicManager } = require("../modules/Models");
-const ItemManager = require("./ItemManager");
-const UserManager = require("./UserManager");
+import Discord from "discord.js" ;
+import DBL from "dblapi.js";
+import EventEmitter from "events";
+
+import Utils from "./Utils";
+
+//const Database = require("../modules/Database");
+//const { MusicManager } = require("../modules/Models");
+//const ItemManager = require("./ItemManager");
+//const UserManager = require("./UserManager");
 
 
-/**
- * RainbowBOT Main Class
- * @extends {EventEmitter}
- */
 class RainbowBOT extends EventEmitter{
+    Client: Discord.Client;
+    dbl: DBL;
+    localization: object;
+    startTimestamp: Date | undefined;
+    Commands: object;
     constructor(){
         super();
         this.setMaxListeners(100);
         this.Client = new Discord.Client();
         this.dbl = new DBL('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjU3MTk0ODk5MzY0MzU0NDU4NyIsImJvdCI6dHJ1ZSwiaWF0IjoxNTc1NTczMjAyfQ.9OfSSDWcanClZpsqdFsz7U-1gStTb0SwYZWF49FtrNU', this.Client);
         this.localization = require("../lang");
-        /** 
-         * @type {Utils}
-         */
-        this.Utils = new Utils(this);
-        /** 
-         * @type {ItemManager}
-         */
-        this.ItemManager = new ItemManager(this);
-        /** 
-         * @type {UserManager}
-         */
-        this.UserManager = new UserManager(this);
-        /** 
-         * @type {Date}
-         */
-        this.startTimestamp;
+
+        //this.Utils = new Utils(this);
+
+        //this.ItemManager = new ItemManager(this);
+
+        //this.UserManager = new UserManager(this);
 
         this.Commands = {
             EightBall:  new (require("../cmds/8ball"))            (this),
@@ -155,9 +148,9 @@ class RainbowBOT extends EventEmitter{
         if(!this.startTimestamp){
             return 0;
         }else{
-            return (new Date() - this.startTimestamp) / 1000;
+            return (new Date().getTime() - this.startTimestamp.getTime()) / 1000;
         }
     }
 }
 
-module.exports = RainbowBOT;
+export = RainbowBOT;

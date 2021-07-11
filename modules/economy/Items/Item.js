@@ -5,54 +5,49 @@ const RainbowBOT = require("../RainbowBOT");
 class Item {
     /**
      * 
-     * @param {object} opts 
      * @param {RainbowBOT} rbot 
      */
-    constructor(opts, rbot){
+    constructor(rbot){
         /**
          * @type {number} Item's ID
          */
-        this.id           =   opts.id;
+        this.id = 0;
         /**
-         * @type {number} Item's Prototype ID
+         * @type {number} Item's Unique Type ID
          */
-        this.ProtoID      =   opts.proto_id;
+        this.UTID = 0;
          /**
          * @type {number} Item's Owner ID
          */
-        this.OwnerID      =   opts.owner_id;
+        this.OwnerID = 0;
          /**
-         * @type {number} Item Type
+         * @type {string} Item Type
          */
-        this.Type         =   opts.type;
+        this.Type = "Item";
         /**
          * @type {string} Item's Name
          */
-        this.Name         =   opts.name;
+        this.Name = "Unnamed Item";
         /**
          * @type {string} Item's Description
          */
-        this.Description  =   opts.description;
+        this.Description  = "Empty item template";
         /**
          * @type {number} Item's Cost
          */
-        this.Cost         =   opts.cost;
+        this.Cost = 0;
         /**
          * @type {boolean} Is Item Sellable
          */
-        this.isSellable   =   opts.isSellable;
+        this.isSellable = false;
         /**
          * @type {object} Item's Metadata
          */
-        this.Meta          =   opts.instMeta;
-        /**
-         * @type {object} Item's Prototype Metadata
-         */
-        this.ProtoMeta     =   opts.protoMeta;
+        this.Meta = {}
         /**
          * @type {RainbowBOT} RainbowBOT 
          */
-        this.rbot          =   rbot;
+        this.rbot = rbot;
     }
 
     /**
@@ -71,22 +66,6 @@ class Item {
             });
             this.owner_id = id;
             res(this);
-        });
-    }
-
-    /**
-     * 
-     * @returns {Promise<void>}
-     */
-    destroy(){
-        return new Promise(async (res, rej) => {
-            await ItemInstanceModel.destroy({
-                where:{
-                    id: this.id
-                }
-            });
-            delete this;
-            res();
         });
     }
 }

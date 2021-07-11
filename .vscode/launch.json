@@ -8,10 +8,9 @@
             "type": "node",
             "request": "launch",
             "name": "RainbowBOT",
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
-            "program": "${workspaceFolder}\\bot.js"
+            "program": "${workspaceFolder}/src/bot.ts",
+            "preLaunchTask": "tsc: build - tsconfig.json",
+            "outFiles": ["${workspaceFolder}/out/**/*.js"]
         }
     ]
 }

@@ -1,4 +1,4 @@
-﻿exports.lng = {
+﻿module.exports = {
     rhelp: {
         title: {
             ru: "Помощь по командам:",

@@ -1,12 +1,12 @@
-﻿const RainbowBOT = require("../modules/RainbowBOT");
-const Database = require("../modules/Database");
+﻿const RainbowBOT = require("../../modules/RainbowBOT");
+const Database = require("../../modules/Database");
 const Discord = require("discord.js");
 const fs = require("fs");
 const RequestPromise = require("request-promise");
 const Jimp = require("jimp");
 const Braile = require("braille-art");
 const AsciiFont = require('ascii-art-font');
-AsciiFont.fontPath = 'fgfonts/';
+AsciiFont.fontPath = process.env.dirname + "cmds/ascii/fonts/";
 
 class Ascii {
     /**
@@ -22,7 +22,6 @@ class Ascii {
                 await this.execute(message);
             }
         });
-
         console.log(`Module "${this.Name}" loaded!`)
     }
 
@@ -32,7 +31,7 @@ class Ascii {
      */
     fontExist(fnt) {
         var files_ = "";
-        var files = fs.readdirSync(process.env.dirname + "/fgfonts/");
+        var files = fs.readdirSync(process.env.dirname + "cmds/ascii/fonts/");
         var i = 0;
         for (i in files) {
              files_ += files[i].replace(".flf", "")+" ";
@@ -46,7 +45,7 @@ class Ascii {
      */
     async sendFonts(channel) {
         var files_ = "";
-        var files = fs.readdirSync(process.env.dirname + "/fgfonts");
+        var files = fs.readdirSync(process.env.dirname + "cmds/ascii/fonts/");
         var mlng = files.sort(function (a, b) { return b.length - a.length; })[0].length;
         for(var i in files){
             if (i % 6 === 0 && i !== 0) {
@@ -85,7 +84,7 @@ class Ascii {
                         } else {
                             inverted = false;
                         }
-                        var imgpath = process.env.dirname + "/tempimg/" + imgs[0].id + imgs[0].name;
+                        var imgpath = process.env.dirname + "/temp/images" + imgs[0].id + imgs[0].name;
                         var writeStream = fs.createWriteStream(imgpath);
                         await RequestPromise(imgs[0].proxyURL + "?width=130&height=120").pipe(writeStream);
                         writeStream.on('finish', async () => {

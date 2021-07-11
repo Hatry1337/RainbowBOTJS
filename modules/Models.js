@@ -62,6 +62,10 @@ Item.init({
 		autoIncrement: true,
 		allowNull: false
 	},
+	utid: {
+		type: DataTypes.INTEGER,
+		allowNull: false
+	},
 	name: {
 		type: DataTypes.STRING,
 		defaultValue: "Unnamed Item",
@@ -77,20 +81,14 @@ Item.init({
 		allowNull: false
 	},
 	type: {
-		type: DataTypes.INTEGER,
+		type: DataTypes.STRING,
 		allowNull: false
 	},
 	is_sellable: {
 		type: DataTypes.BOOLEAN,
 		defaultValue: true,
 		allowNull: false
-	},
-	meta: {
-		type: DataTypes.JSON,
-		defaultValue: {},
-		allowNull: false
 	}
-
 }, {
 	sequelize,
 	modelName: 'Item'
@@ -109,7 +107,7 @@ ItemInstance.init({
 		type: DataTypes.INTEGER,
 		allowNull: false
 	},
-	item_id: {
+	utid: {
 		type: DataTypes.INTEGER,
 		allowNull: false
 	},

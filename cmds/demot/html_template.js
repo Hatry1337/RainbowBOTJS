@@ -1,3 +1,4 @@
+module.exports = `
 <!DOCTYPE html>
 <html>
     <body style="background-color: #000;">
@@ -62,3 +63,4 @@
         </table>
     </body>
 </html>
+`
