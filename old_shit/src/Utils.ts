@@ -1,12 +1,18 @@
-export class Utils{
+import Discord from "discord.js";
+import RainbowBOT from "./RainbowBOT";
+//const Database = require("./Database");
+//import User from "./User";
+import fs from "fs";
+
+export class Utils {
     static getRandomInt(max: number) {
         return Math.floor(Math.random() * Math.floor(max));
-    }
+    };
     
     static arrayRandElement<T>(arr: Array<T>) {
         var rand = Math.floor(Math.random() * arr.length);
         return arr[rand];
-    }
+    };
 
     static parseID(raw_data: string) {
         raw_data = raw_data?.toString();
@@ -31,8 +37,7 @@ export class Utils{
         } else {
             return raw_data;
         }
-    }
-
+    };
 
     static extractDashParam(text: string, param: string){
         var data;
@@ -49,7 +54,6 @@ export class Utils{
         
         return data;
     }
-
 
 }
 

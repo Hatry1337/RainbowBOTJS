@@ -14,11 +14,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const discord_js_1 = __importDefault(require("discord.js"));
 const CommandsController_1 = __importDefault(require("./CommandsController"));
-const RClient_1 = __importDefault(require("./RClient"));
 const Database_1 = require("./Database");
 const Guild_1 = require("./Models/Guild");
 const Utils_1 = require("./Utils");
-const client = new RClient_1.default();
+const client = new discord_js_1.default.Client();
 const commandsController = new CommandsController_1.default();
 (() => __awaiter(void 0, void 0, void 0, function* () {
     yield Database_1.sequelize.sync({ force: false });
