@@ -2,19 +2,20 @@ import Discord from 'discord.js';
 import ICommand from './Commands/ICommand';
 
 /*============Commands Import===============*/
-import JoinMgr     from './Commands/JoinMgr/JoinMgr';
-import Help        from './Commands/Help/Help';
-import Placeholder from './Commands/Placeholder';
-import Usage       from './Commands/Usage/Usage';
+import JoinMgr       from './Commands/JoinMgr/JoinMgr';
+import Help          from './Commands/Help/Help';
+import Placeholder   from './Commands/Placeholder';
+import Usage         from './Commands/Usage/Usage';
+import RBFetch       from './Commands/RBFetch/RBFetch';
 /*==========================================*/
 
 class CommandsController{
     Commands: ICommand[] = [];
     constructor(){
-        this.Commands.push(new JoinMgr(this));
-        this.Commands.push(new Help(this));
-        this.Commands.push(new Usage(this));
-
+        this.Commands.push(new JoinMgr  (this));
+        this.Commands.push(new Help     (this));
+        this.Commands.push(new Usage    (this));
+        this.Commands.push(new RBFetch  (this));
     }
 
     IsCommandExist(message: Discord.Message){

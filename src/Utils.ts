@@ -50,6 +50,25 @@ export class Utils{
         return data;
     }
 
+    static formatTime(s: number){
+        var stime;
+        var m = Math.ceil(s / (1000 * 60));
+        var h = Math.ceil(s / (1000 * 60 * 60));
+        var d = Math.ceil(s / (1000 * 60 * 60 * 24));
+
+        if (s < 60) {
+            stime = `${s} secs`;
+        } else if (m < 60) {
+            stime = `${m} mins, ${s - m * 60} secs`;
+        } else if (h < 24) {
+            stime = `${h} hours, ${m - h * 60} mins, ${s - m * 60} secs`;
+        } else {
+            stime = `${d} days, ${h - d * 24} hours, ${m - h * 60} mins, ${s - m * 60} secs`;
+        }
+        
+        return stime;
+    }
+
 
 }
 

@@ -1,7 +1,6 @@
 import Discord from "discord.js";
 import ICommand from "../ICommand";
-import { Guild } from "../../Models/Guild";
-import { Utils, Emojis, Colors, CustomMessageSettings } from "../../Utils";
+import { Emojis, Colors } from "../../Utils";
 import CommandsController from "../../CommandsController";
 
 class Help implements ICommand{
