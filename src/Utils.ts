@@ -73,7 +73,7 @@ export class Utils{
         raw_data = raw_data.toLowerCase();
         var secs = 0;
 
-        var reg = /([1-9][1-9]*?)(d|h|m|s)/g;
+        var reg = /([0-9][0-9]*?)(d|h|m|s)/g;
         var match;
         while (match = reg.exec(raw_data)) {
             switch(match[2]){
