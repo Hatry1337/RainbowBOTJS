@@ -1,4 +1,9 @@
 import { Table, Model, Column, DataType } from "sequelize-typescript";
+import { CustomMessageSettings } from "../Utils";
+
+interface GuildMeta{
+    jmgr_msg?: CustomMessageSettings
+}
 
 @Table({
     timestamps: true,
@@ -81,5 +86,5 @@ export class Guild extends Model {
         allowNull: false,
         defaultValue: {}
     })
-    Meta: any;
+    Meta!: GuildMeta;
 }

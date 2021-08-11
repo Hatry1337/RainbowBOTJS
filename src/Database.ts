@@ -1,6 +1,7 @@
 import { Sequelize } from "sequelize-typescript";
 
 import { Guild } from './Models/Guild';
+import { MutedUser } from "./Models/MutedUser";
 import { ReactionEvent } from './Models/ReactionEvent';
 
 
@@ -13,6 +14,7 @@ export const sequelize = new Sequelize({
     port: 5432,
     models: [
         Guild,
-        ReactionEvent
+        ReactionEvent,
+        MutedUser
     ]
 });

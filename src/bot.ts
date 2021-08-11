@@ -4,18 +4,32 @@ import RClient from "./RClient";
 import { sequelize } from "./Database";
 import { Guild } from "./Models/Guild";
 import { Colors } from "./Utils";
+import log4js from "log4js";
+import { MutedUser } from "./Models/MutedUser";
 
+log4js.configure({
+    appenders: {
+        console: { type: 'console' },
+        file: { type: 'file', filename: 'botlog.log' },
+    },
+    categories: {
+        default: { appenders: ['console', 'file'], level: 'info' }
+    }
+});
+
+const logger = log4js.getLogger();
 const client = new RClient();
 const commandsController = new CommandsController();
 
 (async () => {
     await sequelize.sync({force: false});
+    logger.info(`DB Synced.`);
 })();
 
 client.once("ready", async () => {
-    console.log("Bot started.");
+    logger.info("Bot started.");
 
-    console.log("Starting guilds caching...");
+    logger.info("Starting guilds caching...");
     Guild.findAll({
         where:{
             IsBanned: false
@@ -23,13 +37,33 @@ client.once("ready", async () => {
     }).then(async guilds => {
         for(var i in guilds){
             await client.guilds.fetch(guilds[i].ID, true, true);
-            console.log(`Cached ${parseInt(i)+1}/${guilds.length}`);
+            logger.info(`Cached ${parseInt(i)+1}/${guilds.length}`);
         }
     });
+
+    //Mutes checker
+    setInterval(async () => {
+        logger.info("Muted users checking...");
+        MutedUser.findAll({
+            where: {
+                IsMuted: true
+            }
+        }).then(async (musrs) => {
+            for(var mu of musrs){
+                if(!mu.IsPermMuted && (mu.UnmuteDate || new Date()) < new Date()){
+                    mu.IsMuted = false;
+                    await mu.save();
+                    var guild = await client.guilds.fetch(mu.GuildID);
+                    var user = guild.member(mu.DsID);
+                    await user?.roles.remove(mu.MuteRoleID);
+                    logger.info(user?.user.tag, "umuted.");
+                }
+            }
+        });
+    }, 120 * 1000);
 });
 
 client.on('message', async message => {
-    console.log(message.content);
     if(message.author.id === client.user?.id) return
     if(message.channel.type === "dm") { 
         await message.channel.send("Команды в личных сообщениях не поддерживаются :cry:"); 
@@ -67,7 +101,7 @@ client.on("guildMemberAdd", async (member) => {
                     guild.JoinRolesIDs.splice(parseInt(i), 1);
                 }
             }
-            await Guild.update({ JoinRolesIDs: guild.JoinRolesIDs }, { where: { ID: guild.ID } }).catch(err => console.error(err));
+            await Guild.update({ JoinRolesIDs: guild.JoinRolesIDs }, { where: { ID: guild.ID } }).catch(err => logger.error(err));
             if(!roles.find(r => !r.editable)){
                 await member.roles.add(roles);
             }else{

@@ -18,14 +18,27 @@ const RClient_1 = __importDefault(require("./RClient"));
 const Database_1 = require("./Database");
 const Guild_1 = require("./Models/Guild");
 const Utils_1 = require("./Utils");
+const log4js_1 = __importDefault(require("log4js"));
+const MutedUser_1 = require("./Models/MutedUser");
+log4js_1.default.configure({
+    appenders: {
+        console: { type: 'console' },
+        file: { type: 'file', filename: 'botlog.log' },
+    },
+    categories: {
+        default: { appenders: ['console', 'file'], level: 'info' }
+    }
+});
+const logger = log4js_1.default.getLogger();
 const client = new RClient_1.default();
 const commandsController = new CommandsController_1.default();
 (() => __awaiter(void 0, void 0, void 0, function* () {
     yield Database_1.sequelize.sync({ force: false });
+    logger.info(`DB Synced.`);
 }))();
 client.once("ready", () => __awaiter(void 0, void 0, void 0, function* () {
-    console.log("Bot started.");
-    console.log("Starting guilds caching...");
+    logger.info("Bot started.");
+    logger.info("Starting guilds caching...");
     Guild_1.Guild.findAll({
         where: {
             IsBanned: false
@@ -33,13 +46,32 @@ client.once("ready", () => __awaiter(void 0, void 0, void 0, function* () {
     }).then((guilds) => __awaiter(void 0, void 0, void 0, function* () {
         for (var i in guilds) {
             yield client.guilds.fetch(guilds[i].ID, true, true);
-            console.log(`Cached ${parseInt(i) + 1}/${guilds.length}`);
+            logger.info(`Cached ${parseInt(i) + 1}/${guilds.length}`);
         }
     }));
+    //Mutes checker
+    setInterval(() => __awaiter(void 0, void 0, void 0, function* () {
+        logger.info("Muted users checking...");
+        MutedUser_1.MutedUser.findAll({
+            where: {
+                IsMuted: true
+            }
+        }).then((musrs) => __awaiter(void 0, void 0, void 0, function* () {
+            for (var mu of musrs) {
+                if (!mu.IsPermMuted && (mu.UnmuteDate || new Date()) < new Date()) {
+                    mu.IsMuted = false;
+                    yield mu.save();
+                    var guild = yield client.guilds.fetch(mu.GuildID);
+                    var user = guild.member(mu.DsID);
+                    yield (user === null || user === void 0 ? void 0 : user.roles.remove(mu.MuteRoleID));
+                    logger.info(user === null || user === void 0 ? void 0 : user.user.tag, "umuted.");
+                }
+            }
+        }));
+    }), 120 * 1000);
 }));
 client.on('message', (message) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
-    console.log(message.content);
     if (message.author.id === ((_a = client.user) === null || _a === void 0 ? void 0 : _a.id))
         return;
     if (message.channel.type === "dm") {
@@ -80,7 +112,7 @@ client.on("guildMemberAdd", (member) => __awaiter(void 0, void 0, void 0, functi
                     guild.JoinRolesIDs.splice(parseInt(i), 1);
                 }
             }
-            yield Guild_1.Guild.update({ JoinRolesIDs: guild.JoinRolesIDs }, { where: { ID: guild.ID } }).catch(err => console.error(err));
+            yield Guild_1.Guild.update({ JoinRolesIDs: guild.JoinRolesIDs }, { where: { ID: guild.ID } }).catch(err => logger.error(err));
             if (!roles.find(r => !r.editable)) {
                 yield member.roles.add(roles);
             }

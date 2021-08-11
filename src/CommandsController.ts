@@ -7,6 +7,9 @@ import Help          from './Commands/Help/Help';
 import Placeholder   from './Commands/Placeholder';
 import Usage         from './Commands/Usage/Usage';
 import RBFetch       from './Commands/RBFetch/RBFetch';
+import Mute          from './Commands/Mute/Mute';
+import UnMute        from './Commands/UnMute/UnMute';
+import Config        from './Commands/Config/Config';
 /*==========================================*/
 
 class CommandsController{
@@ -16,6 +19,9 @@ class CommandsController{
         this.Commands.push(new Help     (this));
         this.Commands.push(new Usage    (this));
         this.Commands.push(new RBFetch  (this));
+        this.Commands.push(new Mute     (this));
+        this.Commands.push(new UnMute   (this));
+        this.Commands.push(new Config   (this));
     }
 
     IsCommandExist(message: Discord.Message){
