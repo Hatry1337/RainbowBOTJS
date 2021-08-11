@@ -103,14 +103,24 @@ class Config implements ICommand{
                             if(role){
                                 message.guild?.channels.cache.each(async (channel) => {
                                     if(role){
-                                        await channel.overwritePermissions([
-                                            {
-                                                id: role.id,
-                                                deny: ['ADD_REACTIONS', 'PRIORITY_SPEAKER', 'STREAM', 'SEND_MESSAGES', 
-                                                'SEND_TTS_MESSAGES', 'MANAGE_MESSAGES', 'EMBED_LINKS', 'ATTACH_FILES',
-                                                'MENTION_EVERYONE', 'USE_EXTERNAL_EMOJIS', 'SPEAK', 'USE_VAD'],
-                                            }
-                                        ], `Muted role setting... Requested by ${message.author.tag}(${message.author.id})`);
+                                        var perms: Array<Discord.OverwriteResolvable> = [];
+
+                                        channel.permissionOverwrites.each(async p => {
+                                            perms.push({
+                                                id: p.id,
+                                                allow: p.allow,
+                                                deny: p.deny
+                                            });
+                                        });
+
+                                        perms.push({
+                                            id: role.id,
+                                            deny: ['ADD_REACTIONS', 'PRIORITY_SPEAKER', 'STREAM', 'SEND_MESSAGES', 
+                                            'SEND_TTS_MESSAGES', 'MANAGE_MESSAGES', 'EMBED_LINKS', 'ATTACH_FILES',
+                                            'MENTION_EVERYONE', 'USE_EXTERNAL_EMOJIS', 'SPEAK', 'USE_VAD'],
+                                        });
+
+                                        await channel.overwritePermissions(perms, `Muted role setting... Requested by ${message.author.tag}(${message.author.id})`);
                                     }
                                 });
                                 guild.MutedRoleID = role.id;

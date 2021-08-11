@@ -1,4 +1,4 @@
-import Discord, { TextChannel } from "discord.js";
+import Discord, { GuildChannel, TextChannel } from "discord.js";
 import CommandsController from "./CommandsController";
 import RClient from "./RClient";
 import { sequelize } from "./Database";
@@ -188,7 +188,6 @@ client.on("guildMemberRemove", async (member) => {
         return await channel.send(embd);
     }).catch(err => { throw err });
 });
-
 
 
 
