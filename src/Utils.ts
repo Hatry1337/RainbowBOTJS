@@ -52,9 +52,9 @@ export class Utils{
 
     static formatTime(s: number){
         var stime;
-        var m = Math.ceil(s / (1000 * 60));
-        var h = Math.ceil(s / (1000 * 60 * 60));
-        var d = Math.ceil(s / (1000 * 60 * 60 * 24));
+        var m = this.div(s, 60);
+        var h = this.div(s, 60 * 60);
+        var d = this.div(s, 60 * 60 * 24);
 
         if (s < 60) {
             stime = `${s} secs`;
@@ -67,6 +67,10 @@ export class Utils{
         }
         
         return stime;
+    }
+
+    static div(val: number, by: number){
+        return (val - val % by) / by;
     }
 
     static parseShortTime(raw_data: string){
