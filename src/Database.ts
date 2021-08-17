@@ -3,6 +3,7 @@ import { Sequelize } from "sequelize-typescript";
 import { Guild } from './Models/Guild';
 import { MutedUser } from "./Models/MutedUser";
 import { ReactionEvent } from './Models/ReactionEvent';
+import { VoiceLobby } from "./Models/VoiceLobby";
 
 
 export const sequelize = new Sequelize({ 
@@ -15,6 +16,7 @@ export const sequelize = new Sequelize({
     models: [
         Guild,
         ReactionEvent,
-        MutedUser
+        MutedUser,
+        VoiceLobby
     ]
 });

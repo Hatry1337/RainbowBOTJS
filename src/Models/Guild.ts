@@ -68,6 +68,12 @@ export class Guild extends Model {
     SystemChannelID!: string;
 
     @Column({
+        type: DataType.STRING,
+        allowNull: true,
+    })
+    VLChannelID!: string;
+
+    @Column({
         type: DataType.BOOLEAN,
         allowNull: false,
         defaultValue: false,

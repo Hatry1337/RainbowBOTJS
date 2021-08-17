@@ -10,6 +10,7 @@ import RBFetch       from './Commands/RBFetch/RBFetch';
 import Mute          from './Commands/Mute/Mute';
 import UnMute        from './Commands/UnMute/UnMute';
 import Config        from './Commands/Config/Config';
+import VL            from './Commands/VL/VL';
 /*==========================================*/
 
 class CommandsController{
@@ -22,6 +23,7 @@ class CommandsController{
         this.Commands.push(new Mute     (this));
         this.Commands.push(new UnMute   (this));
         this.Commands.push(new Config   (this));
+        this.Commands.push(new VL       (this));
     }
 
     IsCommandExist(message: Discord.Message){
