@@ -273,6 +273,14 @@ class VL implements ICommand{
                     case "kick":{
                         var user_id = Utils.parseID(args[1]);
 
+                        if(user_id === message.author.id){
+                            var embd = new Discord.MessageEmbed({
+                                title: `${Emojis.RedErrorCross} You can't kick yourself.`,
+                                color: Colors.Error
+                            });
+                            return resolve(await message.channel.send(embd));
+                        }
+
                         if(user_id && user_id.length === 18){
                             var user = message.guild?.members.resolve(user_id);
                             if(!user){
