@@ -85,10 +85,10 @@ class Music {
         await othis.extractURL(sch_req, async function (songUrl) {
             const songInfo = await othis.ytdl.getInfo(songUrl);
             const song = new Song(
-                songInfo.title,
-                songInfo.video_url,
-                songInfo.length_seconds,
-                songInfo.playerResponse.videoDetails.thumbnail.thumbnails.pop(),
+                songInfo.videoDetails.title,
+                songInfo.videoDetails.video_url,
+                songInfo.videoDetails.lengthSeconds,
+                songInfo.videoDetails.thumbnails.pop(),
                 new Date(),
                 false,
                 lang
