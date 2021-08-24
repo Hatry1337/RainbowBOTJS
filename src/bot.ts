@@ -1,21 +1,44 @@
-import Discord, { TextChannel } from "discord.js";
+import Discord, { GuildChannel, TextChannel } from "discord.js";
 import CommandsController from "./CommandsController";
 import RClient from "./RClient";
 import { sequelize } from "./Database";
 import { Guild } from "./Models/Guild";
 import { Colors } from "./Utils";
+import log4js from "log4js";
+import { MutedUser } from "./Models/MutedUser";
+import { VoiceLobby } from "./Models/VoiceLobby";
 
+log4js.configure({
+    appenders: {
+        console: { type: 'console' },
+        file: { type: 'file', filename: 'botlog.log' },
+    },
+    categories: {
+        default: { appenders: ['console', 'file'], level: 'info' }
+    }
+});
+
+declare module 'discord.js' {
+    interface ClientEvents {
+        RVoiceChannelJoin: [VoiceChannel, GuildMember],
+        RVoiceChannelQuit: [VoiceChannel, GuildMember],
+        RVoiceChannelChange: [VoiceChannel, VoiceChannel, GuildMember],
+    }
+}
+
+const logger = log4js.getLogger();
 const client = new RClient();
 const commandsController = new CommandsController();
 
 (async () => {
     await sequelize.sync({force: false});
+    logger.info(`DB Synced.`);
 })();
 
 client.once("ready", async () => {
-    console.log("Bot started.");
+    logger.info("Bot started.");
 
-    console.log("Starting guilds caching...");
+    logger.info("Starting guilds caching...");
     Guild.findAll({
         where:{
             IsBanned: false
@@ -23,13 +46,47 @@ client.once("ready", async () => {
     }).then(async guilds => {
         for(var i in guilds){
             await client.guilds.fetch(guilds[i].ID, true, true);
-            console.log(`Cached ${parseInt(i)+1}/${guilds.length}`);
+            logger.info(`Cached ${parseInt(i)+1}/${guilds.length}`);
         }
     });
+
+    //Mutes checker
+    setInterval(async () => {
+        logger.info("Muted users checking...");
+        MutedUser.findAll({
+            where: {
+                IsMuted: true
+            }
+        }).then(async (musrs) => {
+            for(var mu of musrs){
+                if(!mu.IsPermMuted && (mu.UnmuteDate || new Date()) < new Date()){
+                    mu.IsMuted = false;
+                    await mu.save();
+                    var guild = await client.guilds.fetch(mu.GuildID);
+                    var user = guild.member(mu.DsID);
+                    await user?.roles.remove(mu.MuteRoleID);
+                    logger.info(user?.user.tag, "umuted.");
+                }
+            }
+        });
+    }, 120 * 1000);
+});
+
+client.on("voiceStateUpdate", async (vs1, vs2) => {
+    if(!vs1.channel && vs2.channel && vs2.member){
+        client.emit("RVoiceChannelJoin", vs2.channel, vs2.member);
+    }else if(vs1.channel && !vs2.channel && vs2.member){
+        client.emit("RVoiceChannelQuit", vs1.channel, vs2.member);
+    }else if(vs1.channel && vs2.channel && vs2.member){
+        client.emit("RVoiceChannelChange", vs1.channel, vs2.channel, vs2.member);
+        if(vs1.channel.id !== vs2.channel.id){
+            client.emit("RVoiceChannelQuit", vs1.channel, vs2.member);
+            client.emit("RVoiceChannelJoin", vs2.channel, vs2.member);
+        }
+    }
 });
 
 client.on('message', async message => {
-    console.log(message.content);
     if(message.author.id === client.user?.id) return
     if(message.channel.type === "dm") { 
         await message.channel.send("Команды в личных сообщениях не поддерживаются :cry:"); 
@@ -67,7 +124,7 @@ client.on("guildMemberAdd", async (member) => {
                     guild.JoinRolesIDs.splice(parseInt(i), 1);
                 }
             }
-            await Guild.update({ JoinRolesIDs: guild.JoinRolesIDs }, { where: { ID: guild.ID } }).catch(err => console.error(err));
+            await Guild.update({ JoinRolesIDs: guild.JoinRolesIDs }, { where: { ID: guild.ID } }).catch(err => logger.error(err));
             if(!roles.find(r => !r.editable)){
                 await member.roles.add(roles);
             }else{
@@ -155,7 +212,124 @@ client.on("guildMemberRemove", async (member) => {
     }).catch(err => { throw err });
 });
 
+client.on("RVoiceChannelJoin", async (channel, member) => {
+    logger.info(`${member.id} joined voice channel ${channel.id} on ${channel.guild?.id}`);
+    Guild.findOrCreate({
+        where: {
+            ID: member.guild.id
+        },
+        defaults: {
+            ID: member.guild.id,
+            Name: member.guild.name,
+            OwnerID: member.guild.ownerID,
+            Region: member.guild.region,
+            SystemChannelID: member.guild.systemChannelID,
+            JoinRolesIDs: [],
+        }
+    }).then(async res => {
+        var guild = res[0];
+
+        //Voice Lobby handler
+        if(guild.VLChannelID && channel.id === guild.VLChannelID){
+            VoiceLobby.findOne({
+                where: {
+                    OwnerID: member.id,
+                    GuildID: member.guild.id
+                }
+            }).then(async vl => {
+                if(vl){
+                    var tx_c = channel.guild.channels.resolve(vl.TextChannelID) as TextChannel;
+                    await tx_c.send(`${member}, you already have Voice Lobby channel!`);
+                    await member.voice.setChannel(vl.VoiceChannelID);
+                    return;
+                }
+
+                var cat = await channel.guild.channels.create(`${member.user.tag}'s Channel`, {
+                    type: "category",
+                    permissionOverwrites: [
+                        {
+                            id: member.guild.roles.everyone,
+                            deny: [ 'SEND_MESSAGES', 'SEND_TTS_MESSAGES', 'MANAGE_MESSAGES', 'MENTION_EVERYONE',
+                                    'SPEAK', 'USE_VAD', 'CONNECT', 'VIEW_CHANNEL', 'STREAM', 'READ_MESSAGE_HISTORY',
+                                    'VIEW_CHANNEL'
+                            ],
+                        },
+                        {
+                            id: member.id,
+                            allow: ['SEND_MESSAGES', 'SEND_TTS_MESSAGES', 'MANAGE_MESSAGES', 'SPEAK', 
+                                    'USE_VAD', 'CONNECT', 'VIEW_CHANNEL', 'STREAM', 'READ_MESSAGE_HISTORY', 'MUTE_MEMBERS', 'PRIORITY_SPEAKER', 'MANAGE_CHANNELS' ],
+                        }
+                    ],
+                    position: 9999
+                });
+
+                var tx_c = await channel.guild.channels.create("text", {
+                    type: "text",
+                    parent: cat
+                });
+
+                var vc_c = await channel.guild.channels.create("voice", {
+                    type: "voice",
+                    parent: cat
+                });
+
+                await member.voice.setChannel(vc_c);
+
+                await VoiceLobby.create({
+                    OwnerID: member.id,
+                    OwnerTag: member.user.tag,
+                    GuildID: channel.guild.id,
+                    IsPrivate: true,
+                    InvitedUsersIDs: [],
+                    CategoryID: cat.id,
+                    TextChannelID: tx_c.id,
+                    VoiceChannelID: vc_c.id,
+                }); 
+            });
+        }
+    });
+});
 
 
+client.on("RVoiceChannelQuit", async (channel, member) => {
+    logger.info(`${member.id} leaved from voice channel ${channel.id} on ${channel.guild?.id}`);
+    Guild.findOrCreate({
+        where: {
+            ID: member.guild.id
+        },
+        defaults: {
+            ID: member.guild.id,
+            Name: member.guild.name,
+            OwnerID: member.guild.ownerID,
+            Region: member.guild.region,
+            SystemChannelID: member.guild.systemChannelID,
+            JoinRolesIDs: [],
+        }
+    }).then(async res => {
+        var guild = res[0];
+
+        if(channel.members.size === 0){
+
+            //Voice Lobby handler
+            if(guild.VLChannelID){
+                VoiceLobby.findOne({
+                    where: {
+                        OwnerID: member.id,
+                        GuildID: member.guild.id
+                    }
+                }).then(async vl => {
+                    if(vl){
+                        await channel.guild.channels.resolve(vl.TextChannelID)?.delete();
+                        await channel.guild.channels.resolve(vl.VoiceChannelID)?.delete();
+                        await channel.guild.channels.resolve(vl.CategoryID)?.delete();
+                        await vl.destroy();
+                        logger.info(`${member.id} destroyed voice lobby ${channel.id} on ${channel.guild?.id}`);
+                    }
+                });
+            }
+        }
+
+    }).catch(err => logger.error);
+});
 
 client.login("NjI3NDkyMTQyMjk3NjQ1MDU2.XY9bmA.4-3FITnIwAlSKE3mPWkLYv8baJs");

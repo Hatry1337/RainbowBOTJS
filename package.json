@@ -10,9 +10,10 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "discord.js": "^12.5.3",
     "@discordjs/opus": "^0.3.2",
+    "discord.js": "^12.5.3",
     "ffmpeg-static": "^4.3.0",
+    "log4js": "^6.3.0",
     "pg": "^8.6.0",
     "pg-hstore": "^2.3.4",
     "reflect-metadata": "^0.1.13",

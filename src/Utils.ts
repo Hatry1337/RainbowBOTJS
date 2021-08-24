@@ -52,9 +52,9 @@ export class Utils{
 
     static formatTime(s: number){
         var stime;
-        var m = Math.ceil(s / (1000 * 60));
-        var h = Math.ceil(s / (1000 * 60 * 60));
-        var d = Math.ceil(s / (1000 * 60 * 60 * 24));
+        var m = this.div(s, 60);
+        var h = this.div(s, 60 * 60);
+        var d = this.div(s, 60 * 60 * 24);
 
         if (s < 60) {
             stime = `${s} secs`;
@@ -69,7 +69,35 @@ export class Utils{
         return stime;
     }
 
+    static div(val: number, by: number){
+        return (val - val % by) / by;
+    }
 
+    static parseShortTime(raw_data: string){
+        raw_data = raw_data.toLowerCase();
+        var secs = 0;
+
+        var reg = /([0-9][0-9]*?)(d|h|m|s)/g;
+        var match;
+        while (match = reg.exec(raw_data)) {
+            switch(match[2]){
+                case "d":
+                    secs += parseInt(match[1]) * 24 * 60 * 60;
+                    break;
+                case "h":
+                    secs += parseInt(match[1]) * 60 * 60;
+                    break;
+                case "m":
+                    secs += parseInt(match[1]) * 60;
+                    break;
+                case "s":
+                    secs += parseInt(match[1]);
+                    break;
+            }
+            reg.lastIndex -= 1;
+        }
+        return secs;
+    }
 }
 
 export enum Emojis{
