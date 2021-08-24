@@ -493,5 +493,51 @@
             ru: "сообщений",
             en: "messages"
         }
+    },
+    getmoney: {
+        income: {
+            ru: "Ваш доход за",
+            en: "Your income in"
+        },
+        points: {
+            ru: "Поинтов",
+            en: "Points"
+        },
+        miningstart: {
+            ru: "Майнинг запущен!",
+            en: "Mining started!"
+        },
+        electricity: {
+            ru: "Электричество",
+            en: "Electricity"
+        },
+        fckupReasons:{
+            ru: [
+                "Землетрясение привёло к потере:",
+                "Пожар на ферме привёл к потере:",
+                "Потоп на ферме привёл к потере:",
+                "Наводнение привело к потере:",
+                "Скачок напряжения на ферме привёл к потере:",
+                "Естественный износ привёл к потере:",
+                "Нападение на ферму привело к краже:",
+                "Отказ системы охлаждения привёл к потере:",
+                "Сбои электропитания привели к потере:",
+                "Неосторожность персонала фермы привела к потере:",
+                "Метеорит упал на ферму и уничтожил:"
+            ],
+            en: [
+                "The earthquake led to the loss of:",
+                "A fire on the farm led to the loss of:",
+                "The flood on the farm led to the loss of:",
+                "The flood led to the loss of:",
+                "A power surge on the farm led to a loss of:",
+                "Natural wear and tear led to the loss of:",
+                "The attack on the farm led to the theft:",
+                "The failure of the cooling system led to the loss of:",
+                "Power failures led to a loss of:",
+                "The carelessness of the farm staff led to the loss of:",
+                "A meteorite fell on the farm and destroyed:"
+            ]
+        }
     }
 };

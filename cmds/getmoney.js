@@ -9,6 +9,11 @@ class GetMoney {
         this.Database = Database;
         this.Utils = Utils;
     }
+
+    fuckUpReason = function(lang){
+        return this.Utils.arrayRandElement(this.Utils.lng.getmoney.fckupReasons[lang]);
+    }
+
     execute = async function (message, pipef) {
         var othis = this;
         this.Database.getUserByDiscordID(message.author.id, async function (user) {
@@ -16,9 +21,9 @@ class GetMoney {
                 user.bm1_time = new Date().getTime() / 1000;
                 othis.Database.updateUser(user.discord_id, user, async function () {
                     if(pipef){
-                        await pipef(`Майнинг запущен!`);
+                        await pipef(othis.Utils.lng.getmoney.miningstart[user.lang]);
                     }
-                    return message.channel.send(`Майнинг запущен!`);
+                    return message.channel.send(othis.Utils.lng.getmoney.miningstart[user.lang]);
                 });
             } else {
                 var curTS = new Date().getTime() / 1000;
@@ -43,29 +48,71 @@ class GetMoney {
                 total_points = Math.floor(total_points);
                 total_xp = Math.floor(total_xp);
 
+
+
                 user.user_points = user.user_points + total_points;
                 user.user_xp = user.user_xp + total_xp;
-                if (!(total_xp === 0)) {
-                    if(pipef){
-                        await pipef(`Ваш доход за ${othis.Utils.timeConversion(diff * 1000, user.lang)}: ${total_points.toReadable()} Поинтов, ${total_xp.toReadable()} ед. Опыта`);
-                    }else {
-                        message.channel.send(`Ваш доход за ${othis.Utils.timeConversion(diff * 1000, user.lang)}: ${total_points.toReadable()} Поинтов, ${total_xp.toReadable()} ед. Опыта`);
-                    }
-                    othis.Database.writeLog('Getmoney', message.author.id, message.guild.name,
-                        JSON.stringify({
-                            Message: `User '${message.author.tag}' getted ${total_points} points, and ${total_xp} xp.`
-                    }));
-                } else {
-                    if(pipef){
-                        await pipef(`Ваш доход за ${othis.Utils.timeConversion(diff * 1000, user.lang)}: ${total_points.toReadable()} Поинтов`);
-                    }else {
-                        message.channel.send(`Ваш доход за ${othis.Utils.timeConversion(diff * 1000, user.lang)}: ${total_points.toReadable()} Поинтов`);
-                    }
-                    othis.Database.writeLog('Getmoney', message.author.id, message.guild.name,
-                        JSON.stringify({
-                            Message: `User '${message.author.tag}' getted ${total_points} points.`
-                    }));
+
+                //miners fuckup feature here:
+                var mfckup_txt = undefined;
+
+                if(Math.random() > 0.9){
+                    var fckup_bm1  = othis.Utils.getRandomInt(Math.floor(user.bitminer1 / 2));
+                    user.bitminer1 -= fckup_bm1;
+                    mfckup_txt = !mfckup_txt ? `${othis.fuckUpReason(user.lang)}\n` : ``;
+                    mfckup_txt += `\`Bitminer S1: ${fckup_bm1}\`\n`;
                 }
+
+                if(Math.random() > 0.9){
+                    var fckup_bm2  = othis.Utils.getRandomInt(Math.floor(user.bitminer2 / 2));
+                    user.bitminer2 -= fckup_bm2;
+                    mfckup_txt = !mfckup_txt ? `${othis.fuckUpReason(user.lang)}\n` : ``;
+                    mfckup_txt += `\`Bitminer S2: ${fckup_bm2}\`\n`;
+                }
+
+                if(Math.random() > 0.9){
+                    var fckup_bmr  = othis.Utils.getRandomInt(Math.floor(user.bitminer_rack / 2));
+                    user.bitminer_rack -= fckup_bmr;
+                    mfckup_txt = !mfckup_txt ? `${othis.fuckUpReason(user.lang)}\n` : ``;
+                    mfckup_txt += `\`Bitminer Rack: ${fckup_bmr}\`\n`;
+                }
+
+                if(Math.random() > 0.9){
+                    var fckup_bmdc = othis.Utils.getRandomInt(Math.floor(user.bitm_dc / 2));
+                    user.bitm_dc -= fckup_bmdc;
+                    mfckup_txt = !mfckup_txt ? `${othis.fuckUpReason(user.lang)}\n` : ``;
+                    mfckup_txt += `\`Bitminer DataCenter: ${fckup_bmdc}\`\n`;
+                }
+
+                //electricity bill feature:
+                var power = (bm1_rate  * 0.2 * diff)       * user.bitminer1      +
+                            (bm2_rate  * 0.2 * diff)       * user.bitminer2      +
+                            (bmr_rate  * 0.2 * diff)       * user.bitminer_rack  +
+                            (bmdc_rate * 0.2 * diff)       * user.bitm_dc        ;
+
+                var p_cost = power * 0.3;
+                user.user_points -= p_cost;
+
+
+                
+                var msg_txt =   `${othis.Utils.lng.getmoney.income[user.lang]} ${othis.Utils.timeConversion(diff * 1000, user.lang)}: ` +
+                                `${total_points.toReadable()} ${othis.Utils.lng.getmoney.points[user.lang]}; ` +
+                                `${total_xp !== 0 ? `${total_xp} xp;` : ``}` +
+                                `\n\`${othis.Utils.lng.getmoney.electricity[user.lang]}: -${Math.floor(p_cost).toReadable()} ${othis.Utils.lng.getmoney.points[user.lang]};\`` +
+                                `${mfckup_txt ? `\n\n${mfckup_txt}`: ``}`;
+
+
+                if(pipef){
+                    await pipef(msg_txt);
+                }else {
+                    await message.channel.send(msg_txt);
+                }
+
+                othis.Database.writeLog('Getmoney', message.author.id, message.guild.name,
+                    JSON.stringify({
+                        Message: `User '${message.author.tag}' getted ${total_points} points, and ${total_xp} xp.`
+                }));
+                
                 user.bm1_time = new Date().getTime() / 1000;
                 othis.Database.updateUser(user.discord_id, user, function () {
                     return;
