@@ -3,14 +3,14 @@ import ICommand from "../ICommand";
 import { Emojis, Colors } from "../../Utils";
 import CommandsController from "../../CommandsController";
 
-class Help implements ICommand{
+class RHelp implements ICommand{
     Name:        string = "Help";
-    Trigger:     string = "!help";
-    Usage:       string = "`!help [<page> <category>] `\n\n" +
+    Trigger:     string = "!rhelp";
+    Usage:       string = "`!rhelp [<page> <category>] `\n\n" +
                           "**Examples:**\n" +
-                          "`!help` - Shows first page of help menu.\n\n" +
-                          "`!help 2` - Shows second page of help menu.\n\n" +
-                          "`!help 1 Info` - Shows first page of \`Info\` category commands.\n\n";
+                          "`!rhelp` - Shows first page of help menu.\n\n" +
+                          "`!rhelp 2` - Shows second page of help menu.\n\n" +
+                          "`!rhelp 1 Info` - Shows first page of \`Info\` category commands.\n\n";
 
     Description: string = "Using this command users can explore bot's commands, and find out how to use them.";
     Category:    string = "Info";
@@ -22,7 +22,7 @@ class Help implements ICommand{
     
     
     Test(mesage: Discord.Message){
-        return mesage.content.toLowerCase().startsWith("!help");
+        return mesage.content.toLowerCase().startsWith("!rhelp");
     }
     
     Run(message: Discord.Message){
@@ -103,4 +103,4 @@ class Help implements ICommand{
     }
 }
 
-export = Help;
+export = RHelp;

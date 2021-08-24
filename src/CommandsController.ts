@@ -3,7 +3,7 @@ import ICommand from './Commands/ICommand';
 
 /*============Commands Import===============*/
 import JoinMgr       from './Commands/JoinMgr/JoinMgr';
-import Help          from './Commands/Help/Help';
+import RHelp          from './Commands/RHelp/RHelp';
 import Placeholder   from './Commands/Placeholder';
 import Usage         from './Commands/Usage/Usage';
 import RBFetch       from './Commands/RBFetch/RBFetch';
@@ -12,10 +12,10 @@ import RBFetch       from './Commands/RBFetch/RBFetch';
 class CommandsController{
     Commands: ICommand[] = [];
     constructor(){
-        this.Commands.push(new JoinMgr  (this));
-        this.Commands.push(new Help     (this));
-        this.Commands.push(new Usage    (this));
-        this.Commands.push(new RBFetch  (this));
+        this.Commands.push(new JoinMgr   (this));
+        this.Commands.push(new RHelp     (this));
+        this.Commands.push(new Usage     (this));
+        this.Commands.push(new RBFetch   (this));
     }
 
     IsCommandExist(message: Discord.Message){
