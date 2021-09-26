@@ -401,7 +401,7 @@ class Music implements ICommand{
             var urls = await this.extractPlaylist(message.content);
             if(urls.length === 0){
                 var url;
-                if(message.content.startsWith("-stream ")){
+                if(message.content.startsWith("-rbfm")){
                     url = message.content;
                 }else{
                     url = await this.extractURL(message.content);
@@ -434,10 +434,10 @@ class Music implements ICommand{
                     break;
                 }
                 if(vid){
-                    if(message.content.startsWith("-stream ")){
+                    if(message.content.startsWith("-rbfm")){
                         var song: TrackOptions = {
-                            title: "Live Broadcast",
-                            url: message.content.split(" ")[1],
+                            title: "RainbowFM Live Broadcast",
+                            url: "https://air.rainbowbot.xyz",
                             duration: 60 * 60 * 2,
                             thumbnail: {
                                 url: "https://static.rainbowbot.xyz/pictures/fox.jpg",
