@@ -316,7 +316,7 @@ class Music implements ICommand{
                 var embd = new Discord.MessageEmbed({
                     title: `RainbowBOT Music Player ${plr.isPlaying ? "▶" : "⏸"} ${plr.isRepeated ? "🔂" : ""}`,
                     color: 0x00a7ff
-                }).setImage("https://cdn.discordapp.com/attachments/575271861643116555/796329363305922610/-1.png");
+                }).setImage("https://static.rainbowbot.xyz/pictures/rbot/music/empty.png");
                 await plr.PlayerMessage.edit(embd);
             }
             resolve (await plr.QueueMessage.edit(qstr));
@@ -440,9 +440,9 @@ class Music implements ICommand{
                             url: "https://air.rainbowbot.xyz",
                             duration: 60 * 60 * 2,
                             thumbnail: {
-                                url: "https://static.rainbowbot.xyz/pictures/fox.jpg",
-                                width: 720,
-                                height: 720
+                                url: "https://static.rainbowbot.xyz/pictures/rbot/music/rbfm.png",
+                                width: 1920,
+                                height: 1080
                             },
                             timestamp: new Date(),
                             isRadio: true
