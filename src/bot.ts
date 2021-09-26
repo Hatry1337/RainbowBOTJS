@@ -7,6 +7,7 @@ import { Colors } from "./Utils";
 import log4js from "log4js";
 import { MutedUser } from "./Models/MutedUser";
 import { VoiceLobby } from "./Models/VoiceLobby";
+import { MusicManager } from "./Models/MusicManager";
 
 log4js.configure({
     appenders: {
@@ -28,7 +29,7 @@ declare module 'discord.js' {
 
 const logger = log4js.getLogger();
 const client = new RClient();
-const commandsController = new CommandsController();
+const commandsController = new CommandsController(client);
 
 (async () => {
     await sequelize.sync({force: false});
@@ -38,17 +39,37 @@ const commandsController = new CommandsController();
 client.once("ready", async () => {
     logger.info("Bot started.");
 
-    logger.info("Starting guilds caching...");
+    logger.info("[GC] Starting guilds caching...");
     Guild.findAll({
         where:{
             IsBanned: false
         }
     }).then(async guilds => {
         for(var i in guilds){
-            await client.guilds.fetch(guilds[i].ID, true, true);
-            logger.info(`Cached ${parseInt(i)+1}/${guilds.length}`);
+            await client.guilds.fetch(guilds[i].ID, true, true).catch(err => {
+                logger.warn('[GC] Guild Fetch Error:', err);
+            });
+            logger.info(`[GC] Guild ${parseInt(i)+1}/${guilds.length}`);
         }
+    }).catch(err => {
+        logger.error('[GC] Guilds Caching error:', err);
     });
+
+    logger.info("[MMC] Starting MusicManagers caching...");
+    var managers = await MusicManager.findAll();
+    for(var i in managers){
+        var ch = await client.channels.fetch(managers[i].get("music_channel_id")).catch(async e => {
+            if(e && e.code === 10003){
+                logger.info(`[MMC] [${managers[i].get("music_channel_id")}] Channel not found. Deleting manager`)
+                await managers[i].destroy();
+            }
+        }) as Discord.TextChannel;
+        if(ch){
+            await ch.messages.fetch();
+            console.log(`${parseInt(i)+1}/${managers.length}`);
+        }
+    }
+
 
     //Mutes checker
     setInterval(async () => {
@@ -144,7 +165,7 @@ client.on("guildMemberAdd", async (member) => {
 
         if(guild.Meta.jmgr_msg){
             var msg_settings = guild.Meta.jmgr_msg;
-            msg_settings.Title = msg_settings.Title?.replace(/%user%/g, member.user.toString());
+            msg_settings.Title = msg_settings.Title?.replace(/%user%/g, member.user.tag);
             msg_settings.Description = msg_settings.Description?.replace(/%blank%/g, "");
             msg_settings.Description = msg_settings.Description?.replace(/%user%/g, member.user.toString());
             var embd = new Discord.MessageEmbed({
@@ -175,7 +196,7 @@ client.on("guildMemberAdd", async (member) => {
             return await channel.send(embd);
         }
 
-    }).catch(err => { throw err });
+    }).catch(err => { logger.error("GuildMemberAdd Event Exception: ", err) });
 });
 
 client.on("guildMemberRemove", async (member) => {
@@ -194,22 +215,42 @@ client.on("guildMemberRemove", async (member) => {
     }).then(async res => {
         var guild = res[0];
 
-        if(!guild.IsJoinMessageEnabled || !guild.JoinMessageChannelID){
+        if(!guild.Meta.IsLeaveMessageEnabled || !guild.Meta.LeaveMessageChannelID || !member.user){
             return;
         }
 
-        var embd = new Discord.MessageEmbed({
-            title: `${member.user?.tag} leaved from server!`,
-            color: Colors.Warning
-        });
-        var avatar_url = member.user?.avatarURL();
-        if(avatar_url){
-            embd.thumbnail = { url: avatar_url }
+        if(guild.Meta.lmgr_msg){
+            var msg_settings = guild.Meta.lmgr_msg;
+            msg_settings.Title = msg_settings.Title?.replace(/%user%/g, member.user.tag);
+            msg_settings.Description = msg_settings.Description?.replace(/%blank%/g, "");
+            msg_settings.Description = msg_settings.Description?.replace(/%user%/g, member.user.toString());
+            var embd = new Discord.MessageEmbed({
+                title: msg_settings.Title,
+                description: msg_settings.Description,
+                image: { url: msg_settings.Image },
+                color: Colors.Warning
+            });
+            var avatar_url = member.user.avatarURL();
+            if(msg_settings.Avatar && avatar_url){
+                embd.thumbnail = { url: avatar_url }
+            }
+            
+            var channel = client.channels.cache.find(c => c.id === guild.Meta.LeaveMessageChannelID) as Discord.TextChannel;
+            return await channel.send(embd);
+        }else{
+            var embd = new Discord.MessageEmbed({
+                title: `${member.user?.tag} leaved from server :(`,
+                color: Colors.Warning
+            });
+            var avatar_url = member.user.avatarURL();
+            if(avatar_url){
+                embd.thumbnail = { url: avatar_url }
+            }
+            
+            var channel = client.channels.cache.find(c => c.id === guild.Meta.LeaveMessageChannelID) as Discord.TextChannel;
+            return await channel.send(embd);
         }
-        
-        var channel = client.channels.cache.find(c => c.id === guild.JoinMessageChannelID) as Discord.TextChannel;
-        return await channel.send(embd);
-    }).catch(err => { throw err });
+    }).catch(err => { logger.error("GuildMemberRemove Event Exception: ", err) });
 });
 
 client.on("RVoiceChannelJoin", async (channel, member) => {
@@ -329,7 +370,7 @@ client.on("RVoiceChannelQuit", async (channel, member) => {
             }
         }
 
-    }).catch(err => logger.error);
+    }).catch(err => logger.error("RVoiceChannelQuit Event Exception: ", err));
 });
 
 client.login("NjI3NDkyMTQyMjk3NjQ1MDU2.XY9bmA.4-3FITnIwAlSKE3mPWkLYv8baJs");

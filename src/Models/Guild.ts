@@ -2,7 +2,10 @@ import { Table, Model, Column, DataType } from "sequelize-typescript";
 import { CustomMessageSettings } from "../Utils";
 
 interface GuildMeta{
-    jmgr_msg?: CustomMessageSettings
+    jmgr_msg?: CustomMessageSettings;
+    lmgr_msg?: CustomMessageSettings;
+    LeaveMessageChannelID?: string;
+    IsLeaveMessageEnabled?: boolean;
 }
 
 @Table({

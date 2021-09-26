@@ -4,20 +4,17 @@ import { Guild } from "../../Models/Guild";
 import { Utils, Emojis, Colors, CustomMessageSettings } from "../../Utils";
 import CommandsController from "../../CommandsController";
 
-class JoinMgr implements ICommand{
-    Name:        string = "JoinMgr";
-    Trigger:     string = "!joinmgr";
-    Usage:       string = "`!joinmgr <sub_cmd> ...`\n\n" +
+class LeaveMgr implements ICommand{
+    Name:        string = "LeaveMgr";
+    Trigger:     string = "!leavemgr";
+    Usage:       string = "`!leavemgr <sub_cmd> ...`\n\n" +
                           "**Subcommands:**\n" +
-                          "`!joinmgr add-join-role @role` - Add selected role to join roles list. Roles from this list are given to members when they join on server.\n\n" +
-                          "`!joinmgr rm-join-role @role` - Remove selected role from join roles list.\n\n" +
-                          "`!joinmgr join-roles` - View list of join roles.\n\n" +
-                          "`!joinmgr join-message-channel #channel` - Set channel to which join messages will be sent.\n\n" +
-                          "`!joinmgr join-message-cfg` - Configure custom join message.\n\n" +
-                          "`!joinmgr join-message-enable` - Enable join messages.\n\n" +
-                          "`!joinmgr join-message-disable` - Disable join messages.\n\n";
+                          "`!leavemgr leave-message-channel #channel` - Set channel to which leave messages will be sent.\n\n" +
+                          "`!leavemgr leave-message-cfg` - Configure custom leave message.\n\n" +
+                          "`!leavemgr leave-message-enable` - Enable leave messages.\n\n" +
+                          "`!leavemgr leave-message-disable` - Disable leave messages.\n\n";
 
-    Description: string = "Using this command admins can set join message, channel, roles and etc.";
+    Description: string = "Using this command admins can set leave message, channel.";
     Category:    string = "Utility";
     Controller: CommandsController
 
@@ -26,7 +23,7 @@ class JoinMgr implements ICommand{
     }
     
     Test(mesage: Discord.Message){
-        return mesage.content.toLowerCase().startsWith("!joinmgr");
+        return mesage.content.toLowerCase().startsWith("!leavemgr");
     }
     
     Run(message: Discord.Message){
@@ -52,196 +49,7 @@ class JoinMgr implements ICommand{
             }
 
             switch(args[0]){
-                case "add-join-role":{
-                    Guild.findOrCreate({
-                        where: {
-                            ID: message.guild?.id
-                        },
-                        defaults: {
-                            ID: message.guild?.id,
-                            Name: message.guild?.name,
-                            OwnerID: message.guild?.ownerID,
-                            Region: message.guild?.region,
-                            SystemChannelID: message.guild?.systemChannelID,
-                            JoinRolesIDs: [],
-                        }
-                    }).then(async res => {
-                        var guild = res[0];
-                        var role_id = Utils.parseID(args[1]);
-                        if(role_id && role_id.length === 18){
-                            var role = message.guild?.roles.cache.get(role_id);
-                            if(guild.JoinRolesIDs.length < 20){
-                                guild.JoinRolesIDs.push(role_id);
-                                Guild.update({ JoinRolesIDs: guild.JoinRolesIDs }, { where: {ID: guild.ID} }).then(async () => {
-                                    var all_roles = "";
-                                    for(var r of guild.JoinRolesIDs){
-                                        all_roles += `${Emojis.BlueRoundedArrowRight} <@&${r}>\n`;
-                                    }
-    
-                                    var embd = new Discord.MessageEmbed({
-                                        title: `New role added to join roles list`,
-                                        description: `**Role ${role} added to join roles list.**\n\nAll join roles:\n${all_roles}\n_${guild.JoinRolesIDs.length}/20_`,
-                                        color: Colors.Success
-                                    });
-                                    return resolve(await message.channel.send(embd));
-                                });
-                            }else{
-                                var all_roles = "";
-                                for(var r of guild.JoinRolesIDs){
-                                    all_roles += `${Emojis.BlueRoundedArrowRight} <@&${r}>\n`;
-                                }
-
-                                var embd = new Discord.MessageEmbed({
-                                    title: `${Emojis.RedErrorCross} You can't add more than 20 roles to join roles list`,
-                                    description: `**Remove some of them with \`!joinmgr rm-join-role\`**\n\nAll join roles:\n${all_roles}\n_${guild.JoinRolesIDs.length}/20_`,
-                                    color: Colors.Error
-                                });
-                                return resolve(await message.channel.send(embd));
-                            }
-                            
-                        }else{
-                            var embd = new Discord.MessageEmbed({
-                                title: `${Emojis.RedErrorCross} Role ID is invalid. Please, check it, and try again.`,
-                                color: Colors.Error
-                            });
-                            return resolve(await message.channel.send(embd));
-                        }
-
-                    }).catch(async res => {
-                        console.error(res);
-                        var embd = new Discord.MessageEmbed({
-                            title: `${Emojis.RedErrorCross} Unexpected error occured. Please contact with bot's support.`,
-                            color: Colors.Error
-                        });
-                        return resolve(await message.channel.send(embd));
-                    });
-                    break;
-                }
-
-                case "rm-join-role":{
-                    Guild.findOrCreate({
-                        where: {
-                            ID: message.guild?.id
-                        },
-                        defaults: {
-                            ID: message.guild?.id,
-                            Name: message.guild?.name,
-                            OwnerID: message.guild?.ownerID,
-                            Region: message.guild?.region,
-                            SystemChannelID: message.guild?.systemChannelID,
-                            JoinRolesIDs: [],
-                        }
-                    }).then(async res => {
-                        var guild = res[0];
-                        var role_id = Utils.parseID(args[1]);
-                        if(role_id && role_id.length === 18){
-                            var role = message.guild?.roles.cache.get(role_id);
-                            if(guild.JoinRolesIDs.length > 0){
-                                var r_indx = guild.JoinRolesIDs.indexOf(role_id);
-                                if(r_indx !== -1){
-                                    guild.JoinRolesIDs.splice(r_indx, 1);
-                                    Guild.update({ JoinRolesIDs: guild.JoinRolesIDs }, { where: {ID: guild.ID} }).then(async () => {
-                                        var all_roles = "";
-                                        for(var r of guild.JoinRolesIDs){
-                                            all_roles += `${Emojis.BlueRoundedArrowRight} <@&${r}>\n`;
-                                        }
-        
-                                        var embd = new Discord.MessageEmbed({
-                                            title: `Role removed from join roles list`,
-                                            description: `**Role ${role} has been removed from join roles list.**\n\nAll join roles:\n${all_roles}\n_${guild.JoinRolesIDs.length}/20_`,
-                                            color: Colors.Success
-                                        });
-                                        return resolve(await message.channel.send(embd));
-                                    });
-                                }else{
-                                    var all_roles = "";
-                                    for(var r of guild.JoinRolesIDs){
-                                        all_roles += `${Emojis.BlueRoundedArrowRight} <@&${r}>\n`;
-                                    }
-
-                                    var embd = new Discord.MessageEmbed({
-                                        title: `${Emojis.RedErrorCross} This role is not in join roles list`,
-                                        description: `**Role ${role} is not in join roles list.**\n\nAll join roles:\n${all_roles}\n_${guild.JoinRolesIDs.length}/20_`,
-                                        color: Colors.Error
-                                    });
-                                    return resolve(await message.channel.send(embd));
-                                }
-                                
-                            }else{
-                                var embd = new Discord.MessageEmbed({
-                                    title: `${Emojis.RedErrorCross} You dont't have roles in join roles list`,
-                                    description: `**You can add them with \`!joinmgr add-join-role\`**`,
-                                    color: Colors.Error
-                                });
-                                return resolve(await message.channel.send(embd));
-                            }
-                        }else{
-                            var embd = new Discord.MessageEmbed({
-                                title: `${Emojis.RedErrorCross} Role ID is invalid. Please, check it, and try again.`,
-                                color: Colors.Error
-                            });
-                            return resolve(await message.channel.send(embd));
-                        }
-
-                    }).catch(async res => {
-                        console.error(res);
-                        var embd = new Discord.MessageEmbed({
-                            title: `${Emojis.RedErrorCross} Unexpected error occured. Please contact with bot's support.`,
-                            color: Colors.Error
-                        });
-                        return resolve(await message.channel.send(embd));
-                    });
-                    break;
-                }
-
-                case "join-roles":{
-                    Guild.findOrCreate({
-                        where: {
-                            ID: message.guild?.id
-                        },
-                        defaults: {
-                            ID: message.guild?.id,
-                            Name: message.guild?.name,
-                            OwnerID: message.guild?.ownerID,
-                            Region: message.guild?.region,
-                            SystemChannelID: message.guild?.systemChannelID,
-                            JoinRolesIDs: [],
-                        }
-                    }).then(async res => {
-                        var guild = res[0];
-                        if(guild.JoinRolesIDs.length > 0){
-                            var all_roles = "";
-                            for(var r of guild.JoinRolesIDs){
-                                all_roles += `${Emojis.BlueRoundedArrowRight} <@&${r}>\n`;
-                            }
-
-                            var embd = new Discord.MessageEmbed({
-                                title: `Join roles list:`,
-                                description: `${all_roles}\n_${guild.JoinRolesIDs.length}/20_`,
-                                color: Colors.Noraml
-                            });
-                            return resolve(await message.channel.send(embd));
-                        }else{
-                            var embd = new Discord.MessageEmbed({
-                                title: `${Emojis.RedErrorCross} You dont't have roles in join roles list`,
-                                description: `**You can add them with \`!joinmgr add-join-role\`**`,
-                                color: Colors.Error
-                            });
-                            return resolve(await message.channel.send(embd));
-                        }
-
-                    }).catch(async res => {
-                        console.error(res);
-                        var embd = new Discord.MessageEmbed({
-                            title: `${Emojis.RedErrorCross} Unexpected error occured. Please contact with bot's support.`,
-                            color: Colors.Error
-                        });
-                        return resolve(await message.channel.send(embd));
-                    });
-                    break;
-                }
-
-                case "join-message-channel":{
+                case "leave-message-channel":{
                     Guild.findOrCreate({
                         where: {
                             ID: message.guild?.id
@@ -259,11 +67,11 @@ class JoinMgr implements ICommand{
                         var channel_id = Utils.parseID(args[1]);
                         if(channel_id && channel_id.length === 18){
                             var channel = message.guild?.channels.cache.get(channel_id);
-                            guild.JoinMessageChannelID = channel_id;
-                            Guild.update({ JoinMessageChannelID: guild.JoinMessageChannelID }, { where: { ID: guild.ID } }).then(async () => {
+                            guild.Meta.LeaveMessageChannelID = channel_id;
+                            Guild.update({ Meta: guild.Meta }, { where: { ID: guild.ID } }).then(async () => {
                                 var embd = new Discord.MessageEmbed({
-                                    title: `Configured join message channel`,
-                                    description: `**Channel ${channel} has been configured to join messages. You can configure custom join message by \`!joinmgr join-message-cfg\` or use default one.**`,
+                                    title: `Configured leave message channel`,
+                                    description: `**Channel ${channel} has been configured to leave messages. You can configure custom leave message by \`!leavemgr leave-message-cfg\` or use default one.**`,
                                     color: Colors.Success
                                 });
                                 return resolve(await message.channel.send(embd));
@@ -293,7 +101,7 @@ class JoinMgr implements ICommand{
                     break;
                 }
 
-                case "join-message-cfg":{
+                case "leave-message-cfg":{
                     Guild.findOrCreate({
                         where: {
                             ID: message.guild?.id
@@ -319,8 +127,8 @@ class JoinMgr implements ICommand{
                         };
 
                         var emb_main = new Discord.MessageEmbed({
-                            title: `Custom Join Message Configuration Wizard`,
-                            description: `**Welcome to Custom Join Message Configuration Wizard. To configrure custom join message, you need to answer on few questions. Let's Start!**\n\n *Are you ready?*\nType **y/n** (Yes/No)`,
+                            title: `Custom Leave Message Configuration Wizard`,
+                            description: `**Welcome to Custom Leave Message Configuration Wizard. To configrure custom leave message, you need to answer on few questions. Let's Start!**\n\n *Are you ready?*\nType **y/n** (Yes/No)`,
                             color: Colors.Noraml
                         });
                         await message.channel.send(emb_main);
@@ -364,7 +172,7 @@ class JoinMgr implements ICommand{
                                                 await message.channel.send(emb_main);
 
                                                 msg_settings.Description?.replace(/%blank%/g, "");
-                                                guild.Meta.jmgr_msg = msg_settings;
+                                                guild.Meta.lmgr_msg = msg_settings;
                                                 Guild.update({
                                                     Meta: guild.Meta
                                                 },{
@@ -397,7 +205,7 @@ class JoinMgr implements ICommand{
 
                                             }).catch(async () => {
                                                 var embd = new Discord.MessageEmbed({
-                                                    title: `Custom Join Message Configuration Wizard`,
+                                                    title: `Custom Leave Message Configuration Wizard`,
                                                     description: `**Answer time is over! Configuration Wizard finished.**`,
                                                     color: Colors.Warning
                                                 });
@@ -406,7 +214,7 @@ class JoinMgr implements ICommand{
 
                                         }).catch(async () => {
                                             var embd = new Discord.MessageEmbed({
-                                                title: `Custom Join Message Configuration Wizard`,
+                                                title: `Custom Leave Message Configuration Wizard`,
                                                 description: `**Answer time is over! Configuration Wizard finished.**`,
                                                 color: Colors.Warning
                                             });
@@ -415,7 +223,7 @@ class JoinMgr implements ICommand{
 
                                     }).catch(async () => {
                                         var embd = new Discord.MessageEmbed({
-                                            title: `Custom Join Message Configuration Wizard`,
+                                            title: `Custom Leave Message Configuration Wizard`,
                                             description: `**Answer time is over! Configuration Wizard finished.**`,
                                             color: Colors.Warning
                                         });
@@ -424,7 +232,7 @@ class JoinMgr implements ICommand{
 
                                 }).catch(async (err) => {
                                     var embd = new Discord.MessageEmbed({
-                                        title: `Custom Join Message Configuration Wizard`,
+                                        title: `Custom Leave Message Configuration Wizard`,
                                         description: `**Answer time is over! Configuration Wizard finished.**`,
                                         color: Colors.Warning
                                     });
@@ -434,7 +242,7 @@ class JoinMgr implements ICommand{
 
                             }else{
                                 var embd = new Discord.MessageEmbed({
-                                    title: `Custom Join Message Configuration Wizard`,
+                                    title: `Custom Leave Message Configuration Wizard`,
                                     description: `**Configuration Wizard finished.**`,
                                     color: Colors.Warning
                                 });
@@ -442,7 +250,7 @@ class JoinMgr implements ICommand{
                             }
                         }).catch(async () => {
                             var embd = new Discord.MessageEmbed({
-                                title: `Custom Join Message Configuration Wizard`,
+                                title: `Custom Leave Message Configuration Wizard`,
                                 description: `**Answer time is over! Configuration Wizard finished.**`,
                                 color: Colors.Warning
                             });
@@ -460,7 +268,7 @@ class JoinMgr implements ICommand{
                     break;
                 }
 
-                case "join-message-enable":{
+                case "leave-message-enable":{
                     Guild.findOrCreate({
                         where: {
                             ID: message.guild?.id
@@ -475,13 +283,13 @@ class JoinMgr implements ICommand{
                         }
                     }).then(async res => {
                         var guild = res[0];
-                        if(guild.JoinMessageChannelID){
-                            var channel = message.guild?.channels.cache.get(guild.JoinMessageChannelID);
-                            guild.IsJoinMessageEnabled = true;
-                            Guild.update({ IsJoinMessageEnabled: guild.IsJoinMessageEnabled }, { where: { ID: guild.ID } }).then(async () => {
+                        if(guild.Meta.LeaveMessageChannelID){
+                            var channel = message.guild?.channels.cache.get(guild.Meta.LeaveMessageChannelID);
+                            guild.Meta.IsLeaveMessageEnabled = true;
+                            Guild.update({ Meta: guild.Meta }, { where: { ID: guild.ID } }).then(async () => {
                                 var embd = new Discord.MessageEmbed({
-                                    title: `Join messages enabled!`,
-                                    description: `**Now join messages will be sending to ${channel}. You can disable join messages by \`!joinmgr join-message-disable\`**`,
+                                    title: `Leave messages enabled!`,
+                                    description: `**Now leave messages will be sending to ${channel}. You can disable leave messages by \`!leavemgr leave-message-disable\`**`,
                                     color: Colors.Success
                                 });
                                 return resolve(await message.channel.send(embd));
@@ -495,7 +303,7 @@ class JoinMgr implements ICommand{
                             });  
                         }else{
                             var embd = new Discord.MessageEmbed({
-                                title: `${Emojis.RedErrorCross} Cannot enable join message. First you need to set join message channel by \`!joinmgr join-message-channel #channel\`.`,
+                                title: `${Emojis.RedErrorCross} Cannot enable leave message. First you need to set join message channel by \`!leavemgr leave-message-channel #channel\`.`,
                                 color: Colors.Error
                             });
                             return resolve(await message.channel.send(embd));
@@ -511,7 +319,7 @@ class JoinMgr implements ICommand{
                     break;
                 }
 
-                case "join-message-disable":{
+                case "leave-message-disable":{
                     Guild.findOrCreate({
                         where: {
                             ID: message.guild?.id
@@ -526,11 +334,11 @@ class JoinMgr implements ICommand{
                         }
                     }).then(async res => {
                         var guild = res[0];
-                        guild.IsJoinMessageEnabled = false;
-                        Guild.update({ JoinMessageChannelID: guild.JoinMessageChannelID }, { where: { ID: guild.ID } }).then(async () => {
+                        guild.Meta.IsLeaveMessageEnabled = false;
+                        Guild.update({ Meta: guild.Meta }, { where: { ID: guild.ID } }).then(async () => {
                             var embd = new Discord.MessageEmbed({
-                                title: `Join messages disabled!`,
-                                description: `**Now join messages disabled. You can enable join messages by \`!joinmgr join-message-enableS\`**`,
+                                title: `Leave messages disabled!`,
+                                description: `**Now leave messages disabled. You can enable leave messages by \`!leavemgr leave-message-enable\`**`,
                                 color: Colors.Success
                             });
                             return resolve(await message.channel.send(embd));
@@ -567,4 +375,4 @@ class JoinMgr implements ICommand{
     }
 }
 
-export = JoinMgr;
+export = LeaveMgr;

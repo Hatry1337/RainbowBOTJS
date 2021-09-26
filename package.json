@@ -1,6 +1,6 @@
 {
   "name": "rainbow-bot-js",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "RainbowBOT JS",
   "main": "./out/bot.js",
   "author": {
@@ -13,12 +13,16 @@
     "@discordjs/opus": "^0.3.2",
     "discord.js": "^12.5.3",
     "ffmpeg-static": "^4.3.0",
+    "got": "^11.8.2",
     "log4js": "^6.3.0",
     "pg": "^8.6.0",
     "pg-hstore": "^2.3.4",
     "reflect-metadata": "^0.1.13",
     "sequelize": "^6.6.2",
-    "sequelize-typescript": "^2.1.0"
+    "sequelize-typescript": "^2.1.0",
+    "ytdl-core": "^4.9.1",
+    "ytpl": "^2.2.3",
+    "ytsr": "^3.5.3"
   },
   "devDependencies": {
     "@types/node": "^15.12.2",

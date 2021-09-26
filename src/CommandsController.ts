@@ -11,19 +11,28 @@ import Mute          from './Commands/Mute/Mute';
 import UnMute        from './Commands/UnMute/UnMute';
 import Config        from './Commands/Config/Config';
 import VL            from './Commands/VL/VL';
+import LeaveMgr      from './Commands/LeaveMgr/LeaveMgr';
+import Clear         from './Commands/Clear/Clear';
+import Music         from './Commands/Music/Music';
 /*==========================================*/
 
 class CommandsController{
     Commands: ICommand[] = [];
-    constructor(){
+    Client: Discord.Client;
+    constructor(client: Discord.Client){
+        this.Client = client;
+
         this.Commands.push(new JoinMgr  (this));
-        this.Commands.push(new RHelp     (this));
+        this.Commands.push(new RHelp    (this));
         this.Commands.push(new Usage    (this));
         this.Commands.push(new RBFetch  (this));
         this.Commands.push(new Mute     (this));
         this.Commands.push(new UnMute   (this));
         this.Commands.push(new Config   (this));
         this.Commands.push(new VL       (this));
+        this.Commands.push(new LeaveMgr (this));
+        this.Commands.push(new Clear    (this));
+        this.Commands.push(new Music    (this))
     }
 
     IsCommandExist(message: Discord.Message){

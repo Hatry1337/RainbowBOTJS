@@ -9,7 +9,7 @@ export class ReactionEvent extends Model {
     @Column({
         type: DataType.UUID
     })
-    id!: number;
+    id!: string;
 
     @Column({
         type: DataType.STRING,
