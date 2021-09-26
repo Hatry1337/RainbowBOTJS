@@ -400,7 +400,12 @@ class Music implements ICommand{
             
             var urls = await this.extractPlaylist(message.content);
             if(urls.length === 0){
-                var url = await this.extractURL(message.content);
+                var url;
+                if(message.content.startsWith("-stream ")){
+                    url = message.content;
+                }else{
+                    url = await this.extractURL(message.content);
+                }
                 if(url){
                     urls.push(url);
                 }
@@ -429,16 +434,32 @@ class Music implements ICommand{
                     break;
                 }
                 if(vid){
-                    var songInfo = await ytdl.getBasicInfo(vid);
-                    var song: TrackOptions = {
-                        title: songInfo.videoDetails.title,
-                        url: songInfo.videoDetails.video_url,
-                        duration: parseInt(songInfo.videoDetails.lengthSeconds),
-                        thumbnail: songInfo.videoDetails.thumbnails.pop() as Thumbnail,
-                        timestamp: new Date(),
-                        isRadio: false
+                    if(message.content.startsWith("-stream ")){
+                        var song: TrackOptions = {
+                            title: "Live Broadcast",
+                            url: message.content.split(" ")[1],
+                            duration: 60 * 60 * 2,
+                            thumbnail: {
+                                url: "https://static.rainbowbot.xyz/pictures/fox.jpg",
+                                width: 720,
+                                height: 720
+                            },
+                            timestamp: new Date(),
+                            isRadio: true
+                        }
+                        tracks.push(song);
+                    }else{
+                        var songInfo = await ytdl.getBasicInfo(vid);
+                        var song: TrackOptions = {
+                            title: songInfo.videoDetails.title,
+                            url: songInfo.videoDetails.video_url,
+                            duration: parseInt(songInfo.videoDetails.lengthSeconds),
+                            thumbnail: songInfo.videoDetails.thumbnails.pop() as Thumbnail,
+                            timestamp: new Date(),
+                            isRadio: false
+                        }
+                        tracks.push(song);
                     }
-                    tracks.push(song);
                     ctr++;
                 }
             }
