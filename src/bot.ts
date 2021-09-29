@@ -120,6 +120,7 @@ client.on('message', async message => {
 });
 
 client.on("guildMemberAdd", async (member) => {
+    logger.info(`[GuildMemberAddEvent] Guild[${member.guild.id}] Member[${member.id}] Event fired.`);
     Guild.findOrCreate({
         where: {
             ID: member.guild?.id
@@ -135,20 +136,37 @@ client.on("guildMemberAdd", async (member) => {
     }).then(async res => {
         var guild = res[0];
 
+        logger.info(`[GuildMemberAddEvent] Guild[${member.guild.id}] Member[${member.id}] Guild data fetched.`);
+
         if(guild.JoinRolesIDs.length > 0){
+            logger.info(`[GuildMemberAddEvent] Guild[${member.guild.id}] Member[${member.id}] [JoinRoles] Join roles present.`);
+
             var roles:Discord.Role[] = [];
             for(var i in guild.JoinRolesIDs){
                 var role = await member.guild.roles.fetch(guild.JoinRolesIDs[i]);
                 if(role){
+                    logger.info(`[GuildMemberAddEvent] Guild[${member.guild.id}] Member[${member.id}] [JoinRoles] Fetched Role[${role.id}]`);
                     roles.push(role);
                 }else{
+                    logger.info(`[GuildMemberAddEvent] Guild[${member.guild.id}] Member[${member.id}] [JoinRoles] Cannot fetch role, deleting.`);
                     guild.JoinRolesIDs.splice(parseInt(i), 1);
                 }
             }
             await Guild.update({ JoinRolesIDs: guild.JoinRolesIDs }, { where: { ID: guild.ID } }).catch(err => logger.error(err));
+            logger.info(`[GuildMemberAddEvent] Guild[${member.guild.id}] Member[${member.id}] [JoinRoles] Updated guild data.`);
+
             if(!roles.find(r => !r.editable)){
                 await member.roles.add(roles);
+
+                var strroles = "[";
+                roles.every((v) => strroles += v.id + ",");
+                strroles = strroles.slice(0, strroles.length - 1);
+                strroles += "]";
+
+                logger.info(`[GuildMemberAddEvent] Guild[${member.guild.id}] Member[${member.id}] [JoinRoles] Added roles ${strroles} to Member${member.id}`);
             }else{
+                logger.info(`[GuildMemberAddEvent] Guild[${member.guild.id}] Member[${member.id}] [JoinRoles] Cannot add roles. No permissions.`);
+                
                 var channel: Discord.TextChannel;
                 if(guild.LogChannelID){
                     channel = client.channels.cache.find(c => c.id === guild.LogChannelID) as Discord.TextChannel;
@@ -159,43 +177,40 @@ client.on("guildMemberAdd", async (member) => {
             }
         }
 
-        if(!guild.IsJoinMessageEnabled || !guild.JoinMessageChannelID){
-            return;
-        }
-
-        if(guild.Meta.jmgr_msg){
-            var msg_settings = guild.Meta.jmgr_msg;
-            msg_settings.Title = msg_settings.Title?.replace(/%user%/g, member.user.tag);
-            msg_settings.Description = msg_settings.Description?.replace(/%blank%/g, "");
-            msg_settings.Description = msg_settings.Description?.replace(/%user%/g, member.user.toString());
-            var embd = new Discord.MessageEmbed({
-                title: msg_settings.Title,
-                description: msg_settings.Description,
-                image: { url: msg_settings.Image },
-                color: Colors.Success
-            });
-            var avatar_url = member.user.avatarURL();
-            if(msg_settings.Avatar && avatar_url){
-                embd.thumbnail = { url: avatar_url }
+        if(guild.IsJoinMessageEnabled && guild.JoinMessageChannelID){
+            if(guild.Meta.jmgr_msg){
+                var msg_settings = guild.Meta.jmgr_msg;
+                msg_settings.Title = msg_settings.Title?.replace(/%user%/g, member.user.tag);
+                msg_settings.Description = msg_settings.Description?.replace(/%blank%/g, "");
+                msg_settings.Description = msg_settings.Description?.replace(/%user%/g, member.user.toString());
+                var embd = new Discord.MessageEmbed({
+                    title: msg_settings.Title,
+                    description: msg_settings.Description,
+                    image: { url: msg_settings.Image },
+                    color: Colors.Success
+                });
+                var avatar_url = member.user.avatarURL();
+                if(msg_settings.Avatar && avatar_url){
+                    embd.thumbnail = { url: avatar_url }
+                }
+                
+                var channel = client.channels.cache.find(c => c.id === guild.JoinMessageChannelID) as Discord.TextChannel;
+                return await channel.send(embd);
+            }else{
+                var embd = new Discord.MessageEmbed({
+                    title: `Welcome to ${member.guild}!`,
+                    description: `We are happy to see you there, ${member.user}!`,
+                    color: Colors.Success
+                });
+                var avatar_url = member.user.avatarURL();
+                if(avatar_url){
+                    embd.thumbnail = { url: avatar_url }
+                }
+                
+                var channel = client.channels.cache.find(c => c.id === guild.JoinMessageChannelID) as Discord.TextChannel;
+                return await channel.send(embd);
             }
-            
-            var channel = client.channels.cache.find(c => c.id === guild.JoinMessageChannelID) as Discord.TextChannel;
-            return await channel.send(embd);
-        }else{
-            var embd = new Discord.MessageEmbed({
-                title: `Welcome to ${member.guild}!`,
-                description: `We are happy to see you there, ${member.user}!`,
-                color: Colors.Success
-            });
-            var avatar_url = member.user.avatarURL();
-            if(avatar_url){
-                embd.thumbnail = { url: avatar_url }
-            }
-            
-            var channel = client.channels.cache.find(c => c.id === guild.JoinMessageChannelID) as Discord.TextChannel;
-            return await channel.send(embd);
         }
-
     }).catch(err => { logger.error("GuildMemberAdd Event Exception: ", err) });
 });
 
