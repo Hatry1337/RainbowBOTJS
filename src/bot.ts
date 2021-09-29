@@ -163,7 +163,7 @@ client.on("guildMemberAdd", async (member) => {
                 strroles = strroles.slice(0, strroles.length - 1);
                 strroles += "]";
 
-                logger.info(`[GuildMemberAddEvent] Guild[${member.guild.id}] Member[${member.id}] [JoinRoles] Added roles ${strroles} to Member${member.id}`);
+                logger.info(`[GuildMemberAddEvent] Guild[${member.guild.id}] Member[${member.id}] [JoinRoles] Added roles ${strroles} to Member[${member.id}]`);
             }else{
                 logger.info(`[GuildMemberAddEvent] Guild[${member.guild.id}] Member[${member.id}] [JoinRoles] Cannot add roles. No permissions.`);
                 
