@@ -46,35 +46,39 @@ export class Guild extends Model {
     
     @Column({
         type: DataType.STRING,
+        allowNull: true,
     })
-    ModeratorRoleID!: string;
-
-    @Column({
-        type: DataType.STRING,
-    })
-    MutedRoleID!: string;
-
-    @Column({
-        type: DataType.STRING,
-    })
-    JoinMessageChannelID!: string;
-
-    @Column({
-        type: DataType.STRING,
-    })
-    LogChannelID!: string;
-
-    @Column({
-        type: DataType.STRING,
-        allowNull: false,
-    })
-    SystemChannelID!: string;
+    ModeratorRoleID?: string;
 
     @Column({
         type: DataType.STRING,
         allowNull: true,
     })
-    VLChannelID!: string;
+    MutedRoleID?: string;
+
+    @Column({
+        type: DataType.STRING,
+        allowNull: true,
+    })
+    JoinMessageChannelID?: string;
+
+    @Column({
+        type: DataType.STRING,
+        allowNull: true,
+    })
+    LogChannelID?: string;
+
+    @Column({
+        type: DataType.STRING,
+        allowNull: true,
+    })
+    SystemChannelID?: string;
+
+    @Column({
+        type: DataType.STRING,
+        allowNull: true,
+    })
+    VLChannelID?: string;
 
     @Column({
         type: DataType.BOOLEAN,
