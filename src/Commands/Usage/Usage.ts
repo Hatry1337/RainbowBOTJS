@@ -13,6 +13,7 @@ class Usage implements ICommand{
 
     Description: string = "Using this command users can view detailed usage information about specified command.";
     Category:    string = "Info";
+    Author:      string = "Thomasss#9258";
     Controller: CommandsController
 
     constructor(controller: CommandsController) {
@@ -33,7 +34,7 @@ class Usage implements ICommand{
                 if(cmd){
                     var embd = new Discord.MessageEmbed({
                         title: `Usage of \`${cmd?.Trigger}\` command:`,
-                        description: cmd?.Usage,
+                        description: cmd?.Usage + `\nInfo:\n*Category: ${cmd.Category}*\n*Author: ${cmd.Author}*`,
                         color: Colors.Noraml
                     });
     

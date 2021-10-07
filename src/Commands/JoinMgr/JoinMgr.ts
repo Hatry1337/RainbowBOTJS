@@ -19,6 +19,7 @@ class JoinMgr implements ICommand{
 
     Description: string = "Using this command admins can set join message, channel, roles and etc.";
     Category:    string = "Utility";
+    Author:      string = "Thomasss#9258";
     Controller: CommandsController
 
     constructor(controller: CommandsController) {

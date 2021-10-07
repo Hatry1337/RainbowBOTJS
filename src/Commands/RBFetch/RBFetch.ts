@@ -12,6 +12,7 @@ class Help implements ICommand{
 
     Description: string = "Using this command you can view bot's stats, and it styled to linux's neofetch/screenfetch.";
     Category:    string = "Utility";
+    Author:      string = "Thomasss#9258";
     Controller: CommandsController
 
     constructor(controller: CommandsController) {

@@ -16,6 +16,7 @@ class LeaveMgr implements ICommand{
 
     Description: string = "Using this command admins can set leave message, channel.";
     Category:    string = "Utility";
+    Author:      string = "Thomasss#9258";
     Controller: CommandsController
 
     constructor(controller: CommandsController) {

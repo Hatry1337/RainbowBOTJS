@@ -18,6 +18,7 @@ class Config implements ICommand{
                           
     Description: string = "Using this command admins can configure bot parameters.";
     Category:    string = "Utility";
+    Author:      string = "Thomasss#9258";
     Controller: CommandsController
 
     constructor(controller: CommandsController) {

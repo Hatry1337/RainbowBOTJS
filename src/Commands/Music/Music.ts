@@ -22,6 +22,7 @@ class Music implements ICommand{
 
     Description: string = "Using this command admins can configure RainbowBOT Music Player on this guild.";
     Category:    string = "Utility";
+    Author:      string = "Thomasss#9258";
     Controller: CommandsController
 
     Players = new Map<string, Player>();

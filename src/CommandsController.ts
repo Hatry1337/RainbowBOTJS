@@ -14,6 +14,8 @@ import VL            from './Commands/VL/VL';
 import LeaveMgr      from './Commands/LeaveMgr/LeaveMgr';
 import Clear         from './Commands/Clear/Clear';
 import Music         from './Commands/Music/Music';
+import Avatar        from './Commands/Avatar/Avatar';
+import Anek        from './Commands/Anek/Anek';
 /*==========================================*/
 
 class CommandsController{
@@ -32,7 +34,9 @@ class CommandsController{
         this.Commands.push(new VL       (this));
         this.Commands.push(new LeaveMgr (this));
         this.Commands.push(new Clear    (this));
-        this.Commands.push(new Music    (this))
+        this.Commands.push(new Music    (this));
+        this.Commands.push(new Avatar   (this));
+        this.Commands.push(new Anek     (this));
     }
 
     IsCommandExist(message: Discord.Message){

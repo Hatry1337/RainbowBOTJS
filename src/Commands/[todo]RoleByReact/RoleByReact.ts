@@ -13,6 +13,7 @@ class RoleByReact implements ICommand{
 
     Description: string = "Using this command admins can create .";
     Category:    string = "Info";
+    Author:      string = "Thomasss#9258";
     Controller: CommandsController
 
     constructor(controller: CommandsController) {
