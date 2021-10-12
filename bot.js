@@ -1,4 +1,4 @@
-﻿const dev_mode = false;
+const dev_mode = false;
 
 const fs = require("fs");
 const Discord = require('discord.js');
@@ -54,7 +54,6 @@ client.on('message', async message => {
     Utils.saveMessage(message);
     if (message.author.bot) return;
     if (!message.content.startsWith("!")) return;
-    const serverQueue = Utils.Modules.Music.queue.get(message.guild.id);
     Utils.checkReg(message, async function (user) {
         Utils.updateUserName(message, user);
         Utils.fetchLang(message, user, function () {
@@ -149,34 +148,6 @@ client.on('message', async message => {
                         } else if (message.content.startsWith(`!items`)) {
                             Utils.Modules.Items.execute(message);
                             return
-
-                        } else if (message.content.startsWith(`!play `)) {
-                            await Utils.Modules.Music.executePlay(message, serverQueue, user.lang);
-                            return;
-
-                        } else if (message.content.startsWith(`!playp`)) {
-                            await Utils.Modules.Music.executePlayList(message, serverQueue, user.lang);
-                            return;
-
-                        } else if (message.content.startsWith(`!rbfm`)) {
-                            await Utils.Modules.Music.executeRadio(message, serverQueue, user.lang);
-                            return;
-
-                        } else if (message.content.startsWith(`!skip`)) {
-                            await Utils.Modules.Music.Skip(message, serverQueue, user.lang);
-                            return;
-
-                        } else if (message.content.startsWith(`!stop`)) {
-                            await Utils.Modules.Music.Stop(message, serverQueue, user.lang);
-                            return;
-
-                        } else if (message.content.startsWith(`!queue`)) {
-                            await Utils.Modules.Music.ShowQueue(message.channel, serverQueue, user.lang);
-                            return;
-
-                        } else if (message.content.startsWith(`!repeat`)) {
-                            await Utils.Modules.Music.Repeat(message, serverQueue, user.lang);
-                            return;
 
                         }else if (message.content.startsWith(`!pay`)) {
                             Utils.Modules.Pay.execute(message);
@@ -297,40 +268,6 @@ client.on('message', async message => {
         });
     });
 });
-
-client.on("voiceStateUpdate", async (oldState, newState)=>{
-    if(newState.member.id === client.user.id){return;}
-    if(newState){
-        var channel;
-        if(!newState.channel){
-            channel = oldState.channel;
-        }else {
-            channel = newState.channel;
-        }
-        if(channel){
-            if(!channel.members.has(client.user.id)){return;}
-
-            if(channel.members.size <= 1){
-                setTimeout(async()=>{
-                    if(channel.members.size <= 1){
-                        var serverQueue = Utils.Modules.Music.queue.get(newState.guild.id);
-                        if(!serverQueue){
-                            await channel.leave();
-                            return;
-                        }
-                        var emd = new Discord.MessageEmbed()
-                            .setTitle(Utils.lng.Music.allUsersLeft.en)
-                            .setColor(0x0000FF);
-                        await serverQueue.textChannel.send(emd);
-                        await serverQueue.voiceChannel.leave();
-                        await Utils.Modules.Music.queue.delete(newState.guild.id);
-                    }
-                }, 20000);
-            }
-        }
-    }
-});
-
 
 if (dev_mode) {
     client.login("NjI3NDkyMTQyMjk3NjQ1MDU2.Xh3pBg.xnRTvNixn_ubf4i25azaCt4vJ1w");
