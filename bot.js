@@ -18,19 +18,24 @@ client.once('ready', () => {
     Utils.loadModules(Utils.getFiles(__dirname + "/cmds"));
     Database.writeLog('System-Up', "System", "System", `{"Message":"System is up!"}`);
     if (!dev_mode) {
-        setInterval(function () {
+        var upd_stat = () => {
             Utils.Request({
                 method: 'POST',
-                uri: 'https://rainbowbot.xyz/apissl/rainbowbot/stats/push',
-                rejectUnauthorized: false,
+                uri: 'https://api.rainbowbot.xyz/bot/_internals/stat/upload',
+                headers: {
+                    "authorization": "Bearer N2f6AzPWrcmfiGcXksZFEjdSrzdmNZKOue1j4Nvn13i0eZ0yxq2aPxq7gSCmIRuV"
+                },
                 body: {
                     servers: client.guilds.cache.size,
-                    ping: client.ws.ping,
-                    secret: "EbalYaVasVsehVRotNahoooy"
+                    ping: client.ws.ping
                 },
                 json: true // Automatically stringifies the body to JSON
-            })
-        }, 25000)
+            }, (err, res, body) => {
+                err ? console.log(err) : 0;
+            });
+        }
+        setInterval(upd_stat, 25000);
+        upd_stat();
     }
     /*client.channels.cache.get("662657721266339853").createInvite({ temporary: true})
         .then(invite => console.log(invite.url))
