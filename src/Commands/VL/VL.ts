@@ -24,6 +24,7 @@ class VL implements ICommand{
                           
     Description: string = "Using this command users can control their Voice Lobby channels.";
     Category:    string = "Utility";
+    Author:      string = "Thomasss#9258";
     Controller: CommandsController
 
     constructor(controller: CommandsController) {

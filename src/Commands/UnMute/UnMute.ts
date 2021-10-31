@@ -17,6 +17,7 @@ class UnMute implements ICommand{
 
     Description: string = "Using this command admins and mods can unmute users.";
     Category:    string = "Moderation";
+    Author:      string = "Thomasss#9258";
     Controller: CommandsController
 
     constructor(controller: CommandsController) {

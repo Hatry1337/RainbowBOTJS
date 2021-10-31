@@ -16,6 +16,7 @@ class Clear implements ICommand{
 
     Description: string = "Using this command admins and mods can clear messages in text channels.";
     Category:    string = "Moderation";
+    Author:      string = "Thomasss#9258";
     Controller: CommandsController
 
     constructor(controller: CommandsController) {

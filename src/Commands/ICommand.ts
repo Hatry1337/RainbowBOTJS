@@ -7,6 +7,7 @@ interface ICommand{
     Usage: string;
     Description: string;
     Category: string;
+    Author: string;
     Test(message: Discord.Message): boolean;
     Run(message: Discord.Message): Promise<Discord.Message>;
     Controller: CommandsController;

@@ -4,7 +4,7 @@ import { Emojis, Colors } from "../../Utils";
 import CommandsController from "../../CommandsController";
 
 class RHelp implements ICommand{
-    Name:        string = "Help";
+    Name:        string = "RHelp";
     Trigger:     string = "!rhelp";
     Usage:       string = "`!rhelp [<page> <category>] `\n\n" +
                           "**Examples:**\n" +
@@ -14,6 +14,7 @@ class RHelp implements ICommand{
 
     Description: string = "Using this command users can explore bot's commands, and find out how to use them.";
     Category:    string = "Info";
+    Author:      string = "Thomasss#9258";
     Controller: CommandsController
 
     constructor(controller: CommandsController) {

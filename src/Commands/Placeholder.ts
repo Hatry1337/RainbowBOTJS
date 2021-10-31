@@ -8,6 +8,7 @@ class Placeholder implements ICommand{
     Usage:       string = "U can't use this command, lol";
     Description: string = "This is test command for debugging. #";
     Category:    string = "Dev";
+    Author:      string = "Thomasss#9258";
     Controller: CommandsController
 
     constructor(controller: CommandsController) {
