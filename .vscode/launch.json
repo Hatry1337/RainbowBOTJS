@@ -7,7 +7,7 @@
         {
             "type": "pwa-node",
             "request": "launch",
-            "name": "Launch Program",
+            "name": "Launch [DEV]",
             "skipFiles": [
                 "<node_internals>/**"
             ],
@@ -15,7 +15,22 @@
             "preLaunchTask": "tsc: build - tsconfig.json",
             "outFiles": [
                 "${workspaceFolder}/out/**/*.js"
-            ]
+            ],
+            "envFile": "${workspaceFolder}/dev.env"
+        },
+        {
+            "type": "pwa-node",
+            "request": "launch",
+            "name": "Launch [Prod]",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/src/bot.ts",
+            "preLaunchTask": "tsc: build - tsconfig.json",
+            "outFiles": [
+                "${workspaceFolder}/out/**/*.js"
+            ],
+            "envFile": "${workspaceFolder}/.env"
         }
     ]
 }

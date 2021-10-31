@@ -28,6 +28,125 @@ class VL implements ICommand{
 
     constructor(controller: CommandsController) {
         this.Controller = controller;
+
+        this.Controller.Client.on("RVoiceChannelJoin", async (channel, member) => {
+            logger.info(`[CMD] [${this.Name}]`, `${member.id} joined voice channel ${channel.id} on ${channel.guild?.id}`);
+            Guild.findOrCreate({
+                where: {
+                    ID: member.guild.id
+                },
+                defaults: {
+                    ID: member.guild.id,
+                    Name: member.guild.name,
+                    OwnerID: member.guild.ownerID,
+                    Region: member.guild.region,
+                    SystemChannelID: member.guild.systemChannelID,
+                    JoinRolesIDs: [],
+                }
+            }).then(async res => {
+                var guild = res[0];
+        
+                //Voice Lobby handler
+                if(guild.VLChannelID && channel.id === guild.VLChannelID){
+                    VoiceLobby.findOne({
+                        where: {
+                            OwnerID: member.id,
+                            GuildID: member.guild.id
+                        }
+                    }).then(async vl => {
+                        if(vl){
+                            var tx_c = channel.guild.channels.resolve(vl.TextChannelID) as Discord.TextChannel;
+                            await tx_c.send(`${member}, you already have Voice Lobby channel!`);
+                            await member.voice.setChannel(vl.VoiceChannelID);
+                            return;
+                        }
+        
+                        var cat = await channel.guild.channels.create(`${member.user.tag}'s Channel`, {
+                            type: "category",
+                            permissionOverwrites: [
+                                {
+                                    id: member.guild.roles.everyone,
+                                    deny: [ 'SEND_MESSAGES', 'SEND_TTS_MESSAGES', 'MANAGE_MESSAGES', 'MENTION_EVERYONE',
+                                            'SPEAK', 'USE_VAD', 'CONNECT', 'VIEW_CHANNEL', 'STREAM', 'READ_MESSAGE_HISTORY',
+                                            'VIEW_CHANNEL'
+                                    ],
+                                },
+                                {
+                                    id: member.id,
+                                    allow: ['SEND_MESSAGES', 'SEND_TTS_MESSAGES', 'MANAGE_MESSAGES', 'SPEAK', 
+                                            'USE_VAD', 'CONNECT', 'VIEW_CHANNEL', 'STREAM', 'READ_MESSAGE_HISTORY', 'MUTE_MEMBERS', 'PRIORITY_SPEAKER', 'MANAGE_CHANNELS' ],
+                                }
+                            ],
+                            position: 9999
+                        });
+        
+                        var tx_c = await channel.guild.channels.create("text", {
+                            type: "text",
+                            parent: cat
+                        });
+        
+                        var vc_c = await channel.guild.channels.create("voice", {
+                            type: "voice",
+                            parent: cat
+                        });
+        
+                        await member.voice.setChannel(vc_c);
+        
+                        await VoiceLobby.create({
+                            OwnerID: member.id,
+                            OwnerTag: member.user.tag,
+                            GuildID: channel.guild.id,
+                            IsPrivate: true,
+                            InvitedUsersIDs: [],
+                            CategoryID: cat.id,
+                            TextChannelID: tx_c.id,
+                            VoiceChannelID: vc_c.id,
+                        }); 
+                    });
+                }
+            }).catch(err => logger.error(`[CMD] [${this.Name}]`, "RVoiceChannelJoin Event Exception: ", err));
+        });
+
+        this.Controller.Client.on("RVoiceChannelQuit", async (channel, member) => {
+            logger.info(`${member.id} leaved from voice channel ${channel.id} on ${channel.guild?.id}`);
+            Guild.findOrCreate({
+                where: {
+                    ID: member.guild.id
+                },
+                defaults: {
+                    ID: member.guild.id,
+                    Name: member.guild.name,
+                    OwnerID: member.guild.ownerID,
+                    Region: member.guild.region,
+                    SystemChannelID: member.guild.systemChannelID,
+                    JoinRolesIDs: [],
+                }
+            }).then(async res => {
+                var guild = res[0];
+        
+                if(channel.members.size === 0){
+        
+                    //Voice Lobby handler
+                    if(guild.VLChannelID){
+                        VoiceLobby.findOne({
+                            where: {
+                                OwnerID: member.id,
+                                GuildID: member.guild.id
+                            }
+                        }).then(async vl => {
+                            if(vl){
+                                await channel.guild.channels.resolve(vl.TextChannelID)?.delete();
+                                await channel.guild.channels.resolve(vl.VoiceChannelID)?.delete();
+                                await channel.guild.channels.resolve(vl.CategoryID)?.delete();
+                                await vl.destroy();
+                                logger.info(`${member.id} destroyed voice lobby ${channel.id} on ${channel.guild?.id}`);
+                            }
+                        });
+                    }
+                }
+        
+            }).catch(err => logger.error(`[CMD] [${this.Name}]`, "RVoiceChannelQuit Event Exception: ", err));
+        });
     }
     
     Test(mesage: Discord.Message){

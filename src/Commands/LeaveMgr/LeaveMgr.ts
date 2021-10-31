@@ -3,6 +3,9 @@ import ICommand from "../ICommand";
 import { Guild } from "../../Models/Guild";
 import { Utils, Emojis, Colors, CustomMessageSettings } from "../../Utils";
 import CommandsController from "../../CommandsController";
+import log4js from "log4js";
+
+const logger = log4js.getLogger();
 
 class LeaveMgr implements ICommand{
     Name:        string = "LeaveMgr";
@@ -20,6 +23,44 @@ class LeaveMgr implements ICommand{
 
     constructor(controller: CommandsController) {
         this.Controller = controller;
+
+        this.Controller.Client.on("RGuildMemberRemove", async (member, rguild, ruser) => {
+            if(!rguild.Meta.IsLeaveMessageEnabled || !rguild.Meta.LeaveMessageChannelID || !member.user){
+                return;
+            }
+
+            if(rguild.Meta.lmgr_msg){
+                var msg_settings = rguild.Meta.lmgr_msg;
+                msg_settings.Title = msg_settings.Title?.replace(/%user%/g, member.user.tag);
+                msg_settings.Description = msg_settings.Description?.replace(/%blank%/g, "");
+                msg_settings.Description = msg_settings.Description?.replace(/%user%/g, member.user.toString());
+                var embd = new Discord.MessageEmbed({
+                    title: msg_settings.Title,
+                    description: msg_settings.Description,
+                    image: { url: msg_settings.Image },
+                    color: Colors.Warning
+                });
+                var avatar_url = member.user.avatarURL();
+                if(msg_settings.Avatar && avatar_url){
+                    embd.thumbnail = { url: avatar_url }
+                }
+                
+                var channel = this.Controller.Client.channels.cache.find(c => c.id === rguild.Meta.LeaveMessageChannelID) as Discord.TextChannel;
+                return await channel.send(embd);
+            }else{
+                var embd = new Discord.MessageEmbed({
+                    title: `${member.user?.tag} leaved from server :(`,
+                    color: Colors.Warning
+                });
+                var avatar_url = member.user.avatarURL();
+                if(avatar_url){
+                    embd.thumbnail = { url: avatar_url }
+                }
+                
+                var channel = this.Controller.Client.channels.cache.find(c => c.id === rguild.Meta.LeaveMessageChannelID) as Discord.TextChannel;
+                return await channel.send(embd);
+            }
+        });
     }
     
     Test(mesage: Discord.Message){

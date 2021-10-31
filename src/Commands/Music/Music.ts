@@ -154,6 +154,23 @@ class Music implements ICommand{
                 }
             }
         });
+
+        this.Controller.Client.on("ready", async () => {
+            logger.info("[MMC] Starting MusicManagers caching...");
+            var managers = await MusicManager.findAll();
+            for(var i in managers){
+                var ch = await this.Controller.Client.channels.fetch(managers[i].get("music_channel_id")).catch(async e => {
+                    if(e && e.code === 10003){
+                        logger.info(`[MMC] [${managers[i].get("music_channel_id")}] Channel not found. Deleting manager`)
+                        await managers[i].destroy();
+                    }
+                }) as Discord.TextChannel;
+                if(ch){
+                    await ch.messages.fetch();
+                    console.log(`${parseInt(i)+1}/${managers.length}`);
+                }
+            }
+        });
     }
     
     Test(mesage: Discord.Message){

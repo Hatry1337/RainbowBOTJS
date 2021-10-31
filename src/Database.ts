@@ -4,6 +4,7 @@ import { Guild } from './Models/Guild';
 import { MusicManager } from "./Models/MusicManager";
 import { MutedUser } from "./Models/MutedUser";
 import { ReactionEvent } from './Models/ReactionEvent';
+import { User } from "./Models/User";
 import { VoiceLobby } from "./Models/VoiceLobby";
 
 
@@ -19,6 +20,7 @@ export const sequelize = new Sequelize({
         ReactionEvent,
         MutedUser,
         VoiceLobby,
-        MusicManager
+        MusicManager,
+        User
     ]
 });

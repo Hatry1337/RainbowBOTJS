@@ -2,3 +2,4 @@
 /out/**
 package-lock.json
 botlog.log
+*.env
