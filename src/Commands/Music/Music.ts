@@ -200,98 +200,77 @@ class Music implements ICommand{
                         });
                         return resolve(await message.channel.send(embd));
                     }
-                    
-                    Guild.findOrCreate({
-                        where: {
-                            ID: message.guild?.id
-                        },
-                        defaults: {
-                            ID: message.guild?.id,
-                            Name: message.guild?.name,
-                            OwnerID: message.guild?.ownerID,
-                            Region: message.guild?.region,
-                            SystemChannelID: message.guild?.systemChannelID,
-                            JoinRolesIDs: [],
-                        }
-                    }).then(async res => {
-                        var guild = message.guild;
-                        if(!guild){
-                            var embd = new Discord.MessageEmbed({
-                                title: `${Emojis.RedErrorCross} This command is not allowed in dm.`,
-                                color: Colors.Error
-                            });
-                            return resolve(await message.channel.send(embd));
-                        }
 
-                        var manager = await MusicManager.findOne({
-                            where: {
-                                guild_id: guild.id
-                            }
-                        });
-            
-                        if(!manager){
-                            var role = await guild.roles.create({
-                                data: {
-                                    name: 'Rainbow DJ',
-                                    color: 0xFF00FF,
-                                  },
-                                reason: 'We need new DJ Role!'
-                            });
-                            var channel = await guild.channels.create("RainbowBOT Music", { 
-                                type: "text",
-                                topic: "⏯ - play/pause\n⏹ - stop player and clear queue\n⏭ - skip current track\n🔂 - repeat current track\n🔀 - shuffle current playlist\n<:igniblprpl:727513115633123415> - Add tracks from RainbowBOT Chart\n\nTo add track in playlist you need to send youtube URI in this channel.",
-                                permissionOverwrites: [
-                                    {
-                                        id: guild.roles.everyone.id,
-                                        deny: "SEND_MESSAGES"
-                                    },
-                                    {
-                                        id: role.id,
-                                        allow: "SEND_MESSAGES"
-                                    }
-                                ]
-                            });
-                            var embd = new Discord.MessageEmbed({
-                                title: "RainbowBOT Music Player",
-                                color: 0x00a7ff
-                            }).setImage("https://cdn.discordapp.com/attachments/575271861643116555/796329363305922610/-1.png");
-            
-                            
-                            var react_message = await channel.send(embd);
-                            await react_message.react("⏯");
-                            await react_message.react("⏹");
-                            await react_message.react("⏭");
-                            await react_message.react("🔂");
-                            await react_message.react("🔀");
-                            await react_message.react("igniblprpl:727513115633123415");
-                            var queue_message = await channel.send("Next Tracks:\n`Empty`")
-            
-                            manager = await MusicManager.create({
-                                guild_id: guild.id,
-                                music_message_id: react_message.id,
-                                music_channel_id: channel.id,
-                                queue_message_id: queue_message.id,
-                                dj_role_id: role.id,
-                                is_playing: false,
-                                is_repeated: false,
-                                queue: []
-                            });
-
-                            var embd = new Discord.MessageEmbed({
-                                title: `Successfully configured RainbowBOT Music Player`,
-                                description: `Now RainbowBOT Music Player available in ${channel}`,
-                                color: Colors.Success
-                            });
-                            return resolve(await message.channel.send(embd));
-                        }
-                    }).catch(async res => {
-                        logger.error(res);
+                    var guild = message.guild;
+                    if(!guild){
                         var embd = new Discord.MessageEmbed({
-                            title: `${Emojis.RedErrorCross} Unexpected error occured. Please contact with bot's support.`,
+                            title: `${Emojis.RedErrorCross} This command is not allowed in dm.`,
                             color: Colors.Error
                         });
                         return resolve(await message.channel.send(embd));
+                    }
+
+                    var manager = await MusicManager.findOne({
+                        where: {
+                            guild_id: guild.id
+                        }
                     });
+        
+                    if(!manager){
+                        var role = await guild.roles.create({
+                            data: {
+                                name: 'Rainbow DJ',
+                                color: 0xFF00FF,
+                                },
+                            reason: 'We need new DJ Role!'
+                        });
+                        var channel = await guild.channels.create("RainbowBOT Music", { 
+                            type: "text",
+                            topic: "⏯ - play/pause\n⏹ - stop player and clear queue\n⏭ - skip current track\n🔂 - repeat current track\n🔀 - shuffle current playlist\n<:igniblprpl:727513115633123415> - Add tracks from RainbowBOT Chart\n\nTo add track in playlist you need to send youtube URI in this channel.",
+                            permissionOverwrites: [
+                                {
+                                    id: guild.roles.everyone.id,
+                                    deny: "SEND_MESSAGES"
+                                },
+                                {
+                                    id: role.id,
+                                    allow: "SEND_MESSAGES"
+                                }
+                            ]
+                        });
+                        var embd = new Discord.MessageEmbed({
+                            title: "RainbowBOT Music Player",
+                            color: 0x00a7ff
+                        }).setImage("https://cdn.discordapp.com/attachments/575271861643116555/796329363305922610/-1.png");
+        
+                        
+                        var react_message = await channel.send(embd);
+                        await react_message.react("⏯");
+                        await react_message.react("⏹");
+                        await react_message.react("⏭");
+                        await react_message.react("🔂");
+                        await react_message.react("🔀");
+                        await react_message.react("igniblprpl:727513115633123415");
+                        var queue_message = await channel.send("Next Tracks:\n`Empty`")
+        
+                        manager = await MusicManager.create({
+                            guild_id: guild.id,
+                            music_message_id: react_message.id,
+                            music_channel_id: channel.id,
+                            queue_message_id: queue_message.id,
+                            dj_role_id: role.id,
+                            is_playing: false,
+                            is_repeated: false,
+                            queue: []
+                        });
+
+                        var embd = new Discord.MessageEmbed({
+                            title: `Successfully configured RainbowBOT Music Player`,
+                            description: `Now RainbowBOT Music Player available in ${channel}`,
+                            color: Colors.Success
+                        });
+                        return resolve(await message.channel.send(embd));
+                    }
                 }
             }
         });

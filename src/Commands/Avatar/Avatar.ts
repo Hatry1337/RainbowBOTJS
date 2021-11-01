@@ -30,83 +30,59 @@ class Avatar implements ICommand{
     
     Run(message: Discord.Message){
         return new Promise<Discord.Message>(async (resolve, reject) => {
-            Guild.findOrCreate({
-                where: {
-                    ID: message.guild?.id
-                },
-                defaults: {
-                    ID: message.guild?.id,
-                    Name: message.guild?.name,
-                    OwnerID: message.guild?.ownerID,
-                    Region: message.guild?.region,
-                    SystemChannelID: message.guild?.systemChannelID,
-                    JoinRolesIDs: [],
-                }
-            }).then(async res => {
-                var guild = res[0];
-
-                var args = message.content.split(" ").slice(1);
-                if(args.length === 0){
-                    var avatar = message.author.avatarURL({ size: 2048 });
-                    if(avatar){
-                        var embd = new Discord.MessageEmbed({
-                            title: `${message.author.username}'s avatar`,
-                            image: { url: avatar },
-                            color: Colors.Noraml
-                        });
-                        return resolve(await message.channel.send(embd));
-                    }else{
-                        var embd = new Discord.MessageEmbed({
-                            title: `${Emojis.RedErrorCross} Cannot your user's avatar!`,
-                            color: Colors.Error
-                        });
-                        return resolve(await message.channel.send(embd));
-                    }                    
-                }
-
-                var user_id = Utils.parseID(args[0]);
-                if(user_id && user_id.length === 18){
-                    var user = message.guild?.members.cache.get(user_id);
-                    if(!user){
-                        var embd = new Discord.MessageEmbed({
-                            title: `${Emojis.RedErrorCross} Cannot find this user. Check your user's id, it may be incorrect.`,
-                            color: Colors.Error
-                        });
-                        return resolve(await message.channel.send(embd));
-                    }
-
-                    var avatar = user.user.avatarURL({ size: 2048 });
-
-                    if(!avatar){
-                        var embd = new Discord.MessageEmbed({
-                            title: `${Emojis.RedErrorCross} Cannot get user's avatar!`,
-                            color: Colors.Error
-                        });
-                        return resolve(await message.channel.send(embd));
-                    }
-
+            var args = message.content.split(" ").slice(1);
+            if(args.length === 0){
+                var avatar = message.author.avatarURL({ size: 2048 });
+                if(avatar){
                     var embd = new Discord.MessageEmbed({
-                        title: `${user.user.username}'s avatar`,
+                        title: `${message.author.username}'s avatar`,
                         image: { url: avatar },
                         color: Colors.Noraml
                     });
                     return resolve(await message.channel.send(embd));
                 }else{
                     var embd = new Discord.MessageEmbed({
-                        title: `${Emojis.RedErrorCross} User ID is invalid. Please, check it, and try again.`,
+                        title: `${Emojis.RedErrorCross} Cannot your user's avatar!`,
+                        color: Colors.Error
+                    });
+                    return resolve(await message.channel.send(embd));
+                }                    
+            }
+
+            var user_id = Utils.parseID(args[0]);
+            if(user_id && user_id.length === 18){
+                var user = message.guild?.members.cache.get(user_id);
+                if(!user){
+                    var embd = new Discord.MessageEmbed({
+                        title: `${Emojis.RedErrorCross} Cannot find this user. Check your user's id, it may be incorrect.`,
                         color: Colors.Error
                     });
                     return resolve(await message.channel.send(embd));
                 }
-               
-            }).catch(async res => {
-                logger.error(res);
+
+                var avatar = user.user.avatarURL({ size: 2048 });
+
+                if(!avatar){
+                    var embd = new Discord.MessageEmbed({
+                        title: `${Emojis.RedErrorCross} Cannot get user's avatar!`,
+                        color: Colors.Error
+                    });
+                    return resolve(await message.channel.send(embd));
+                }
+
                 var embd = new Discord.MessageEmbed({
-                    title: `${Emojis.RedErrorCross} Unexpected error occured. Please contact with bot's support.`,
+                    title: `${user.user.username}'s avatar`,
+                    image: { url: avatar },
+                    color: Colors.Noraml
+                });
+                return resolve(await message.channel.send(embd));
+            }else{
+                var embd = new Discord.MessageEmbed({
+                    title: `${Emojis.RedErrorCross} User ID is invalid. Please, check it, and try again.`,
                     color: Colors.Error
                 });
                 return resolve(await message.channel.send(embd));
-            });
+            }
         });
     }
 }

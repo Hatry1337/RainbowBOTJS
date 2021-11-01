@@ -2,6 +2,7 @@ import Discord from "discord.js";
 import ICommand from "../ICommand";
 import { Utils } from "../../Utils";
 import CommandsController from "../../CommandsController";
+import { User } from "../../Models/User";
 
 class Help implements ICommand{
     Name:        string = "RBFetch";
@@ -31,7 +32,7 @@ class Help implements ICommand{
             var uptime = Utils.formatTime(Math.floor((message.client.uptime || 0) / 1000));
             var ping = message.client.ws.ping;
             var modules = this.Controller.Commands.length;
-            var db_users = "N/A"; //TODO
+            var db_users = await User.count();
             var disc_users = 0;
             message.client.guilds.cache.each(guild => disc_users += guild.memberCount);
             var disc_servs = message.client.guilds.cache.size;

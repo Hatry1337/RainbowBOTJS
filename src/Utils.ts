@@ -1,4 +1,14 @@
+import Discord from "discord.js";
+
 export class Utils{
+    static async ErrMsg(message: string, channel: Discord.TextChannel | Discord.DMChannel | Discord.NewsChannel){
+        var embd = new Discord.MessageEmbed({
+            title: `${Emojis.RedErrorCross} ${message}`,
+            color: Colors.Error
+        });
+        return await channel.send(embd);
+    }
+
     static getRandomInt(max: number) {
         return Math.floor(Math.random() * Math.floor(max));
     }

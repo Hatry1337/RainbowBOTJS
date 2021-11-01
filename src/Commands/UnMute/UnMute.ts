@@ -28,45 +28,53 @@ class UnMute implements ICommand{
         return mesage.content.toLowerCase().startsWith("!unmute");
     }
     
-    Run(message: Discord.Message){
+    Run(message: Discord.Message, guild: Guild){
         return new Promise<Discord.Message>(async (resolve, reject) => {
-            Guild.findOrCreate({
-                where: {
-                    ID: message.guild?.id
-                },
-                defaults: {
-                    ID: message.guild?.id,
-                    Name: message.guild?.name,
-                    OwnerID: message.guild?.ownerID,
-                    Region: message.guild?.region,
-                    SystemChannelID: message.guild?.systemChannelID,
-                    JoinRolesIDs: [],
-                }
-            }).then(async res => {
-                var guild = res[0];
-                if(!(message.member?.hasPermission("ADMINISTRATOR") || message.member?.roles.cache.get(guild.ModeratorRoleID || ""))){
+            if(!(message.member?.hasPermission("ADMINISTRATOR") || message.member?.roles.cache.get(guild.ModeratorRoleID || ""))){
+                var embd = new Discord.MessageEmbed({
+                    title: `${Emojis.RedErrorCross} Only administrators or moderators can use this command.`,
+                    color: Colors.Error
+                });
+                return resolve(await message.channel.send(embd));
+            }
+
+
+            var args = message.content.split(" ").slice(1);
+            if(args.length < 1){
+                var embd = new Discord.MessageEmbed({
+                    title: `${Emojis.RedErrorCross} Not enough parameters.`,
+                    description: `Command Usage: \n${this.Usage}`,
+                    color: Colors.Error
+                });
+                return resolve(await message.channel.send(embd));
+            }
+
+            var user_id = Utils.parseID(args[0]);
+
+            if(user_id && user_id.length === 18){
+                var user = message.guild?.members.cache.get(user_id);
+                if(!user){
                     var embd = new Discord.MessageEmbed({
-                        title: `${Emojis.RedErrorCross} Only administrators or moderators can use this command.`,
+                        title: `${Emojis.RedErrorCross} Cannot find this user. Check your user's id, it may be incorrect.`,
                         color: Colors.Error
                     });
                     return resolve(await message.channel.send(embd));
                 }
 
+                MutedUser.findOne({
+                    where: {
+                        DsID: user.id,
+                        GuildID: message.guild?.id
+                    }
+                }).then(async muser => {
+                    if(!muser || !muser.IsMuted){
+                        var embd = new Discord.MessageEmbed({
+                            title: `${Emojis.RedErrorCross} This user is not muted.`,
+                            color: Colors.Error
+                        });
+                        return resolve(await message.channel.send(embd));
+                    }
 
-                var args = message.content.split(" ").slice(1);
-                if(args.length < 1){
-                    var embd = new Discord.MessageEmbed({
-                        title: `${Emojis.RedErrorCross} Not enough parameters.`,
-                        description: `Command Usage: \n${this.Usage}`,
-                        color: Colors.Error
-                    });
-                    return resolve(await message.channel.send(embd));
-                }
-
-                var user_id = Utils.parseID(args[0]);
-
-                if(user_id && user_id.length === 18){
-                    var user = message.guild?.members.cache.get(user_id);
                     if(!user){
                         var embd = new Discord.MessageEmbed({
                             title: `${Emojis.RedErrorCross} Cannot find this user. Check your user's id, it may be incorrect.`,
@@ -75,65 +83,34 @@ class UnMute implements ICommand{
                         return resolve(await message.channel.send(embd));
                     }
 
-                    MutedUser.findOne({
-                        where: {
-                            DsID: user.id,
-                            GuildID: message.guild?.id
-                        }
-                    }).then(async muser => {
-                        if(!muser || !muser.IsMuted){
-                            var embd = new Discord.MessageEmbed({
-                                title: `${Emojis.RedErrorCross} This user is not muted.`,
-                                color: Colors.Error
-                            });
-                            return resolve(await message.channel.send(embd));
-                        }
+                    await user.roles.remove(muser.MuteRoleID);
+                    muser.IsMuted = false;
+                    muser.IsPermMuted = false;
+                    await muser.save();
 
-                        if(!user){
-                            var embd = new Discord.MessageEmbed({
-                                title: `${Emojis.RedErrorCross} Cannot find this user. Check your user's id, it may be incorrect.`,
-                                color: Colors.Error
-                            });
-                            return resolve(await message.channel.send(embd));
-                        }
-
-                        await user.roles.remove(muser.MuteRoleID);
-                        muser.IsMuted = false;
-                        muser.IsPermMuted = false;
-                        await muser.save();
-
-                        logger.info(`User ${message.author.tag}(${message.author.id}) unmuted ${user.user.tag}(${user.id})`);
-                        var embd = new Discord.MessageEmbed({
-                            description: `**User ${message.author} unmuted ${user}.**`,
-                            color: Colors.Success
-                        });
-                        await message.delete();
-                        return resolve(await message.channel.send(embd));
-
-                    }).catch(async res => {
-                        logger.error(res);
-                        var embd = new Discord.MessageEmbed({
-                            title: `${Emojis.RedErrorCross} Unexpected error occured. Please contact with bot's support.`,
-                            color: Colors.Error
-                        });
-                        return resolve(await message.channel.send(embd));
-                    });
-                }else{
+                    logger.info(`User ${message.author.tag}(${message.author.id}) unmuted ${user.user.tag}(${user.id})`);
                     var embd = new Discord.MessageEmbed({
-                        title: `${Emojis.RedErrorCross} User ID is invalid. Please, check it, and try again.`,
+                        description: `**User ${message.author} unmuted ${user}.**`,
+                        color: Colors.Success
+                    });
+                    await message.delete();
+                    return resolve(await message.channel.send(embd));
+
+                }).catch(async res => {
+                    logger.error(res);
+                    var embd = new Discord.MessageEmbed({
+                        title: `${Emojis.RedErrorCross} Unexpected error occured. Please contact with bot's support.`,
                         color: Colors.Error
                     });
                     return resolve(await message.channel.send(embd));
-                }
-
-            }).catch(async res => {
-                logger.error(res);
+                });
+            }else{
                 var embd = new Discord.MessageEmbed({
-                    title: `${Emojis.RedErrorCross} Unexpected error occured. Please contact with bot's support.`,
+                    title: `${Emojis.RedErrorCross} User ID is invalid. Please, check it, and try again.`,
                     color: Colors.Error
                 });
                 return resolve(await message.channel.send(embd));
-            });
+            }
         });
     }
 }

@@ -4,7 +4,7 @@ import { Guild } from "../../Models/Guild";
 import { Emojis, Colors, Utils } from "../../Utils";
 import CommandsController from "../../CommandsController";
 import log4js from "log4js";
-import { AnekAPI } from "../../AnekAPI";
+import { AnekAPI } from "./AnekAPI";
 
 const logger = log4js.getLogger();
 
@@ -33,24 +33,51 @@ class Anek implements ICommand{
     
     Run(message: Discord.Message){
         return new Promise<Discord.Message>(async (resolve, reject) => {
-            Guild.findOrCreate({
-                where: {
-                    ID: message.guild?.id
-                },
-                defaults: {
-                    ID: message.guild?.id,
-                    Name: message.guild?.name,
-                    OwnerID: message.guild?.ownerID,
-                    Region: message.guild?.region,
-                    SystemChannelID: message.guild?.systemChannelID,
-                    JoinRolesIDs: [],
-                }
-            }).then(async res => {
-                var guild = res[0];
+            var args = message.content.split(" ").slice(1);
+            if(args.length === 0){
+                AnekAPI.GetRandomAnek().then(async anek => {
+                    var embd = new Discord.MessageEmbed({
+                        title: `Anek of B category number ${anek.id}`,
+                        description: `${anek.anek}\n\nSource: ${anek.source}${anek.tags.length > 0 ? `, Tags: \`${anek.tags.join("`, `")}\`` : ""}`,
+                        color: Colors.Noraml
+                    });
+                    return resolve(await message.channel.send(embd));
+                }).catch(async err => {
+                    logger.error("Anek.RandomAnek.RequestFailedError:", err);
+                    var embd = new Discord.MessageEmbed({
+                        title: `${Emojis.RedErrorCross} Cannot get this anek. Is it exist? If you're sure, contact with support.`,
+                        color: Colors.Error
+                    });
+                    return resolve(await message.channel.send(embd));
+                });  
+            }else{
+                if(args[0] === "tags"){
+                    AnekAPI.GetTags().then(async tags => {
+                        var embd = new Discord.MessageEmbed({
+                            title: `Aneks of B category tags`,
+                            description: `Existing tags: \`${tags.join("`, `")}\``,
+                            color: Colors.Noraml
+                        });
+                        return resolve(await message.channel.send(embd));
+                    }).catch(async err => {
+                        logger.error("Anek.Tags.RequestFailedError:", err);
+                        var embd = new Discord.MessageEmbed({
+                            title: `${Emojis.RedErrorCross} Cannot get aneks tags. Please try again later, or contact with support.`,
+                            color: Colors.Error
+                        });
+                        return resolve(await message.channel.send(embd));
+                    });  
+                }else if(args[0] === "id"){
+                    var id = parseInt(args[1]);
+                    if(!id || isNaN(id)){
+                        var embd = new Discord.MessageEmbed({
+                            title: `${Emojis.RedErrorCross} Missing or Incorrect anek id specified.`,
+                            color: Colors.Error
+                        });
+                        return resolve(await message.channel.send(embd));
+                    }
 
-                var args = message.content.split(" ").slice(1);
-                if(args.length === 0){
-                    AnekAPI.GetRandomAnek().then(async anek => {
+                    AnekAPI.GetAnek(id).then(async anek => {
                         var embd = new Discord.MessageEmbed({
                             title: `Anek of B category number ${anek.id}`,
                             description: `${anek.anek}\n\nSource: ${anek.source}${anek.tags.length > 0 ? `, Tags: \`${anek.tags.join("`, `")}\`` : ""}`,
@@ -58,7 +85,7 @@ class Anek implements ICommand{
                         });
                         return resolve(await message.channel.send(embd));
                     }).catch(async err => {
-                        logger.error("Anek.RandomAnek.RequestFailedError:", err);
+                        logger.error("Anek.AnekID.RequestFailedError:", err);
                         var embd = new Discord.MessageEmbed({
                             title: `${Emojis.RedErrorCross} Cannot get this anek. Is it exist? If you're sure, contact with support.`,
                             color: Colors.Error
@@ -66,76 +93,25 @@ class Anek implements ICommand{
                         return resolve(await message.channel.send(embd));
                     });  
                 }else{
-                    if(args[0] === "tags"){
-                        AnekAPI.GetTags().then(async tags => {
-                            var embd = new Discord.MessageEmbed({
-                                title: `Aneks of B category tags`,
-                                description: `Existing tags: \`${tags.join("`, `")}\``,
-                                color: Colors.Noraml
-                            });
-                            return resolve(await message.channel.send(embd));
-                        }).catch(async err => {
-                            logger.error("Anek.Tags.RequestFailedError:", err);
-                            var embd = new Discord.MessageEmbed({
-                                title: `${Emojis.RedErrorCross} Cannot get aneks tags. Please try again later, or contact with support.`,
-                                color: Colors.Error
-                            });
-                            return resolve(await message.channel.send(embd));
-                        });  
-                    }else if(args[0] === "id"){
-                        var id = parseInt(args[1]);
-                        if(!id || isNaN(id)){
-                            var embd = new Discord.MessageEmbed({
-                                title: `${Emojis.RedErrorCross} Missing or Incorrect anek id specified.`,
-                                color: Colors.Error
-                            });
-                            return resolve(await message.channel.send(embd));
-                        }
+                    var tag = args[0];
 
-                        AnekAPI.GetAnek(id).then(async anek => {
-                            var embd = new Discord.MessageEmbed({
-                                title: `Anek of B category number ${anek.id}`,
-                                description: `${anek.anek}\n\nSource: ${anek.source}${anek.tags.length > 0 ? `, Tags: \`${anek.tags.join("`, `")}\`` : ""}`,
-                                color: Colors.Noraml
-                            });
-                            return resolve(await message.channel.send(embd));
-                        }).catch(async err => {
-                            logger.error("Anek.AnekID.RequestFailedError:", err);
-                            var embd = new Discord.MessageEmbed({
-                                title: `${Emojis.RedErrorCross} Cannot get this anek. Is it exist? If you're sure, contact with support.`,
-                                color: Colors.Error
-                            });
-                            return resolve(await message.channel.send(embd));
-                        });  
-                    }else{
-                        var tag = args[0];
-
-                        AnekAPI.GetTaggedRandomAnek(tag).then(async anek => {
-                            var embd = new Discord.MessageEmbed({
-                                title: `Anek of B category number ${anek.id}`,
-                                description: `${anek.anek}\n\nSource: ${anek.source}${anek.tags.length > 0 ? `, Tags: \`${anek.tags.join("`, `")}\`` : ""}`,
-                                color: Colors.Noraml
-                            });
-                            return resolve(await message.channel.send(embd));
-                        }).catch(async err => {
-                            logger.error("Anek.TaggedAnek.RequestFailedError:", err);
-                            var embd = new Discord.MessageEmbed({
-                                title: `${Emojis.RedErrorCross} Cannot get this anek. Is it exist? If you're sure, contact with support.`,
-                                color: Colors.Error
-                            });
-                            return resolve(await message.channel.send(embd));
-                        });  
-                    }
+                    AnekAPI.GetTaggedRandomAnek(tag).then(async anek => {
+                        var embd = new Discord.MessageEmbed({
+                            title: `Anek of B category number ${anek.id}`,
+                            description: `${anek.anek}\n\nSource: ${anek.source}${anek.tags.length > 0 ? `, Tags: \`${anek.tags.join("`, `")}\`` : ""}`,
+                            color: Colors.Noraml
+                        });
+                        return resolve(await message.channel.send(embd));
+                    }).catch(async err => {
+                        logger.error("Anek.TaggedAnek.RequestFailedError:", err);
+                        var embd = new Discord.MessageEmbed({
+                            title: `${Emojis.RedErrorCross} Cannot get this anek. Is it exist? If you're sure, contact with support.`,
+                            color: Colors.Error
+                        });
+                        return resolve(await message.channel.send(embd));
+                    });  
                 }
-
-            }).catch(async res => {
-                logger.error(res);
-                var embd = new Discord.MessageEmbed({
-                    title: `${Emojis.RedErrorCross} Unexpected error occured. Please contact with bot's support.`,
-                    color: Colors.Error
-                });
-                return resolve(await message.channel.send(embd));
-            });
+            }
         });
     }
 }

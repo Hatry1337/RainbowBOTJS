@@ -46,7 +46,11 @@ client.once("ready", async () => {
     }).then(async guilds => {
         for(var i in guilds){
             await client.guilds.fetch(guilds[i].ID, true, true).catch(err => {
-                logger.warn(`[root] [GC]`, 'Guild Fetch Error:', err);
+                if(err.code === 50001){
+                    logger.warn(`[root] [GC]`, guilds[i].ID, 'Guild Fetch Error: Missing Access');
+                }else{
+                    logger.warn(`[root] [GC]`, 'Guild Fetch Error:', err);
+                }
             });
             logger.info(`[root] [GC]`, `Guild ${parseInt(i)+1}/${guilds.length}`);
         }

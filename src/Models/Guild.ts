@@ -6,6 +6,7 @@ interface GuildMeta{
     lmgr_msg?: CustomMessageSettings;
     LeaveMessageChannelID?: string;
     IsLeaveMessageEnabled?: boolean;
+    MiningChannelID?: string;
 }
 
 @Table({
