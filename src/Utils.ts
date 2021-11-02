@@ -18,6 +18,21 @@ export class Utils{
         return arr[rand];
     }
 
+    /**
+     * Pads specified `number` to `count` zeros
+     */
+    static padz(count: number, number: number){
+        return String(number).padStart(count, '0');
+    }
+
+    /**
+     * Returns current timestamp formatted to `%Y-%m-%d %H:%M:%S.$f`
+     */
+    static ts(){
+        var date = new Date();
+        return `${date.getFullYear()}-${this.padz(2, date.getMonth() + 1)}-${this.padz(2, date.getDate())} ${this.padz(2, date.getHours())}:${this.padz(2, date.getMinutes())}:${this.padz(2, date.getSeconds())}.${this.padz(3, date.getMilliseconds())}`;
+    }
+
     static parseID(raw_data: string) {
         raw_data = raw_data?.toString();
         if (raw_data?.startsWith("<<@")) {

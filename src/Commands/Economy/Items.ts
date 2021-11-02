@@ -7,9 +7,10 @@ import log4js from "log4js";
 import { User } from "../../Models/User";
 import { Item } from "../../Models/Economy/Item";
 import { ItemStack } from "../../Models/Economy/ItemStack";
-import { ItemDefs } from "./ItemDefs";
+import { ItemController } from "./ItemController";
+import { RecipeController } from "./RecipeController";
 
-const logger = log4js.getLogger();
+const logger = log4js.getLogger("command");
 
 class Items implements ICommand{
     Name:        string = "Items";
@@ -24,14 +25,17 @@ class Items implements ICommand{
     Author:      string = "Thomasss#9258";
     Controller: CommandsController
 
-    ItemDefinitions: ItemDefs;
+    ItemController: ItemController;
+    RecipeController: RecipeController;
 
     constructor(controller: CommandsController) {
         this.Controller = controller; 
-        this.ItemDefinitions = new ItemDefs();
+        this.ItemController = new ItemController();
+        this.RecipeController = new RecipeController();
         
         this.Controller.Client.on("ready", async () => {
-            await this.ItemDefinitions.CheckDefs();
+            await this.ItemController.CheckDefs();
+            await this.RecipeController.CheckDefs();
         });
     }
     

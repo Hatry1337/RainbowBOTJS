@@ -5,7 +5,7 @@ import { Utils, Emojis, Colors, CustomMessageSettings } from "../../Utils";
 import CommandsController from "../../CommandsController";
 import log4js from "log4js";
 
-const logger = log4js.getLogger();
+const logger = log4js.getLogger("command");
 
 class JoinMgr implements ICommand{
     Name:        string = "JoinMgr";
@@ -30,7 +30,7 @@ class JoinMgr implements ICommand{
 
         this.Controller.Client.on("RGuildMemberAdd", async (member, rguild, ruser) => {
             if(rguild.JoinRolesIDs.length > 0){
-                logger.info(`[CMD] [${this.Name}]`, `[${member.guild}]`, `[${member}]`, "Join Roles present:", `[${rguild.JoinRolesIDs.join(",")}]`);
+                logger.info(`[${this.Name}]`, `[${member.guild}]`, `[${member}]`, "Join Roles present:", `[${rguild.JoinRolesIDs.join(",")}]`);
 
                 var roles:Discord.Role[] = [];
                 for(var i in rguild.JoinRolesIDs){
@@ -41,13 +41,13 @@ class JoinMgr implements ICommand{
                         rguild.JoinRolesIDs.splice(parseInt(i), 1);
                     }
                 }
-                await Guild.update({ JoinRolesIDs: rguild.JoinRolesIDs }, { where: { ID: rguild.ID } }).catch(err => logger.error(err));
+                await Guild.update({ JoinRolesIDs: rguild.JoinRolesIDs }, { where: { ID: rguild.ID } }).catch(err => logger.error(`[${this.Name}]`, err));
 
                 if(!roles.find(r => !r.editable)){
                     await member.roles.add(roles);
-                    logger.info(`[CMD] [${this.Name}]`, `[${member.guild}]`, `[${member}]`, "Added roles:", `[${roles.join(",")}]`);
+                    logger.info(`[${this.Name}]`, `[${member.guild}]`, `[${member}]`, "Added roles:", `[${roles.join(",")}]`);
                 }else{
-                    logger.info(`[CMD] [${this.Name}]`, `[${member.guild}]`, `[${member}]`, "Not enougth permissions. Sending notification to sys. channel...");
+                    logger.info(`[${this.Name}]`, `[${member.guild}]`, `[${member}]`, "Not enougth permissions. Sending notification to sys. channel...");
                     var channel: Discord.TextChannel;
                     if(rguild.LogChannelID){
                         channel = this.Controller.Client.channels.cache.find(c => c.id === rguild.LogChannelID) as Discord.TextChannel;

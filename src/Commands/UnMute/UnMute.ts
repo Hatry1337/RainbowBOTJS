@@ -6,7 +6,7 @@ import CommandsController from "../../CommandsController";
 import { MutedUser } from "../../Models/MutedUser";
 import log4js from "log4js";
 
-const logger = log4js.getLogger();
+const logger = log4js.getLogger("command");
 
 class UnMute implements ICommand{
     Name:        string = "UnMute";
@@ -88,7 +88,7 @@ class UnMute implements ICommand{
                     muser.IsPermMuted = false;
                     await muser.save();
 
-                    logger.info(`User ${message.author.tag}(${message.author.id}) unmuted ${user.user.tag}(${user.id})`);
+                    logger.info(`[${this.Name}]`, `User ${message.author.tag}(${message.author.id}) unmuted ${user.user.tag}(${user.id})`);
                     var embd = new Discord.MessageEmbed({
                         description: `**User ${message.author} unmuted ${user}.**`,
                         color: Colors.Success
@@ -97,7 +97,7 @@ class UnMute implements ICommand{
                     return resolve(await message.channel.send(embd));
 
                 }).catch(async res => {
-                    logger.error(res);
+                    logger.error(`[${this.Name}]`, res);
                     var embd = new Discord.MessageEmbed({
                         title: `${Emojis.RedErrorCross} Unexpected error occured. Please contact with bot's support.`,
                         color: Colors.Error

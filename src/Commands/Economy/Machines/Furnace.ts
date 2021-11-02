@@ -19,6 +19,8 @@ export class Furnace implements IMachine{
 
     Run(message: Discord.Message, guild: Guild, user: User){
         return new Promise<Discord.Message>(async (resolve, reject) => {
+            await this.Process(user);
+
             var args = message.content.split(" ").slice(2);
 
             if(args.length === 0) {
@@ -78,7 +80,7 @@ export class Furnace implements IMachine{
                             await itemstack.save();
                             await ItemStack.create({
                                 Count: count,
-                                itemId: itemstack.itemId,
+                                itemCode: itemstack.itemCode,
                                 ownerId: itemstack.ownerId,
                                 Container: `machine#${this.Code}#input`
                             });
@@ -87,6 +89,64 @@ export class Furnace implements IMachine{
                     }
                 }
             }
+        });
+    }
+
+    Process(user: User){
+        return new Promise<void>(async (resolve, reject) =>{
+            var items = await ItemStack.findAll({
+                where: {
+                    ownerId: user.ID,
+                    Container: `machine#${this.Code}#input`
+                },
+                include: [Item]
+            });
+            var recipes = await Recipe.findAll({
+                where: {
+                    Type: `machine#${this.Code}`
+                },
+                include: [
+                    {
+                        model: ItemStack, 
+                        as: 'Result', 
+                        include: [Item]
+                    }, 
+                    {
+                        model: ItemStack,
+                        as: 'Ingredients', 
+                        include: [Item]
+                    }
+                ]
+            });
+            var ts = new Date();
+            var i = items[0];
+            if(i){
+                if(!i.Meta.ProcessingTimeStamp){
+                    i.Meta.ProcessingTimeStamp = new Date();
+                    await i.save();
+                }
+                i.Meta.ProcessingTimeStamp = new Date(i.Meta.ProcessingTimeStamp);
+    
+                var time = (i.Item.Meta.MeltTime || 60000) * i.Count;
+                
+                if(ts.getTime() - i.Meta.ProcessingTimeStamp.getTime() > time){
+                    var recipe = recipes.find(r => r.Ingredients.find(ing => ing.Item.Code === i.Item.Code));
+                    if(!recipe){
+                        i.Container = "inventory";
+                        i.Meta.ProcessingTimeStamp = undefined;
+                        await i.save();
+                    }else{
+                        await ItemStack.create({
+                            Count: recipe.Result.Count * i.Count,
+                            itemCode: recipe.Result.itemCode,
+                            ownerId: user.ID,
+                            Container: `machine#${this.Code}#output`
+                        });
+                        await i.destroy();
+                    }
+                }
+            }
+            resolve();
         });
     }
 
@@ -106,6 +166,12 @@ export class Furnace implements IMachine{
             });
 
             var inbuf = "";
+            if(inItems[0]){
+                inItems[0].Meta.ProcessingTimeStamp = new Date(inItems[0].Meta.ProcessingTimeStamp || 0);
+                var prtime = ((inItems[0].Item.Meta.MeltTime || 60000) * inItems[0].Count) - ((new Date()).getTime() - (inItems[0].Meta.ProcessingTimeStamp.getTime()));
+                inbuf += `**${inItems[0].Item.Name}** (${inItems[0].Item.Code}) - \`[${inItems[0].Count}]\` [${Utils.formatTime(Math.floor(prtime / 1000))}]\n`;
+            }
+            inItems.shift();
             for(var i of inItems){
                 inbuf += `**${i.Item.Name}** (${i.Item.Code}) - \`[${i.Count}]\`\n`;
             }

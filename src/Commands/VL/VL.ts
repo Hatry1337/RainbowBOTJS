@@ -6,7 +6,7 @@ import CommandsController from "../../CommandsController";
 import log4js from "log4js";
 import { VoiceLobby } from "../../Models/VoiceLobby";
 
-const logger = log4js.getLogger();
+const logger = log4js.getLogger("command");
 
 class VL implements ICommand{
     Name:        string = "Vl";
@@ -31,7 +31,7 @@ class VL implements ICommand{
         this.Controller = controller;
 
         this.Controller.Client.on("RVoiceChannelJoin", async (channel, member) => {
-            logger.info(`[CMD] [${this.Name}]`, `${member.id} joined voice channel ${channel.id} on ${channel.guild?.id}`);
+            logger.info(`[${this.Name}] [Event]`, `${member.id} joined voice channel ${channel.id} on ${channel.guild?.id}`);
             Guild.findOrCreate({
                 where: {
                     ID: member.guild.id
@@ -105,10 +105,10 @@ class VL implements ICommand{
                         }); 
                     });
                 }
-            }).catch(err => logger.error(`[CMD] [${this.Name}]`, "RVoiceChannelJoin Event Exception: ", err));
+            }).catch(err => logger.error(`[${this.Name}] [Event]`, "RVoiceChannelJoin Event Exception: ", err));
         });
         this.Controller.Client.on("RVoiceChannelQuit", async (channel, member) => {
-            logger.info(`${member.id} leaved from voice channel ${channel.id} on ${channel.guild?.id}`);
+            logger.info(`[${this.Name}] [Event]`, `${member.id} leaved from voice channel ${channel.id} on ${channel.guild?.id}`);
             Guild.findOrCreate({
                 where: {
                     ID: member.guild.id
@@ -139,13 +139,13 @@ class VL implements ICommand{
                                 await channel.guild.channels.resolve(vl.VoiceChannelID)?.delete();
                                 await channel.guild.channels.resolve(vl.CategoryID)?.delete();
                                 await vl.destroy();
-                                logger.info(`${member.id} destroyed voice lobby ${channel.id} on ${channel.guild?.id}`);
+                                logger.info(`[${this.Name}]`, `${member.id} destroyed voice lobby ${channel.id} on ${channel.guild?.id}`);
                             }
                         });
                     }
                 }
         
-            }).catch(err => logger.error(`[CMD] [${this.Name}]`, "RVoiceChannelQuit Event Exception: ", err));
+            }).catch(err => logger.error(`[${this.Name}] [Event]`, "RVoiceChannelQuit Event Exception: ", err));
         });
     }
     

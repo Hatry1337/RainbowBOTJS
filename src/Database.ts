@@ -1,4 +1,6 @@
 import { Sequelize } from "sequelize-typescript";
+import { Utils } from "./Utils";
+import log4js from "log4js";
 
 import { Guild } from './Models/Guild';
 import { Item } from "./Models/Economy/Item";
@@ -12,14 +14,9 @@ import { VoiceLobby } from "./Models/VoiceLobby";
 import { ItemStackToItem } from "./Models/Economy/ItemStackToItem";
 import { Ingredient } from "./Models/Economy/Ingredient";
 
+const logger = log4js.getLogger("database");
 
-export const sequelize = new Sequelize({ 
-    dialect: "postgres",
-    username: "rbot_pln",
-    password: "4Rp-k65-Yae-3UY",
-    database: "rbot_pln",
-    host: "127.0.0.1",
-    port: 5432,
+export const sequelize = new Sequelize(process.env.DBURI as string, {
     models: [
         Guild,
         ReactionEvent,
@@ -32,5 +29,8 @@ export const sequelize = new Sequelize({
         ItemStackToItem,
         Recipe,
         Ingredient
-    ]
+    ],
+    logging: (sql) => {
+        logger.info(sql);
+    }
 });

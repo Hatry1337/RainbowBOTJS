@@ -5,9 +5,10 @@ export interface ItemDef{
     Code: string;
     Description: string;
     IsCraftable: boolean;
+    Meta?: any;
 }
 
-export class ItemDefs{
+export class ItemController{
     List: ItemDef[] = [
         {
             Name: "Stone",
@@ -69,6 +70,13 @@ export class ItemDefs{
             Description: "Machine that melt items.",
             IsCraftable: true
         },
+        {
+            Name: "Iron Ore Dust",
+            Code: "iron_ore_dust",
+            Description: "Crushed iron ore.",
+            IsCraftable: true
+        },
+
     ]
     async CheckDefs(){
         var items: Item[] = [];
@@ -81,7 +89,8 @@ export class ItemDefs{
                     Name: i.Name,
                     Code: i.Code,
                     Description: i.Description,
-                    IsCraftable: i.IsCraftable
+                    IsCraftable: i.IsCraftable,
+                    Meta: i.Meta || {}
                 }
             });
             items.push(item[0]);
@@ -89,7 +98,7 @@ export class ItemDefs{
         return items;
     }
 
-    async Define(i: ItemDef){
+    static async Define(i: ItemDef){
         var item = await Item.findOrCreate({
             where: { 
                 Name: i.Name 
@@ -98,7 +107,8 @@ export class ItemDefs{
                 Name: i.Name,
                 Code: i.Code,
                 Description: i.Description,
-                IsCraftable: i.IsCraftable
+                IsCraftable: i.IsCraftable,
+                Meta: i.Meta || {}
             }
         });
         return item[0];

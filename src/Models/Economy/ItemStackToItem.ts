@@ -14,5 +14,5 @@ export class ItemStackToItem extends Model {
 
     @ForeignKey(() => Item)
     @Column
-    itemId!: number
+    itemCode!: string
 }

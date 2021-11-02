@@ -10,7 +10,7 @@ import { ItemStack } from "../../Models/Economy/ItemStack";
 import { IMachine } from "./Machines/IMachine";
 import { Furnace } from "./Machines/Furnace";
 
-const logger = log4js.getLogger();
+const logger = log4js.getLogger("command");
 
 class Machine implements ICommand{
     Name:        string = "Machine";

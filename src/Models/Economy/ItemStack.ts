@@ -4,7 +4,7 @@ import { User } from "../User";
 import { ItemStackToItem } from "./ItemStackToItem";
 
 interface ItemStackMeta{
-
+    ProcessingTimeStamp?: Date;
 }
 
 @Table({
@@ -17,7 +17,7 @@ export class ItemStack extends Model {
     id!: number;
 
     @Column({
-        type: DataType.NUMBER,
+        type: DataType.INTEGER,
         allowNull: false,
     })
     Count!: number;
@@ -25,7 +25,7 @@ export class ItemStack extends Model {
     @ForeignKey(() => Item)
     @AllowNull(false) 
     @Column
-    itemId!: number;
+    itemCode!: string;
 
     @BelongsTo(() => Item)
     Item!: Item;

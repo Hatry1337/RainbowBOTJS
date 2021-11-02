@@ -5,7 +5,7 @@ import { Emojis, Colors } from "../../Utils";
 import CommandsController from "../../CommandsController";
 import log4js from "log4js";
 
-const logger = log4js.getLogger();
+const logger = log4js.getLogger("command");
 
 class Clear implements ICommand{
     Name:        string = "Clear";
@@ -66,7 +66,7 @@ class Clear implements ICommand{
                         await msg.delete({timeout:5000});
                     });
                 });
-                logger.info(`User ${message.author.tag}(${message.author.id}) cleared ${messages.size} messages in ${channel.name}(${channel.id}) on ${channel.guild}(${channel.guild.id})`);
+                logger.info(`[${this.Name}]`, `User ${message.author.tag}(${message.author.id}) cleared ${messages.size} messages in ${channel.name}(${channel.id}) on ${channel.guild}(${channel.guild.id})`);
             });
             
         });

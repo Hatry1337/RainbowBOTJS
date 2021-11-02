@@ -8,7 +8,7 @@ import { User } from "../../Models/User";
 import { Item } from "../../Models/Economy/Item";
 import { ItemStack } from "../../Models/Economy/ItemStack";
 
-const logger = log4js.getLogger();
+const logger = log4js.getLogger("command");
 
 class Profile implements ICommand{
     Name:        string = "Profile";

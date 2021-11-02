@@ -6,7 +6,7 @@ import CommandsController from "../../CommandsController";
 import log4js from "log4js";
 import { AnekAPI } from "./AnekAPI";
 
-const logger = log4js.getLogger();
+const logger = log4js.getLogger("command");
 
 class Anek implements ICommand{
     Name:        string = "Anek";
@@ -43,7 +43,7 @@ class Anek implements ICommand{
                     });
                     return resolve(await message.channel.send(embd));
                 }).catch(async err => {
-                    logger.error("Anek.RandomAnek.RequestFailedError:", err);
+                    logger.error(`[${this.Name}]`, "Anek.RandomAnek.RequestFailedError:", err);
                     var embd = new Discord.MessageEmbed({
                         title: `${Emojis.RedErrorCross} Cannot get this anek. Is it exist? If you're sure, contact with support.`,
                         color: Colors.Error
@@ -60,7 +60,7 @@ class Anek implements ICommand{
                         });
                         return resolve(await message.channel.send(embd));
                     }).catch(async err => {
-                        logger.error("Anek.Tags.RequestFailedError:", err);
+                        logger.error(`[${this.Name}]`, "Anek.Tags.RequestFailedError:", err);
                         var embd = new Discord.MessageEmbed({
                             title: `${Emojis.RedErrorCross} Cannot get aneks tags. Please try again later, or contact with support.`,
                             color: Colors.Error
@@ -85,7 +85,7 @@ class Anek implements ICommand{
                         });
                         return resolve(await message.channel.send(embd));
                     }).catch(async err => {
-                        logger.error("Anek.AnekID.RequestFailedError:", err);
+                        logger.error(`[${this.Name}]`, "Anek.AnekID.RequestFailedError:", err);
                         var embd = new Discord.MessageEmbed({
                             title: `${Emojis.RedErrorCross} Cannot get this anek. Is it exist? If you're sure, contact with support.`,
                             color: Colors.Error
@@ -103,7 +103,7 @@ class Anek implements ICommand{
                         });
                         return resolve(await message.channel.send(embd));
                     }).catch(async err => {
-                        logger.error("Anek.TaggedAnek.RequestFailedError:", err);
+                        logger.error(`[${this.Name}]`, "Anek.TaggedAnek.RequestFailedError:", err);
                         var embd = new Discord.MessageEmbed({
                             title: `${Emojis.RedErrorCross} Cannot get this anek. Is it exist? If you're sure, contact with support.`,
                             color: Colors.Error

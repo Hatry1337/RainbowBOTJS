@@ -11,7 +11,7 @@ import ytpl from "ytpl";
 import ytdl from "ytdl-core";
 import { Thumbnail, TrackOptions } from "./TrackOptions";
 
-const logger = log4js.getLogger();
+const logger = log4js.getLogger("command");
 
 class Music implements ICommand{
     Name:        string = "Music";
@@ -65,8 +65,8 @@ class Music implements ICommand{
             if(manager){
                 if(message.member?.roles.cache.get(manager.get("dj_role_id"))){
                     await this.exec_add_track(message, manager).catch(async err => {
-                        await message.delete().catch(err => logger.warn("[MusicPlayer] MessageEventCatchBlock.MessageDeletionError: ", err));
-                        logger.error("[MusicPlayer] Add track error: ", err, "MusicManager: ", manager, "Message: ", message);
+                        await message.delete().catch(err => logger.warn(`[${this.Name}]`, "MessageEventCatchBlock.MessageDeletionError: ", err));
+                        logger.error(`[${this.Name}]`, "Add track error: ", err, "MusicManager: ", manager, "Message: ", message);
                         var embd = new Discord.MessageEmbed({
                             title: `${Emojis.RedErrorCross} Unexpected error occured. Please contact with bot's support.`,
                             color: Colors.Error
@@ -74,7 +74,7 @@ class Music implements ICommand{
                         return await message.channel.send(embd);
                     });
                 }else{
-                    await message.delete().catch(err => logger.warn("[MusicPlayer] MessageEvent.MessageDeletionError: ", err));
+                    await message.delete().catch(err => logger.warn(`[${this.Name}]`, "MessageEvent.MessageDeletionError: ", err));
                 }
             }
         });
@@ -156,13 +156,13 @@ class Music implements ICommand{
             }
         });
 
-        this.Controller.Client.on("ready", async () => {
-            logger.info("[MMC] Starting MusicManagers caching...");
+        this.Controller.Client.once("ready", async () => {
+            logger.info(`[${this.Name}] [Cacher]`, `Starting MusicManagers caching...`);
             var managers = await MusicManager.findAll();
             for(var i in managers){
                 var ch = await this.Controller.Client.channels.fetch(managers[i].get("music_channel_id")).catch(async e => {
                     if(e && e.code === 10003){
-                        logger.info(`[MMC] [${managers[i].get("music_channel_id")}] Channel not found. Deleting manager`)
+                        logger.info(`[${this.Name}] [Cacher]`, `[${managers[i].get("music_channel_id")}] Channel not found. Deleting manager`)
                         await managers[i].destroy();
                     }
                 }) as Discord.TextChannel;
@@ -171,6 +171,7 @@ class Music implements ICommand{
                     console.log(`${parseInt(i)+1}/${managers.length}`);
                 }
             }
+            logger.info(`[${this.Name}] [Cacher]`, `Cached ${managers.length} MusicManagers.`);
         });
     }
     
@@ -391,8 +392,8 @@ class Music implements ICommand{
             const voiceChannel = message.member?.voice.channel;
             if(!voiceChannel){
                 var ms = await message.channel.send("You're not in the voice channel!");
-                await message.delete({timeout: 5000}).catch(err => logger.warn("[MusicPlayer] ExecAddTrack.MessageDeletionError: ", err));
-                return resolve(await ms.delete({timeout: 5000}).catch(err => logger.warn("[MusicPlayer] ExecAddTrack.MessageDeletionError: ", err)));
+                await message.delete({timeout: 5000}).catch(err => logger.warn(`[${this.Name}]`, "ExecAddTrack.MessageDeletionError: ", err));
+                return resolve(await ms.delete({timeout: 5000}).catch(err => logger.warn(`[${this.Name}]`, "ExecAddTrack.MessageDeletionError: ", err)));
             }
             
             var urls = await this.extractPlaylist(message.content);
@@ -427,7 +428,7 @@ class Music implements ICommand{
             for(var vid of urls){
                 if(ctr >= 100){
                     var ms = await message.channel.send("Max tracks in queue - 100!");
-                    resolve(await ms.delete({timeout: 5000}).catch(err => logger.warn("[MusicPlayer] ExecAddTrack.MessageDeletionError: ", err)));
+                    resolve(await ms.delete({timeout: 5000}).catch(err => logger.warn(`[${this.Name}]`, "ExecAddTrack.MessageDeletionError: ", err)));
                     break;
                 }
                 if(vid){
@@ -464,7 +465,7 @@ class Music implements ICommand{
             if(!plr.isPlaying){
                 plr.Play(undefined, voiceChannel);
             }
-            await message.delete().catch(err => logger.warn("[MusicPlayer] ExecAddTrack.MessageDeletionError: ", err));
+            await message.delete().catch(err => logger.warn(`[${this.Name}]`, "ExecAddTrack.MessageDeletionError: ", err));
             resolve(await this.update_queue(manager));
         });
     }

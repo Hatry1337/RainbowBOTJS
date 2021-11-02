@@ -4,7 +4,8 @@ import { Guild } from "../../Models/Guild";
 import { Emojis, Colors, Utils } from "../../Utils";
 import CommandsController from "../../CommandsController";
 import log4js from "log4js";
-const logger = log4js.getLogger();
+
+const logger = log4js.getLogger("command");
 
 class Mining implements ICommand{
     Name:        string = "Mining";

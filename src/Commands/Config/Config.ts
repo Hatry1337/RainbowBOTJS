@@ -5,7 +5,7 @@ import { Utils, Emojis, Colors } from "../../Utils";
 import CommandsController from "../../CommandsController";
 import log4js from "log4js";
 
-const logger = log4js.getLogger();
+const logger = log4js.getLogger("command");
 
 class Config implements ICommand{
     Name:        string = "Config";

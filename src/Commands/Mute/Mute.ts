@@ -6,7 +6,7 @@ import CommandsController from "../../CommandsController";
 import { MutedUser } from "../../Models/MutedUser";
 import log4js from "log4js";
 
-const logger = log4js.getLogger();
+const logger = log4js.getLogger("command");
 
 class Mute implements ICommand{
     Name:        string = "Mute";
@@ -28,7 +28,7 @@ class Mute implements ICommand{
         this.Controller = controller;
 
         setInterval(async () => {
-            logger.info(`[CMD] [${this.Name}]`, "Muted users checking...");
+            logger.info(`[${this.Name}] [Checker]`, "Muted users checking...");
             MutedUser.findAll({
                 where: {
                     IsMuted: true
@@ -41,9 +41,10 @@ class Mute implements ICommand{
                         var guild = await this.Controller.Client.guilds.fetch(mu.GuildID);
                         var user = guild.member(mu.DsID);
                         await user?.roles.remove(mu.MuteRoleID);
-                        logger.info(`[CMD] [${this.Name}]`, user?.user.tag, "umuted.");
+                        logger.info(`[${this.Name}]`, user?.user.tag, "umuted.");
                     }
                 }
+                logger.info(`[${this.Name}] [Checker]`, `Checked ${musrs.length} MutedUsers`);
             });
         }, 120 * 1000);
     }
@@ -168,7 +169,7 @@ class Mute implements ICommand{
                             await muser.save();
                         }
 
-                        logger.info(`[CMD] [${this.Name}]`, `User ${message.author.tag}(${message.author.id}) muted ${user.user.tag}(${user.id}). Unmute at: ${muser.UnmuteDate?.toString()}`);
+                        logger.info(`[${this.Name}]`, `User ${message.author.tag}(${message.author.id}) muted ${user.user.tag}(${user.id}). Unmute at: ${muser.UnmuteDate?.toString()}`);
                         var embd = new Discord.MessageEmbed({
                             description: `**User ${message.author} muted ${user}.\nReason: ${reason}\nUnmute at: ${ is_perm ? "Never" : muser.UnmuteDate?.toLocaleDateString() + " " + muser.UnmuteDate?.toLocaleTimeString()}**`,
                             color: Colors.Success
@@ -177,7 +178,7 @@ class Mute implements ICommand{
                         return resolve(await message.channel.send(embd));
 
                     }).catch(async res => {
-                        logger.error(`[CMD] [${this.Name}]`, res);
+                        logger.error(`[${this.Name}]`, res);
                         var embd = new Discord.MessageEmbed({
                             title: `${Emojis.RedErrorCross} Unexpected error occured. Please contact with bot's support.`,
                             color: Colors.Error

@@ -5,7 +5,7 @@ import { Utils, Emojis, Colors, CustomMessageSettings } from "../../Utils";
 import CommandsController from "../../CommandsController";
 import log4js from "log4js";
 
-const logger = log4js.getLogger();
+const logger = log4js.getLogger("command");
 
 class LeaveMgr implements ICommand{
     Name:        string = "LeaveMgr";

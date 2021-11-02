@@ -1,30 +1,25 @@
-import { Table, Model, Column, DataType, AutoIncrement, PrimaryKey, HasMany, BelongsToMany } from "sequelize-typescript";
+import { Table, Model, Column, DataType, AutoIncrement, PrimaryKey, HasMany, BelongsToMany, AllowNull } from "sequelize-typescript";
 import { ItemStack } from "./ItemStack";
 import { ItemStackToItem } from "./ItemStackToItem";
 
 interface ItemMeta{
+    MeltTime?: number;
 }
 
 @Table({
     timestamps: true,
 })
 export class Item extends Model {
-    @PrimaryKey 
-    @AutoIncrement 
+    @PrimaryKey
+    @AllowNull(false)
     @Column
-    id!: number;
+    Code!: string;
 
     @Column({
         type: DataType.STRING,
         allowNull: false
     })
     Name!: string;
-
-    @Column({
-        type: DataType.STRING,
-        allowNull: false
-    })
-    Code!: string;
 
     @Column({
         type: DataType.STRING,

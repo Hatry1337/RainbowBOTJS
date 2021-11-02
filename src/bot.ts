@@ -1,4 +1,3 @@
-import Discord, { GuildChannel, TextChannel } from "discord.js";
 import CommandsController from "./CommandsController";
 import RClient from "./RClient";
 import { sequelize } from "./Database";
@@ -8,11 +7,15 @@ import log4js from "log4js";
 
 log4js.configure({
     appenders: {
-        console: { type: 'console' },
-        file: { type: 'file', filename: 'botlog.log' },
+        console:  { type: 'console' },
+        file:     { type: 'file', filename: 'botlog.log' },
+        database: { type: 'file', filename: 'sql.log' }
     },
     categories: {
-        default: { appenders: ['console', 'file'], level: 'info' }
+        default:  { appenders: ['console', 'file'], level: 'info' },
+        root:     { appenders: ['console', 'file'], level: 'info' },
+        command:  { appenders: ['console', 'file'], level: 'info' },
+        database: { appenders: ['database'], level: 'info' }
     }
 });
 
@@ -26,19 +29,33 @@ declare module 'discord.js' {
     }
 }
 
-const logger = log4js.getLogger();
+const logger = log4js.getLogger("root");
 const client = new RClient();
 const commandsController = new CommandsController(client);
 
 (async () => {
     await sequelize.sync({force: false});
-    logger.info(`DB Synced.`);
+    await RUser.findOrCreate({
+        where: { 
+            ID: "system" 
+        }, 
+        defaults: { 
+            ID: "system", 
+            Tag: "System",
+            Avatar: "https://cdn.discordapp.com/avatars/571948993643544587/1ae2abe89523db2a74205763887e3e60.webp",
+            Group: "Admin"
+        }
+    });
+    logger.info(`Database Synchronized.`);
+    logger.info(`Loggining to BOT Account...`);
+    await client.login(process.env.TOKEN);
+    logger.info(`Loggined In!`);
 })();
 
 client.once("ready", async () => {
-    logger.info("Bot started.");
+    logger.info("BOT Ready.");
 
-    logger.info(`[root] [GC]`, "Starting guilds caching...");
+    logger.info(`[GC]`, "Starting guilds caching...");
     RGuild.findAll({
         where:{
             IsBanned: false
@@ -47,15 +64,16 @@ client.once("ready", async () => {
         for(var i in guilds){
             await client.guilds.fetch(guilds[i].ID, true, true).catch(err => {
                 if(err.code === 50001){
-                    logger.warn(`[root] [GC]`, guilds[i].ID, 'Guild Fetch Error: Missing Access');
+                    logger.warn(`[GC]`, guilds[i].ID, 'Guild Fetch Error: Missing Access');
                 }else{
-                    logger.warn(`[root] [GC]`, 'Guild Fetch Error:', err);
+                    logger.warn(`[GC]`, 'Guild Fetch Error:', err);
                 }
             });
-            logger.info(`[root] [GC]`, `Guild ${parseInt(i)+1}/${guilds.length}`);
+            logger.info(`[GC]`, `Guild ${parseInt(i)+1}/${guilds.length}`);
         }
+        logger.info(`[GC]`, `Cached ${guilds.length} guilds.`);
     }).catch(err => {
-        logger.error(`[root] [GC]`, 'Guilds Caching error:', err);
+        logger.error(`[GC]`, 'Guilds Caching error:', err);
     });
 });
 
@@ -83,7 +101,7 @@ client.on('message', async message => {
     if(!message.content.startsWith("!")) return;
 
     await commandsController.FindAndRun(message).catch(err => {
-        logger.error(`[root] [Cmd.Run]`, err);
+        logger.error(`[Cmd.Run]`, err);
     });
 });
 
@@ -150,7 +168,5 @@ client.on("guildMemberRemove", async (member) => {
             var user = u[0];
             client.emit("RGuildMemberRemove", member, guild, user);
         });
-    }).catch(err => { logger.error(`[root] [GuildMemberRemoveEvent]`, err) });
+    }).catch(err => { logger.error(`[GuildMemberRemoveEvent]`, err) });
 });
-
-client.login(process.env.TOKEN);
