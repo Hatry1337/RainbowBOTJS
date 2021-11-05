@@ -20,9 +20,14 @@ import Clear         from './Commands/Clear/Clear';
 import Music         from './Commands/Music/Music';
 import Avatar        from './Commands/Avatar/Avatar';
 import Anek          from './Commands/Anek/Anek';
-import Items         from './Commands/Economy/Items';
-import Profile       from './Commands/Economy/Profile';
-import Machine       from './Commands/Economy/Machine';
+
+import Economy       from './Commands/Economy/Economy';
+import Items         from './Commands/Economy/Commands/Items';
+import Profile       from './Commands/Economy/Commands/Profile';
+import Machine       from './Commands/Economy/Commands/Machine';
+
+import Servers       from './Commands/Servers/Servers';
+
 
 /*==========================================*/
 
@@ -45,9 +50,13 @@ class CommandsController{
         this.Commands.push(new Music    (this));
         this.Commands.push(new Avatar   (this));
         this.Commands.push(new Anek     (this));
+        
+        this.Commands.push(new Economy  (this));
         this.Commands.push(new Items    (this));
         this.Commands.push(new Profile  (this));
         this.Commands.push(new Machine  (this));
+
+        this.Commands.push(new Servers  (this));
         
     }
 
@@ -91,13 +100,11 @@ class CommandsController{
                     },
                     where: { 
                         ID: message.author.id
-                    }, 
-                    include: [{ model: ItemStack, include: [Item] }] 
+                    }
                 }))[0];
 
                 user.Tag = message.author.tag;
                 user.Avatar = message.author.avatarURL({ format: "png" }) || "No Avatar";
-                user.Inventory = user.Inventory || [];
                                 
                 await user.save();
 

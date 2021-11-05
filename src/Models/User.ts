@@ -1,4 +1,5 @@
 import { Table, Model, Column, DataType, HasMany } from "sequelize-typescript";
+import { Item } from "./Economy/Item";
 import { ItemStack } from "./Economy/ItemStack";
 
 interface UserMeta{
@@ -48,9 +49,6 @@ export class User extends Model {
     })
     Lang!: string;
 
-    @HasMany(() => ItemStack)
-    Inventory!: ItemStack[];
-
     @Column({
         type: DataType.BOOLEAN,
         allowNull: false,
@@ -64,4 +62,24 @@ export class User extends Model {
         defaultValue: {}
     })
     Meta!: UserMeta;
+
+    private Inventory?: ItemStack[];
+
+    async getInventory(){
+        if(this.Inventory){
+            return this.Inventory;
+        }else{
+            return await this.fetchInventory();
+        }
+    }
+
+    async fetchInventory(){
+        this.Inventory = await ItemStack.findAll({
+            where: {
+                Container: `inventory#${this.ID}`
+            },
+            include: [Item]
+        });
+        return this.Inventory;
+    }
 }

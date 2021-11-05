@@ -1,24 +1,24 @@
 import Discord from "discord.js";
-import ICommand from "../ICommand";
-import { Guild } from "../../Models/Guild";
-import { Emojis, Colors, Utils } from "../../Utils";
-import CommandsController from "../../CommandsController";
+import ICommand from "../../ICommand";
+import { Guild } from "../../../Models/Guild";
+import { Emojis, Colors, Utils } from "../../../Utils";
+import CommandsController from "../../../CommandsController";
 import log4js from "log4js";
-import { User } from "../../Models/User";
-import { Item } from "../../Models/Economy/Item";
-import { ItemStack } from "../../Models/Economy/ItemStack";
+import { User } from "../../../Models/User";
+import { Item } from "../../../Models/Economy/Item";
+import { ItemStack } from "../../../Models/Economy/ItemStack";
 
 const logger = log4js.getLogger("command");
 
-class Profile implements ICommand{
-    Name:        string = "Profile";
-    Trigger:     string = "!profile";
-    Usage:       string = "`!profile [user]`\n\n" +
+class Items implements ICommand{
+    Name:        string = "Items";
+    Trigger:     string = "!items";
+    Usage:       string = "`!items [user]`\n\n" +
                           "**Example:**\n" +
-                          "`!profile` - show your profile\n\n" +
-                          "`!profile @User` - show User's profile\n\n";
+                          "`!items` - show your inventory\n\n" +
+                          "`!items @User` - show User's inventory\n\n";
 
-    Description: string = "Using this command you can view your, or someone's profile.";
+    Description: string = "Using this command you can view your, or someone's inventory.";
     Category:    string = "Economy";
     Author:      string = "Thomasss#9258";
     Controller: CommandsController
@@ -28,7 +28,7 @@ class Profile implements ICommand{
     }
     
     Test(mesage: Discord.Message){
-        return mesage.content.toLowerCase().startsWith("!profile");
+        return mesage.content.toLowerCase().startsWith("!items");
     }
     
     Run(message: Discord.Message, guild: Guild, user: User){
@@ -48,19 +48,15 @@ class Profile implements ICommand{
             }
 
             if(target){
+                var inventory = await user.fetchInventory();
+    
+                var desc = "";
+                for(var i of inventory){
+                    desc += `**${i.Item.Name}** (${i.Item.Code}) - \`[${i.Count}]\`\n`;
+                }
                 var embd = new Discord.MessageEmbed({
-                    title: `${target.Tag}'s Profile`,
-                    thumbnail: { url: target.Avatar },
-                    fields: [
-                        {
-                            name: "Points",
-                            value: target.Points
-                        },
-                        {
-                            name: "Group",
-                            value: target.Group
-                        }
-                    ],
+                    title: `${target.Tag}'s Inventory`,
+                    description: desc || "`Empty`",
                     color: Colors.Noraml
                 });
                 return resolve(await message.channel.send(embd));
@@ -71,8 +67,9 @@ class Profile implements ICommand{
                 });
                 return resolve(await message.channel.send(embd));
             }
+            
         });
     }
 }
 
-export = Profile;
+export = Items;

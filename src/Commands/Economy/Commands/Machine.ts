@@ -1,14 +1,15 @@
 import Discord from "discord.js";
-import ICommand from "../ICommand";
-import { Guild } from "../../Models/Guild";
-import { Emojis, Colors, Utils } from "../../Utils";
-import CommandsController from "../../CommandsController";
+import ICommand from "../../ICommand";
+import { Guild } from "../../../Models/Guild";
+import { Emojis, Colors, Utils } from "../../../Utils";
+import CommandsController from "../../../CommandsController";
 import log4js from "log4js";
-import { User } from "../../Models/User";
-import { Item } from "../../Models/Economy/Item";
-import { ItemStack } from "../../Models/Economy/ItemStack";
-import { IMachine } from "./Machines/IMachine";
-import { Furnace } from "./Machines/Furnace";
+import { User } from "../../../Models/User";
+import { Item } from "../../../Models/Economy/Item";
+import { ItemStack } from "../../../Models/Economy/ItemStack";
+import { IMachine } from "../Machines/IMachine";
+import { Furnace } from "../Machines/Furnace";
+import { Crusher } from "../Machines/Crusher";
 
 const logger = log4js.getLogger("command");
 
@@ -27,7 +28,8 @@ class Machine implements ICommand{
     Controller: CommandsController
 
     Machines: IMachine[] = [
-        new Furnace()
+        new Furnace(),
+        new Crusher()
     ]
 
     constructor(controller: CommandsController) {
@@ -42,10 +44,12 @@ class Machine implements ICommand{
         return new Promise<Discord.Message>(async (resolve, reject) => {
             var args = message.content.split(" ").slice(1);
 
+            var inventory = await user.fetchInventory();
+
             if(args.length === 0) {
                 var desc = "";
                 for(var m of this.Machines){
-                    if(user.Inventory.find(stack => stack.Item.Code === m.Name.toLowerCase())){
+                    if(inventory.find(stack => stack.Item.Code === m.Name.toLowerCase())){
                         desc += `\`${m.Name}\` - ${m.Description}\n`;
                     }
                 }
@@ -67,7 +71,7 @@ class Machine implements ICommand{
                 return resolve(await message.channel.send(embd));
             }
 
-            if(!user.Inventory.find(stack => stack.Item.Code === machine!.Name.toLowerCase())){
+            if(!inventory.find(stack => stack.Item.Code === machine!.Name.toLowerCase())){
                 var embd = new Discord.MessageEmbed({
                     title: `${Emojis.RedErrorCross} You don't have this machine.`,
                     color: Colors.Error

@@ -1,6 +1,5 @@
 import { Table, Model, Column, DataType, AutoIncrement, PrimaryKey, HasMany, BelongsToMany, AllowNull } from "sequelize-typescript";
 import { ItemStack } from "./ItemStack";
-import { ItemStackToItem } from "./ItemStackToItem";
 
 interface ItemMeta{
     MeltTime?: number;
@@ -34,9 +33,6 @@ export class Item extends Model {
         defaultValue: false
     })
     IsCraftable!: boolean;
-
-    @BelongsToMany(() => ItemStack, () => ItemStackToItem)
-    stacks!: Array<ItemStack & {ItemStackToItem: ItemStackToItem}>;
 
     @Column({
         type: DataType.JSONB,

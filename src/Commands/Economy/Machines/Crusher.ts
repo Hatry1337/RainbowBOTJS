@@ -8,12 +8,12 @@ import { User } from "../../../Models/User";
 import { Colors, Emojis, Utils } from "../../../Utils";
 import { IMachine } from "./IMachine";
 
-export class Furnace implements IMachine{
-    Name:        string =   "Furnace";
-    Code:        string =   "furnace";
-    Description: string =   "This machine can melt items.";
+export class Crusher implements IMachine{
+    Name:        string =   "Crusher";
+    Code:        string =   "crusher";
+    Description: string =   "This machine can crush items.";
 
-    Actions:     string =   "`put <item_code> <amount>` - put items to input buffer\n" +
+    Actions:     string =   "`put <item_code> <amount>` - put items into input buffer\n" +
                             "`stash` - get all items from input buffer\n" + 
                             "`empty` - get all items from output buffer"
 
@@ -84,7 +84,7 @@ export class Furnace implements IMachine{
                         var recipe = recipes.find(r => r.Ingredients.find(i => i.Item.Code === args[1]));
 
                         if(!recipe){
-                            return resolve(await Utils.ErrMsg("This item cannot be melted in furnace.", message.channel));
+                            return resolve(await Utils.ErrMsg("This item cannot be crushed in crusher.", message.channel));
                         }
 
                         if(ingred.Count === count){
@@ -346,7 +346,7 @@ export class Furnace implements IMachine{
             }
 
             var embd = new Discord.MessageEmbed({
-                title: `Furnace:`,
+                title: `Crusher:`,
                 fields: [
                     { name: "Input Buffer", value: inbuf || "Empty" },
                     { name: "Output Buffer", value: outbuf || "Empty" },

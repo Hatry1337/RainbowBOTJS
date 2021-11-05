@@ -11,7 +11,6 @@ import { MutedUser } from "./Models/MutedUser";
 import { ReactionEvent } from './Models/ReactionEvent';
 import { User } from "./Models/User";
 import { VoiceLobby } from "./Models/VoiceLobby";
-import { ItemStackToItem } from "./Models/Economy/ItemStackToItem";
 import { Ingredient } from "./Models/Economy/Ingredient";
 
 const logger = log4js.getLogger("database");
@@ -26,7 +25,6 @@ export const sequelize = new Sequelize(process.env.DBURI as string, {
         User,
         Item,
         ItemStack,
-        ItemStackToItem,
         Recipe,
         Ingredient
     ],

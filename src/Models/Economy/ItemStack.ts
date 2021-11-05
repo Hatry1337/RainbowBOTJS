@@ -1,10 +1,8 @@
-import { Table, Model, Column, DataType, AutoIncrement, PrimaryKey, HasOne, ForeignKey, AllowNull, BelongsToMany, BelongsTo } from "sequelize-typescript";
+import { Table, Model, Column, DataType, AutoIncrement, PrimaryKey, ForeignKey, AllowNull, BelongsTo, BeforeInit, BeforeFind, AfterFind, AfterCreate, AfterBulkCreate, AfterRestore } from "sequelize-typescript";
 import { Item } from "./Item";
-import { User } from "../User";
-import { ItemStackToItem } from "./ItemStackToItem";
 
 interface ItemStackMeta{
-    ProcessingTimeStamp?: Date;
+    ProcessingTimeStamp?: number;
 }
 
 @Table({
@@ -30,18 +28,9 @@ export class ItemStack extends Model {
     @BelongsTo(() => Item)
     Item!: Item;
 
-    @ForeignKey(() => User)
-    @AllowNull(false) 
-    @Column
-    ownerId!: string;
-
-    @BelongsTo(() => User)
-    Owner!: User;
-
     @Column({
         type: DataType.STRING,
-        allowNull: false,
-        defaultValue: "inventory"
+        allowNull: false
     })
     Container!: string;
 
@@ -51,4 +40,23 @@ export class ItemStack extends Model {
         defaultValue: {}
     })
     Meta!: ItemStackMeta;
+
+    isStackable(tocmp: ItemStack){
+        if(this.id === tocmp.id) return false;
+        if(this.Container !== tocmp.Container) return false;
+        if(this.itemCode !== tocmp.itemCode) return false;
+        if(JSON.stringify(this.Meta) !== JSON.stringify(tocmp.Meta)) return false;
+        
+        return true;
+    }
+
+    async stackWith(tostack: ItemStack[]){
+        for(var s of tostack){
+            if(this.isStackable(s)){
+                this.Count += s.Count;
+                await s.destroy();
+            }
+        }
+        await this.save();
+    }
 }

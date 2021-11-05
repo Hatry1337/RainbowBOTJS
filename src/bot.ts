@@ -4,6 +4,7 @@ import { sequelize } from "./Database";
 import { Guild as RGuild } from "./Models/Guild";
 import { User as RUser } from "./Models/User";
 import log4js from "log4js";
+import { ItemStack } from "./Models/Economy/ItemStack";
 
 log4js.configure({
     appenders: {
@@ -127,7 +128,8 @@ client.on("guildMemberAdd", async (member) => {
             },
             defaults: {
                 ID: member.id,
-                Tag: member.user.tag
+                Tag: member.user.tag,
+                Avatar: member.user.avatarURL({ format: "png" }) || "No Avatar"
             }
         }).then(async u => {
             logger.info(`[GuildMemberAddEvent] Member[${member.id}] User data fetched.`);
@@ -160,7 +162,8 @@ client.on("guildMemberRemove", async (member) => {
             },
             defaults: {
                 ID: member.id,
-                Tag: member.user?.tag
+                Tag: member.user?.tag,
+                Avatar: member.user?.avatarURL({ format: "png" }) || "No Avatar"
             }
         }).then(async u => {
             logger.info(`[GuildMemberRemoveEvent] Member[${member.id}] User data fetched.`);

@@ -2,6 +2,7 @@ import { Ingredient } from "../../Models/Economy/Ingredient";
 import { Item } from "../../Models/Economy/Item"
 import { ItemStack } from "../../Models/Economy/ItemStack";
 import { Recipe } from "../../Models/Economy/Recipe";
+import Economy from "./Economy";
 
 export interface StackDef{
     Code: string,
@@ -15,6 +16,7 @@ export interface RecipeDef{
 }
 
 export class RecipeController{
+    Economy: Economy;
     List: RecipeDef[] = [
         {
             Result: {
@@ -32,7 +34,7 @@ export class RecipeController{
         {
             Result: {
                 Code: "iron_ingot",
-                Count: 2
+                Count: 1
             },
             Ingredients: [
                 {
@@ -41,8 +43,26 @@ export class RecipeController{
                 }
             ],
             Type: "machine#furnace"
+        },
+        {
+            Result: {
+                Code: "iron_ore_dust",
+                Count: 2
+            },
+            Ingredients: [
+                {
+                    Code: "iron_ore",
+                    Count: 1
+                }
+            ],
+            Type: "machine#crusher"
         }
     ]
+
+    constructor(eco: Economy){
+        this.Economy = eco;
+    }
+
     async CheckDefs(){
         var recipes = await Recipe.findAll({
             include: [
@@ -75,13 +95,11 @@ export class RecipeController{
                     where:{
                         itemCode: r.Result.Code,
                         Count: r.Result.Count,
-                        ownerId: "system",
                         Container: "virtual"
                     },
                     defaults: {
                         itemCode: r.Result.Code,
                         Count: r.Result.Count,
-                        ownerId: "system",
                         Container: "virtual"
                     }
                 }))[0];
@@ -95,13 +113,11 @@ export class RecipeController{
                         where:{
                             itemCode: i.Code,
                             Count: i.Count,
-                            ownerId: "system",
                             Container: "virtual"
                         },
                         defaults: {
                             itemCode: i.Code,
                             Count: i.Count,
-                            ownerId: "system",
                             Container: "virtual"
                         }
                     }))[0];

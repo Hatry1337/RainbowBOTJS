@@ -1,4 +1,6 @@
 import { Item } from "../../Models/Economy/Item"
+import { ItemStack } from "../../Models/Economy/ItemStack";
+import Economy from "./Economy";
 
 export interface ItemDef{
     Name: string;
@@ -9,6 +11,7 @@ export interface ItemDef{
 }
 
 export class ItemController{
+    Economy: Economy;
     List: ItemDef[] = [
         {
             Name: "Stone",
@@ -71,6 +74,18 @@ export class ItemController{
             IsCraftable: true
         },
         {
+            Name: "Crusher",
+            Code: "crusher",
+            Description: "Machine that crush items.",
+            IsCraftable: true
+        },
+        {
+            Name: "Energy Cell",
+            Code: "energy_cell",
+            Description: "Machine that store energy-points(⚡).",
+            IsCraftable: true
+        },
+        {
             Name: "Iron Ore Dust",
             Code: "iron_ore_dust",
             Description: "Crushed iron ore.",
@@ -78,6 +93,11 @@ export class ItemController{
         },
 
     ]
+
+    constructor(eco: Economy){
+        this.Economy = eco;
+    }
+
     async CheckDefs(){
         var items: Item[] = [];
         for(var i of this.List){
