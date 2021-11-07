@@ -16,6 +16,7 @@ log4js.configure({
         default:  { appenders: ['console', 'file'], level: 'info' },
         root:     { appenders: ['console', 'file'], level: 'info' },
         command:  { appenders: ['console', 'file'], level: 'info' },
+        economy:  { appenders: ['console', 'file'], level: 'info' },
         database: { appenders: ['database'], level: 'info' }
     }
 });

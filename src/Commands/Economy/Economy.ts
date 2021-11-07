@@ -5,8 +5,13 @@ import { Emojis, Colors, Utils } from "../../Utils";
 import CommandsController from "../../CommandsController";
 import log4js from "log4js";
 import { User } from "../../Models/User";
-import { ItemController } from "./ItemController";
-import { RecipeController } from "./RecipeController";
+import { Items } from "./Items";
+import { TileEntity } from "./TileEntitys/TileEntity";
+import { TEFurnace } from "./TileEntitys/TEFurnace";
+import { ItemStack } from "./Items/ItemStack";
+import { Item } from "./Items/Item";
+import { FurnaceRecipes } from "./Items/crafting/FurnaceRecipes";
+
 
 const logger = log4js.getLogger("command");
 
@@ -20,19 +25,30 @@ class Economy implements ICommand{
     Author:      string = "Thomasss#9258";
     Controller: CommandsController
 
-    Items: ItemController;
-    Recipes: RecipeController;
+    Ticker: NodeJS.Timeout;
+    furnaceRecipes: FurnaceRecipes;
 
     constructor(controller: CommandsController) {
         this.Controller = controller; 
 
-        this.Items = new ItemController(this);
-        this.Recipes = new RecipeController(this);
+        this.furnaceRecipes = new FurnaceRecipes(); 
+
+        this.Ticker = setInterval(() => {
+            TileEntity.REGISTRY.tick();
+        }, 500);
+
+        var furnace = new TEFurnace();
+        TileEntity.REGISTRY.register(1, "te:furnace", furnace);
         
-        this.Controller.Client.on("ready", async () => {
-            await this.Items.CheckDefs();
-            await this.Recipes.CheckDefs();
-        });
+        furnace.setInventorySlotContents(0, new ItemStack(Items.IRON_ORE, 4));
+        furnace.setInventorySlotContents(1, new ItemStack(Items.COAL));
+
+        setInterval(() => {
+            console.log("[IN]", furnace.getStackInSlot(0));
+            console.log("[FL]", furnace.getStackInSlot(1));
+            console.log("[OUT]", furnace.getStackInSlot(2));
+            console.log("=");
+        }, 500);
     }
     
     Test(mesage: Discord.Message){

@@ -22,9 +22,6 @@ import Avatar        from './Commands/Avatar/Avatar';
 import Anek          from './Commands/Anek/Anek';
 
 import Economy       from './Commands/Economy/Economy';
-import Items         from './Commands/Economy/Commands/Items';
-import Profile       from './Commands/Economy/Commands/Profile';
-import Machine       from './Commands/Economy/Commands/Machine';
 
 import Servers       from './Commands/Servers/Servers';
 
@@ -52,9 +49,6 @@ class CommandsController{
         this.Commands.push(new Anek     (this));
         
         this.Commands.push(new Economy  (this));
-        this.Commands.push(new Items    (this));
-        this.Commands.push(new Profile  (this));
-        this.Commands.push(new Machine  (this));
 
         this.Commands.push(new Servers  (this));
         
