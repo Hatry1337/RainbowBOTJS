@@ -2,8 +2,6 @@ import Discord from 'discord.js';
 import ICommand from './Commands/ICommand';
 import { Guild } from './Models/Guild';
 import { User } from './Models/User';
-import { ItemStack } from './Models/Economy/ItemStack';
-import { Item } from './Models/Economy/Item';
 
 /*============Commands Import===============*/
 import JoinMgr       from './Commands/JoinMgr/JoinMgr';
@@ -20,10 +18,12 @@ import Clear         from './Commands/Clear/Clear';
 import Music         from './Commands/Music/Music';
 import Avatar        from './Commands/Avatar/Avatar';
 import Anek          from './Commands/Anek/Anek';
-
-import Economy       from './Commands/Economy/Economy';
-
 import Servers       from './Commands/Servers/Servers';
+
+import Economy       from './Commands/Economy/Commands/Economy';
+import Rooms         from './Commands/Economy/Commands/Rooms';
+import Invent from './Commands/Economy/Commands/Invent';
+
 
 
 /*==========================================*/
@@ -47,11 +47,26 @@ class CommandsController{
         this.Commands.push(new Music    (this));
         this.Commands.push(new Avatar   (this));
         this.Commands.push(new Anek     (this));
-        
-        this.Commands.push(new Economy  (this));
-
         this.Commands.push(new Servers  (this));
         
+        this.Commands.push(new Economy  (this));
+        this.Commands.push(new Rooms    (this));
+        this.Commands.push(new Invent   (this));
+
+        
+    }
+
+    Init(){
+        return new Promise<number>(async (resolve, reject) => {
+            var count = 0;
+            for(var c of this.Commands){
+                if(c.Init){
+                    await c.Init();
+                    count++;
+                }
+            }
+            return resolve(count);
+        });
     }
 
     IsCommandExist(message: Discord.Message){

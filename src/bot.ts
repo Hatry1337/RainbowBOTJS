@@ -4,7 +4,7 @@ import { sequelize } from "./Database";
 import { Guild as RGuild } from "./Models/Guild";
 import { User as RUser } from "./Models/User";
 import log4js from "log4js";
-import { ItemStack } from "./Models/Economy/ItemStack";
+import Economy from "./Commands/Economy/Commands/Economy";
 
 log4js.configure({
     appenders: {
@@ -35,6 +35,11 @@ const logger = log4js.getLogger("root");
 const client = new RClient();
 const commandsController = new CommandsController(client);
 
+process.on("SIGINT", async () => {
+    var eco = commandsController.Commands.find(c => c instanceof Economy) as Economy;
+    await eco.saveWorld()
+});
+
 (async () => {
     await sequelize.sync({force: false});
     await RUser.findOrCreate({
@@ -51,7 +56,11 @@ const commandsController = new CommandsController(client);
     logger.info(`Database Synchronized.`);
     logger.info(`Loggining to BOT Account...`);
     await client.login(process.env.TOKEN);
-    logger.info(`Loggined In!`);
+    logger.info(`Loggined In! (${client.user?.tag})`);
+    logger.info(`Running Commands Inititalization...`);
+    var inic = await commandsController.Init();
+    logger.info(`Initialized ${inic} Commands Initializers.`);
+    logger.info(`BOT Fully ready! Enjoy =)`);
 })();
 
 client.once("ready", async () => {

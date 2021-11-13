@@ -3,15 +3,14 @@ import { Utils } from "./Utils";
 import log4js from "log4js";
 
 import { Guild } from './Models/Guild';
-import { Item } from "./Models/Economy/Item";
-import { ItemStack } from "./Models/Economy/ItemStack";
-import { Recipe } from "./Models/Economy/Recipe";
+import { MPlayer } from "./Models/Economy/MPlayer";
 import { MusicManager } from "./Models/MusicManager";
 import { MutedUser } from "./Models/MutedUser";
 import { ReactionEvent } from './Models/ReactionEvent';
 import { User } from "./Models/User";
 import { VoiceLobby } from "./Models/VoiceLobby";
-import { Ingredient } from "./Models/Economy/Ingredient";
+import { MRoom } from "./Models/Economy/MRoom";
+import { MPlayerRoom } from "./Models/Economy/MPlayerRoom";
 
 const logger = log4js.getLogger("database");
 
@@ -23,10 +22,9 @@ export const sequelize = new Sequelize(process.env.DBURI as string, {
         VoiceLobby,
         MusicManager,
         User,
-        Item,
-        ItemStack,
-        Recipe,
-        Ingredient
+        MPlayer,
+        MRoom,
+        MPlayerRoom
     ],
     logging: (sql) => {
         logger.info(sql);

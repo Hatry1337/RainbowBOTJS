@@ -1,4 +1,4 @@
-import { Item } from "./Item";
+import { Item } from "../Items/Item";
 
 
 export class ItemRegistry{
@@ -10,6 +10,14 @@ export class ItemRegistry{
 
     public getItem(code: string): Item | undefined{
         return this.registry.get(code);
+    }
+
+    public getCode(item: Item): string | undefined{
+        for(var e of this.registry.entries()){
+            if(e[1] === item){
+                return e[0];
+            }
+        }
     }
 
     public containsCode(code: string): boolean{

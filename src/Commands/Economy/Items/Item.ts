@@ -1,4 +1,4 @@
-import { ItemRegistry } from "./ItemRegistry";
+import { ItemRegistry } from "../Registrys/ItemRegistry";
 import { ItemStack } from "./ItemStack";
 
 const ireg = new ItemRegistry();
@@ -64,4 +64,5 @@ export class Item{
         this.max_stack_size = m_s_size;
         return this;
     }
+    
 }

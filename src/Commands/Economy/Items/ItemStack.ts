@@ -1,7 +1,13 @@
 import { Item } from "./Item";
 
 export interface IItemStackMeta{
-    [key: string]: object;
+    [key: string]: any;
+}
+
+export interface IISObject{
+    item: string;
+    size: number;
+    meta: IItemStackMeta;
 }
 
 export class ItemStack{
@@ -20,7 +26,7 @@ export class ItemStack{
     public isEmpty(): boolean {
         if (this === ItemStack.EMPTY) {
             return true;
-        } else if (this.getItem() !== null) {
+        } else if (this.getItem()) {
             return this.stackSize <= 0;
         } else {
             return true;
@@ -28,14 +34,14 @@ export class ItemStack{
     }
 
     public isItemEqual(other: ItemStack): boolean {
-        return !other.isEmpty() && this.item == other.item;
+        return !other.isEmpty() && this.item === other.item;
     }
 
     public static areItemStackMetaEqual(stackA: ItemStack, stackB: ItemStack): boolean {
         if (stackA.isEmpty() && stackB.isEmpty()) {
             return true;
         } else if (!stackA.isEmpty() && !stackB.isEmpty()) {
-            return stackA.meta === stackB.meta;
+            return JSON.stringify(stackA.getMeta()) === JSON.stringify(stackB.getMeta());
         } else {
             return false;
         }
@@ -94,6 +100,39 @@ export class ItemStack{
         itemstack.setCount(i);
         this.shrink(i);
         return itemstack;
+    }
+
+    public toObject(){
+        var data: IISObject = {
+            item: Item.REGISTRY.getCode(this.item) || "",
+            size: this.stackSize || 1,
+            meta: this.meta || {}
+        }
+        return data;
+    }
+
+    public static fromObject(obj: any){
+        if(obj.item){
+            var item = Item.REGISTRY.getItem(obj.item);
+            if(!item){
+                return ItemStack.EMPTY;
+            }
+            var size = parseInt(obj.size);
+            if(isNaN(size) || size <= 0){
+                size = 1;
+            }
+            var meta = obj.meta || {};
+
+            return new ItemStack(item, size, meta);
+        }
+    }
+
+    public serialize(){
+        return JSON.stringify(this.toObject());
+    }
+
+    public static deserialize(data: string){
+        return ItemStack.fromObject(JSON.parse(data));
     }
 
 }

@@ -4,7 +4,7 @@ import { Utils } from "../../Utils";
 import CommandsController from "../../CommandsController";
 import { User } from "../../Models/User";
 
-class Help implements ICommand{
+class RBFetch implements ICommand{
     Name:        string = "RBFetch";
     Trigger:     string = "!rbfetch";
     Usage:       string = "`!rbfetch`\n\n" +
@@ -69,4 +69,4 @@ class Help implements ICommand{
     }
 }
 
-export = Help;
+export = RBFetch;

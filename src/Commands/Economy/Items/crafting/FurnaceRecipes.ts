@@ -1,7 +1,7 @@
 import { ItemStack } from "../ItemStack";
 import log4js from "log4js";
 import { Item } from "../Item";
-import { Items } from "../../Items";
+import { Items } from "../Items";
 
 const logger = log4js.getLogger("economy");
 
@@ -62,6 +62,6 @@ export class FurnaceRecipes{
     }
 
     private compareItemStacks(stack1: ItemStack, stack2: ItemStack): boolean {
-        return stack2.getItem() == stack1.getItem() && stack2.getMeta() == stack1.getMeta();
+        return stack1.isItemEqual(stack2) && ItemStack.areItemStackMetaEqual(stack1, stack2);
     }
 }

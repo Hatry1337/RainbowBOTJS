@@ -1,50 +1,35 @@
-class TileEntityRegistry{
-    private registry: Map<string, TileEntity> = new Map();
-    private underlyingIntegerMap: Map<number, TileEntity> = new Map();
+import { TileEntityRegistry } from "../Registrys/TileEntityRegistry";
+import Discord from "discord.js";
+import { Player } from "../inventory/Player";
 
-    public register(id: number, code: string, item: TileEntity): void{
-        this.underlyingIntegerMap.set(id, item);
-        this.registry.set(code, item);
-    }
-
-    public getObject(code: string): TileEntity | undefined{
-        return this.registry.get(code);
-    }
-
-    public containsCode(code: string): boolean{
-        return this.registry.has(code);
-    }
-
-    public containsId(id: number): boolean{
-        return this.underlyingIntegerMap.has(id);
-    }
-
-    public getIDForObject(value: TileEntity): number {
-        for(var e of this.underlyingIntegerMap.entries()){
-            if(e[1] === value){
-                return e[0];
-            }
-        }
-        return -1;
-    }
-
-    public getObjectById(id: number): TileEntity | undefined {
-        return this.underlyingIntegerMap.get(id);
-    }
-
-    public tick(){
-        for(var te of this.registry.entries()){
-            te[1].update();
-        }
-    }
+export interface ITileEntityMeta{
+    [key: string]: any
+}
+export interface ITEObject{
+    code: string;
+    meta: ITileEntityMeta;
 }
 
-const tereg = new TileEntityRegistry();
-
 export class TileEntity{
-    public static REGISTRY: TileEntityRegistry = tereg;
-    public static currentTick: number = new Date().getTime() / 500;
+    public static REGISTRY: TileEntityRegistry = new TileEntityRegistry();
+
+    public proto: typeof TileEntity = TileEntity;
 
     public update(): void{
+    }
+
+    public loadMeta(meta: ITileEntityMeta): void{
+    }
+
+    public saveMeta(): ITileEntityMeta{
+        return {};
+    }
+
+    public async showInterface(player: Player, message: Discord.Message): Promise<Discord.Message>{
+        return message.channel.send("`INTERFACE OF THIS MACHINE NOT IMPLEMENTED!`");
+    }
+
+    public async interact(player: Player, message: Discord.Message): Promise<Discord.Message>{
+        return message.channel.send("`INTERRACTION WITH THIS MACHINE NOT IMPLEMENTED!`");
     }
 }

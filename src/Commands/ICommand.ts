@@ -10,6 +10,9 @@ interface ICommand{
     Description: string;
     Category: string;
     Author: string;
+
+    Init?(): Promise<void>;
+
     Test(message: Discord.Message, guild?: Guild, user?: User): boolean;
     Test(message: Discord.Message, guild: Guild, user?: User): boolean;
     Test(message: Discord.Message, guild: Guild, user: User): boolean;
