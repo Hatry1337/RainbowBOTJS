@@ -21,10 +21,6 @@ import Anek          from './Commands/Anek/Anek';
 import Servers       from './Commands/Servers/Servers';
 
 import Economy       from './Commands/Economy/Commands/Economy';
-import Rooms         from './Commands/Economy/Commands/Rooms';
-import Invent from './Commands/Economy/Commands/Invent';
-
-
 
 /*==========================================*/
 
@@ -48,11 +44,7 @@ class CommandsController{
         this.Commands.push(new Avatar   (this));
         this.Commands.push(new Anek     (this));
         this.Commands.push(new Servers  (this));
-        
-        this.Commands.push(new Economy  (this));
-        this.Commands.push(new Rooms    (this));
-        this.Commands.push(new Invent   (this));
-
+        //this.Commands.push(new Economy  (this)); // We need to add some other stuff to production, so temporary disabled. 
         
     }
 

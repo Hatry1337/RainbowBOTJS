@@ -5,18 +5,14 @@ import { Emojis, Colors, Utils } from "../../../Utils";
 import CommandsController from "../../../CommandsController";
 import log4js from "log4js";
 import { User } from "../../../Models/User";
-import { Items } from "../Items/Items";
-import { TileEntity } from "../TileEntitys/TileEntity";
-import { TEFurnace } from "../TileEntitys/TEFurnace";
-import { ItemStack } from "../Items/ItemStack";
-import { FurnaceRecipes } from "../Items/crafting/FurnaceRecipes";
 import { TPSMeter } from "../TileEntitys/TPSMeter";
 import { Player } from "../inventory/Player";
 import { MPlayer } from "../../../Models/Economy/MPlayer";
 import { World } from "../World/World";
 import { Room } from "../Rooms/Room";
 import { MRoom } from "../../../Models/Economy/MRoom";
-
+import Rooms         from './Rooms';
+import Invent from './Invent';
 
 const logger = log4js.getLogger("economy");
 
@@ -33,6 +29,8 @@ class Economy implements ICommand{
 
     constructor(controller: CommandsController) {
         this.Controller = controller; 
+        this.Controller.Commands.push(new Rooms(this.Controller));
+        this.Controller.Commands.push(new Invent(this.Controller));
         /*
         for(var i = 0; i < 0; i++){
             var fnc = new TEFurnace();

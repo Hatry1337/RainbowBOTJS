@@ -169,14 +169,13 @@ class Mute implements ICommand{
                             await muser.save();
                         }
 
-                        logger.info(`[${this.Name}]`, `User ${message.author.tag}(${message.author.id}) muted ${user.user.tag}(${user.id}). Unmute at: ${muser.UnmuteDate?.toString()}`);
+                        logger.info(`[${this.Name}]`, `User ${message.author.tag}(${message.author.id}) muted ${user.user.tag}(${user.id}). Unmute at: ${Utils.ts(muser.UnmuteDate)}`);
                         var embd = new Discord.MessageEmbed({
-                            description: `**User ${message.author} muted ${user}.\nReason: ${reason}\nUnmute at: ${ is_perm ? "Never" : muser.UnmuteDate?.toLocaleDateString() + " " + muser.UnmuteDate?.toLocaleTimeString()}**`,
+                            description: `**User ${message.author} muted ${user} on ${args[1]}.\nReason: ${reason}\nUnmute at: ${ is_perm ? "Never" : Utils.ts(muser.UnmuteDate)}**`,
                             color: Colors.Success
                         });
                         await message.delete();
                         return resolve(await message.channel.send(embd));
-
                     }).catch(async res => {
                         logger.error(`[${this.Name}]`, res);
                         var embd = new Discord.MessageEmbed({
