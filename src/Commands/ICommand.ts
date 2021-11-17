@@ -10,7 +10,8 @@ interface ICommand{
     Description: string;
     Category: string;
     Author: string;
-
+    
+    InitPriority?: number;
     Init?(): Promise<void>;
 
     Test(message: Discord.Message, guild?: Guild, user?: User): boolean;

@@ -62,6 +62,38 @@ export class Player{
         this.inventory.push(item);
     }
 
+    public addAndStackItem(item: ItemStack){
+        var stack = this.inventory.find(i => i.isItemEqual(item) && i.getCount() !== i.getMaxStackSize());
+        if(stack){
+            var delta = stack.getMaxStackSize() - stack.getCount();
+            if(delta >= item.getCount()){
+                stack.grow(item.getCount());
+            }else{
+                stack.grow(delta);
+                item.shrink(delta);
+                this.addItem(item);
+            }
+        }else{
+            this.addItem(item);
+        }
+    }
+
+    public inventRestack(){
+        for(let i of this.inventory){
+            var stack = this.inventory.find(f => f.isItemEqual(i) && f !== i && f.getCount() !== f.getMaxStackSize());
+            if(stack){
+                var delta = stack.getMaxStackSize() - stack.getCount();
+                if(delta >= i.getCount()){
+                    stack.grow(i.getCount());
+                    this.delItem(i);
+                }else{
+                    stack.grow(delta);
+                    i.shrink(delta);
+                }
+            }
+        }
+    }
+
     public delItem(item: ItemStack){
         var i = this.inventory.indexOf(item);
         if(i !== -1){

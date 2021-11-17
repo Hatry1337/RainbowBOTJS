@@ -314,8 +314,8 @@ export class TEFurnace extends TileEntity{
 
                 if(isNaN(count) || count <= 0) count = 1;
                 
-                let item = player.getInventory().find(i => Item.REGISTRY.getCode(i.getItem()) === args[2]);
-                if(!item || item.getCount() < count){
+                let item = player.getInventory().find(i => Item.REGISTRY.getCode(i.getItem()) === args[2] && i.getCount() >= count);
+                if(!item){
                     return await Utils.ErrMsg("No or not enough items in your inventory.", message.channel);
                 }
 
@@ -334,8 +334,10 @@ export class TEFurnace extends TileEntity{
                     var cp = item.copy();
                     cp.setCount(count);
                     this.setInventorySlotContents(index, cp);
-                }else if(inp.isItemEqual(item) && ItemStack.areItemStackMetaEqual(inp, item)){
+                }else if(inp.isItemEqual(item) && ItemStack.areItemStackMetaEqual(inp, item) && inp.getCount()+count <= inp.getMaxStackSize()){
                     inp.grow(count);
+                }else if (inp.getCount()+count > inp.getMaxStackSize()){
+                    return await Utils.ErrMsg("This slot is fully filled.", message.channel);
                 }else{
                     return await Utils.ErrMsg("This slot is filled with other type of item.", message.channel);
                 }
@@ -356,7 +358,11 @@ export class TEFurnace extends TileEntity{
 
                 let slot = this.getStackInSlot(index);
 
-                player.addItem(slot);
+                if(slot.isEmpty()){
+                    return await Utils.ErrMsg("This slot is empty.", message.channel);
+                }
+
+                player.addAndStackItem(slot);
                 this.setInventorySlotContents(index, ItemStack.EMPTY);
 
                 return await this.showInterface(player, message);
@@ -365,7 +371,8 @@ export class TEFurnace extends TileEntity{
             default:{
                 let emb = new Discord.MessageEmbed({
                     title: `Furnace Interactions`,
-                    description:"`put <slot> <item_code>[ <count>]` - put specified item into mechanism slot.",
+                    description:    "`put <slot> <item_code>[ <count>]` - put specified item into furnace slot.\n" +
+                                    "`get <slot>` - get items from specified slot.",
                     color: Colors.Noraml
                 });
                 return await message.channel.send(emb);

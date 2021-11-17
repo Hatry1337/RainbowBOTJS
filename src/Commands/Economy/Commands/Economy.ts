@@ -13,6 +13,7 @@ import { Room } from "../Rooms/Room";
 import { MRoom } from "../../../Models/Economy/MRoom";
 import Rooms         from './Rooms';
 import Invent from './Invent';
+import Mining from "./Mining";
 
 const logger = log4js.getLogger("economy");
 
@@ -24,6 +25,7 @@ class Economy implements ICommand{
     Description: string = "Info and guidelines about economy game.";
     Category:    string = "Economy";
     Author:      string = "Thomasss#9258";
+    InitPriority: number = 100;
     Controller: CommandsController
 
 
@@ -31,6 +33,7 @@ class Economy implements ICommand{
         this.Controller = controller; 
         this.Controller.Commands.push(new Rooms(this.Controller));
         this.Controller.Commands.push(new Invent(this.Controller));
+        this.Controller.Commands.push(new Mining(this.Controller));
         /*
         for(var i = 0; i < 0; i++){
             var fnc = new TEFurnace();

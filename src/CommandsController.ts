@@ -44,14 +44,16 @@ class CommandsController{
         this.Commands.push(new Avatar   (this));
         this.Commands.push(new Anek     (this));
         this.Commands.push(new Servers  (this));
-        //this.Commands.push(new Economy  (this)); // We need to add some other stuff to production, so temporary disabled. 
+        this.Commands.push(new Economy  (this));
         
     }
 
     Init(){
         return new Promise<number>(async (resolve, reject) => {
+            var cmdc = this.Commands.slice(0);
+            cmdc.sort((a, b) => ((b.InitPriority || 1) - (a.InitPriority || 1)));
             var count = 0;
-            for(var c of this.Commands){
+            for(var c of cmdc){
                 if(c.Init){
                     await c.Init();
                     count++;

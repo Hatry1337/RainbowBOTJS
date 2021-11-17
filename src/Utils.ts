@@ -9,8 +9,8 @@ export class Utils{
         return await channel.send(embd);
     }
 
-    static getRandomInt(max: number) {
-        return Math.floor(Math.random() * Math.floor(max));
+    static getRandomInt(min: number, max: number) {
+        return Math.floor(Math.random() * (max - min + 1) + min)    
     }
     
     static arrayRandElement<T>(arr: Array<T>) {

@@ -26,7 +26,22 @@ interface EnteredPlayer{
 class Rooms implements ICommand{
     Name:        string = "Rooms";
     Trigger:     string = "!rooms";
-    Usage:       string = "`!rooms[ <number>]`";
+    Usage:       string = "`!rooms[ <sub_cmd>]`\n" +
+                          "Sub Commands:\n" +
+                          "`**NONE**` - Show your rooms.\n" +
+                          "`create <name>` - Create new room with specified name.\n" +
+                          "`delete <name>` - Delete room with specified name.\n" +
+                          "`enter <name>` - Enter the room with specified name. When you entered, you can use direct commands and interact with mechanisms.\n" +
+                          "`addmember <name> @user` - Add specified user to your room's members list.\n" +
+                          "`removemember <name> @user` - Delete specified user from your room's members list.\n" +
+
+                          "Examples:\n" +
+                          "`!rooms`\n" + 
+                          "`!rooms create MyCoolRoom`\n" +
+                          "`!rooms delete MyCoolRoom`\n" +
+                          "`!rooms enter MyCoolRoom`\n" +
+                          "`!rooms addmember MyCoolRoom @MyBestFriend`\n" +
+                          "`!rooms removemember MyCoolRoom @MyBestFriend`\n";
 
     Description: string = "Show your rooms with mechanisms.";
     Category:    string = "Economy";
@@ -124,6 +139,18 @@ class Rooms implements ICommand{
 
                     return await mechanism.interact(ep.Player, message);
                 }
+
+                case "help":{
+                    let emb = new MessageEmbed({
+                        title: `Room Direct Commands:`,
+                        description:    "`quit` - leave from current room.\n" +
+                                        "`place <item_code>` - place specified item to the room.\n" +
+                                        "`info` - info about this room.\n" +
+                                        "`mech <index>[ <action> ...]` - interact with mechanism.\n",
+                        color: Colors.Noraml
+                    });
+                    return await message.channel.send(emb);
+                }
             }
         });
     }
@@ -212,7 +239,7 @@ class Rooms implements ICommand{
                     });
 
                     let emb = new MessageEmbed({
-                        title: `You entered into '${room.getName()}' room. Now you can use direct commands here. Use \`quit\` to leave room and direct commands mode.`,
+                        title: `You entered into '${room.getName()}' room. Now you can use direct commands here. Using \`help\` you can view list of direct commands. Use \`quit\` to leave room and direct commands mode.`,
                         color: Colors.Noraml
                     });
                     return resolve(await message.channel.send(emb));

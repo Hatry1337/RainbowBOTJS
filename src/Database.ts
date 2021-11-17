@@ -11,6 +11,7 @@ import { User } from "./Models/User";
 import { VoiceLobby } from "./Models/VoiceLobby";
 import { MRoom } from "./Models/Economy/MRoom";
 import { MPlayerRoom } from "./Models/Economy/MPlayerRoom";
+import { MMiningChannel } from "./Models/Economy/MMiningChannel";
 
 const logger = log4js.getLogger("database");
 
@@ -24,7 +25,8 @@ export const sequelize = new Sequelize(process.env.DBURI as string, {
         User,
         MPlayer,
         MRoom,
-        MPlayerRoom
+        MPlayerRoom,
+        MMiningChannel
     ],
     logging: (sql) => {
         logger.info(sql);

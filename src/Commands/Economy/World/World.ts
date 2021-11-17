@@ -3,6 +3,7 @@ import { Player } from "../inventory/Player";
 import { FurnaceRecipes } from "../Items/crafting/FurnaceRecipes";
 import { Items } from "../Items/Items";
 import { Room } from "../Rooms/Room";
+import { TEChest } from "../TileEntitys/TEChest";
 import { TEFurnace } from "../TileEntitys/TEFurnace";
 import { TileEntity } from "../TileEntitys/TileEntity";
 import { TPSMeter } from "../TileEntitys/TPSMeter";
@@ -43,6 +44,7 @@ export class World extends EventEmitter{
     static {
         TileEntity.REGISTRY.putObject("te:furnace", TEFurnace, Items.FURNACE);
         TileEntity.REGISTRY.putObject("te:tpsmeter", TPSMeter, Items.TPS_METER);
+        TileEntity.REGISTRY.putObject("te:chest", TEChest, Items.CHEST);
     }
 
     public getTileEntity(roomid: string, index: number){
@@ -113,7 +115,9 @@ export class World extends EventEmitter{
         if(this.players.has(id)){
             return this.players.get(id)!;
         }else{
-            return await Player.createOrLoadFromStorage(id);
+            var plr = await Player.createOrLoadFromStorage(id);
+            this.players.set(id, plr);
+            return plr;
         }
     }
 }
