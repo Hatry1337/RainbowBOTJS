@@ -17,7 +17,7 @@ export class World extends EventEmitter{
     public static furnaceRecipes: FurnaceRecipes = new FurnaceRecipes(); 
 
     private rooms: Map<string, Room> = new Map();
-    private ticker: NodeJS.Timeout;
+    private ticker?: NodeJS.Timeout;
     private ticks: number = 0;
     private players: Map<string, Player> = new Map();
    
@@ -28,23 +28,45 @@ export class World extends EventEmitter{
     
     constructor(){
         super();
-
-        this.ticker = setInterval(async () => {
-            this.emit("tick");
-            this.ticks++;
-            
-            for(var e of this.rooms.entries()){
-                for(var m of e[1].getMechs()){
-                    m.update();
-                }
-            }
-        }, 500);
+        this.ticker = setInterval(this.tickHandler.bind(this), 500);
     }
 
     static {
         TileEntity.REGISTRY.putObject("te:furnace", TEFurnace, Items.FURNACE);
         TileEntity.REGISTRY.putObject("te:tpsmeter", TPSMeter, Items.TPS_METER);
         TileEntity.REGISTRY.putObject("te:chest", TEChest, Items.CHEST);
+    }
+
+    private tickHandler(){
+        this.emit("tick");
+        this.ticks++;
+        
+        for(var e of this.rooms.entries()){
+            for(var m of e[1].getMechs()){
+                m.update();
+            }
+        }
+    }
+
+    public isTicking(){
+        return this.ticker ? true : false;
+    }
+
+    public stopTicking(){
+        if(!this.ticker) return;
+        clearInterval(this.ticker);
+        this.ticker = undefined;
+    }
+
+    public startTicking(){
+        if(this.ticker) return;
+        this.ticker = setInterval(this.tickHandler, 500);
+    }
+
+    public clear(){
+        this.rooms.clear();
+        this.players.clear();
+        this.ticks = 0;
     }
 
     public getTileEntity(roomid: string, index: number){

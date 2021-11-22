@@ -30,149 +30,165 @@ class Music implements ICommand{
     constructor(controller: CommandsController) {
         this.Controller = controller;
 
-        this.Controller.Client.on("voiceStateUpdate", async (oldState, newState)=>{
-            var oldchannel = oldState.channel;
-            if(newState.member?.id === this.Controller.Client.user?.id){return;}
-            if(!oldState.channel?.members.has(this.Controller.Client.user?.id || "")){return;}
-            if(oldState.channel.members.size <= 1){
-                setTimeout(async()=>{
-                    if(!oldchannel) {return}
-                    if(oldchannel.members.size <= 1){
-                        var plr = this.Players.get(oldchannel.guild.id);
-                        if(plr && plr.isPlaying){
-                            await plr.Pause(oldchannel);
-                            var manager = await MusicManager.findOne({
-                                where: {
-                                    guild_id: oldchannel.guild.id
-                                }
-                            });
-                            if(!manager) {return}
-                            this.update_queue(manager);
-                        }
-                    }
-                }, 20000);
-            }
-        });
+        this.Controller.Client.on("voiceStateUpdate", this.onVoiceStateUpdate.bind(this));
+        this.Controller.Client.on('message', this.onMessage.bind(this));
+        this.Controller.Client.on("messageReactionAdd", this.onMessageReactionAdd.bind(this));
+    }
 
-        this.Controller.Client.on('message', async message => {
-            if(message.author.id === this.Controller.Client.user?.id){return}
-            if(!message.guild) {return}
-            var manager = await MusicManager.findOne({
-                where: {
-                    music_channel_id: message.channel.id
-                }
-            });
-            if(manager){
-                if(message.member?.roles.cache.get(manager.get("dj_role_id"))){
-                    await this.exec_add_track(message, manager).catch(async err => {
-                        await message.delete().catch(err => logger.warn(`[${this.Name}]`, "MessageEventCatchBlock.MessageDeletionError: ", err));
-                        logger.error(`[${this.Name}]`, "Add track error: ", err, "MusicManager: ", manager, "Message: ", message);
-                        var embd = new Discord.MessageEmbed({
-                            title: `${Emojis.RedErrorCross} Unexpected error occured. Please contact with bot's support.`,
-                            color: Colors.Error
-                        });
-                        return await message.channel.send(embd);
-                    });
-                }else{
-                    await message.delete().catch(err => logger.warn(`[${this.Name}]`, "MessageEvent.MessageDeletionError: ", err));
-                }
-            }
-        });
-
-        this.Controller.Client.on("messageReactionAdd", async (reaction, user) => {
-            if(user.id === this.Controller.Client.user?.id){return}
-            var manager = await MusicManager.findOne({
-                where: {
-                    music_message_id: reaction.message.id
-                }
-            });
-            if(manager){
-                var member = reaction.message.guild?.member(user.id);
-                if(member?.roles.cache.get(manager.get("dj_role_id"))){
-                    if(!reaction.message.guild) {return await reaction.users.remove(user.id);}
-
-                    var plr = this.Players.get(reaction.message.guild.id);
-                    if(!plr){
-                        plr = new Player(manager, this.Controller.Client);
-                        await plr.Init();
-                        plr.on("started", async () => {
-                            await this.update_queue(manager!);
-                        });
-                        this.Players.set(reaction.message.guild.id, plr);
-                    }
-                    var vc = member.voice.channel;
-                    if(!vc) {return await reaction.users.remove(user.id);}
-
-                    switch(reaction.emoji.name){
-                        case "⏯":{
-                            if(plr.isPlaying){
-                                await plr.Pause(vc);
-                            }else{
-                                await plr.Play(await plr.GetCurrentTrack(), vc);
+    private async onVoiceStateUpdate(oldState: Discord.VoiceState, newState: Discord.VoiceState){
+        var oldchannel = oldState.channel;
+        if(newState.member?.id === this.Controller.Client.user?.id){return;}
+        if(!oldState.channel?.members.has(this.Controller.Client.user?.id || "")){return;}
+        if(oldState.channel.members.size <= 1){
+            setTimeout(async()=>{
+                if(!oldchannel) {return}
+                if(oldchannel.members.size <= 1){
+                    var plr = this.Players.get(oldchannel.guild.id);
+                    if(plr && plr.isPlaying){
+                        await plr.Pause(oldchannel);
+                        var manager = await MusicManager.findOne({
+                            where: {
+                                guild_id: oldchannel.guild.id
                             }
-                            await this.update_queue(manager);
-                            await reaction.users.remove(member.id);
-                            break;
-                        };
-
-                        case "⏹":{
-                            await plr.Stop(vc);
-                            await this.update_queue(manager);
-                            await reaction.users.remove(member.id);
-                            break;
-                        };
-
-                        case "⏭":{
-                            await plr.Skip(vc);
-                            await this.update_queue(manager);
-                            await reaction.users.remove(member.id);
-                            break;
-                        };
-
-                        case "🔂":{
-                            await plr.Repeat(!plr.isRepeated);
-                            await this.update_queue(manager);
-                            await reaction.users.remove(member.id);
-                            break;
-                        };
-
-                        case "🔀":{
-                            await plr.QueueShuffle();
-                            await this.update_queue(manager);
-                            await reaction.users.remove(member.id);
-                            break;
-                        };
-
-                        case "igniblprpl":{
-                            await plr.QueueShuffle();
-                            await this.update_queue(manager);
-                            await reaction.users.remove(member.id);
-                            break;
-                        };
+                        });
+                        if(!manager) {return}
+                        this.update_queue(manager);
                     }
-                }else{
-                    await reaction.users.remove(user.id);
                 }
+            }, 20000);
+        }
+    }
+
+    private async onMessage(message: Discord.Message){
+        if(message.author.id === this.Controller.Client.user?.id){return}
+        if(!message.guild) {return}
+        var manager = await MusicManager.findOne({
+            where: {
+                music_channel_id: message.channel.id
             }
         });
-
-        this.Controller.Client.once("ready", async () => {
-            logger.info(`[${this.Name}] [Cacher]`, `Starting MusicManagers caching...`);
-            var managers = await MusicManager.findAll();
-            for(var i in managers){
-                var ch = await this.Controller.Client.channels.fetch(managers[i].get("music_channel_id")).catch(async e => {
-                    if(e && e.code === 10003){
-                        logger.info(`[${this.Name}] [Cacher]`, `[${managers[i].get("music_channel_id")}] Channel not found. Deleting manager`)
-                        await managers[i].destroy();
-                    }
-                }) as Discord.TextChannel;
-                if(ch){
-                    await ch.messages.fetch();
-                    console.log(`${parseInt(i)+1}/${managers.length}`);
-                }
+        if(manager){
+            if(message.member?.roles.cache.get(manager.get("dj_role_id"))){
+                await this.exec_add_track(message, manager).catch(async err => {
+                    await message.delete().catch(err => logger.warn(`[${this.Name}]`, "MessageEventCatchBlock.MessageDeletionError: ", err));
+                    logger.error(`[${this.Name}]`, "Add track error: ", err, "MusicManager: ", manager, "Message: ", message);
+                    var embd = new Discord.MessageEmbed({
+                        title: `${Emojis.RedErrorCross} Unexpected error occured. Please contact with bot's support.`,
+                        color: Colors.Error
+                    });
+                    return await message.channel.send(embd);
+                });
+            }else{
+                await message.delete().catch(err => logger.warn(`[${this.Name}]`, "MessageEvent.MessageDeletionError: ", err));
             }
-            logger.info(`[${this.Name}] [Cacher]`, `Cached ${managers.length} MusicManagers.`);
+        }
+    }
+
+    private async onMessageReactionAdd(reaction: Discord.MessageReaction, user: Discord.User | Discord.PartialUser){
+        if(user.id === this.Controller.Client.user?.id){return}
+        var manager = await MusicManager.findOne({
+            where: {
+                music_message_id: reaction.message.id
+            }
         });
+        if(manager){
+            var member = reaction.message.guild?.member(user.id);
+            if(member?.roles.cache.get(manager.get("dj_role_id"))){
+                if(!reaction.message.guild) {return await reaction.users.remove(user.id);}
+
+                var plr = this.Players.get(reaction.message.guild.id);
+                if(!plr){
+                    plr = new Player(manager, this.Controller.Client);
+                    await plr.Init();
+                    plr.on("started", async () => {
+                        await this.update_queue(manager!);
+                    });
+                    this.Players.set(reaction.message.guild.id, plr);
+                }
+                var vc = member.voice.channel;
+                if(!vc) {return await reaction.users.remove(user.id);}
+
+                switch(reaction.emoji.name){
+                    case "⏯":{
+                        if(plr.isPlaying){
+                            await plr.Pause(vc);
+                        }else{
+                            await plr.Play(await plr.GetCurrentTrack(), vc);
+                        }
+                        await this.update_queue(manager);
+                        await reaction.users.remove(member.id);
+                        break;
+                    };
+
+                    case "⏹":{
+                        await plr.Stop(vc);
+                        await this.update_queue(manager);
+                        await reaction.users.remove(member.id);
+                        break;
+                    };
+
+                    case "⏭":{
+                        await plr.Skip(vc);
+                        await this.update_queue(manager);
+                        await reaction.users.remove(member.id);
+                        break;
+                    };
+
+                    case "🔂":{
+                        await plr.Repeat(!plr.isRepeated);
+                        await this.update_queue(manager);
+                        await reaction.users.remove(member.id);
+                        break;
+                    };
+
+                    case "🔀":{
+                        await plr.QueueShuffle();
+                        await this.update_queue(manager);
+                        await reaction.users.remove(member.id);
+                        break;
+                    };
+
+                    case "igniblprpl":{
+                        await plr.QueueShuffle();
+                        await this.update_queue(manager);
+                        await reaction.users.remove(member.id);
+                        break;
+                    };
+                }
+            }else{
+                await reaction.users.remove(user.id);
+            }
+        }
+    }
+
+    async Init(){
+        logger.info(`[${this.Name}] [Cacher]`, `Starting MusicManagers caching...`);
+        var managers = await MusicManager.findAll();
+        for(var i in managers){
+            var ch = await this.Controller.Client.channels.fetch(managers[i].get("music_channel_id")).catch(async e => {
+                if(e && e.code === 10003){
+                    logger.info(`[${this.Name}] [Cacher]`, `[${managers[i].get("music_channel_id")}] Channel not found. Deleting manager`)
+                    await managers[i].destroy();
+                }
+            }) as Discord.TextChannel;
+            if(ch){
+                await ch.messages.fetch();
+                console.log(`${parseInt(i)+1}/${managers.length}`);
+            }
+        }
+        logger.info(`[${this.Name}] [Cacher]`, `Cached ${managers.length} MusicManagers.`);
+    }
+
+    async UnLoad(){
+        logger.info(`Unloading '${this.Name}' module:`);
+        logger.info("Unsubscribing from 'VoiceStateUpdate' Event...")
+        this.Controller.Client.removeListener("voiceStateUpdate", this.onVoiceStateUpdate);
+
+        logger.info("Unsubscribing from 'MessageReactionAdd' Event...")
+        this.Controller.Client.removeListener("messageReactionAdd", this.onMessageReactionAdd);
+
+        logger.info("Unsubscribing from 'Message' Event...")
+        this.Controller.Client.removeListener("message", this.onMessage);
     }
     
     Test(mesage: Discord.Message){

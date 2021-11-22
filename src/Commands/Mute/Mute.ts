@@ -24,10 +24,12 @@ class Mute implements ICommand{
     Author:      string = "Thomasss#9258";
     Controller: CommandsController
 
+    private CheckerTimer: NodeJS.Timeout;
+
     constructor(controller: CommandsController) {
         this.Controller = controller;
 
-        setInterval(async () => {
+        this.CheckerTimer = setInterval(async () => {
             logger.info(`[${this.Name}] [Checker]`, "Muted users checking...");
             MutedUser.findAll({
                 where: {
@@ -49,6 +51,12 @@ class Mute implements ICommand{
         }, 120 * 1000);
     }
     
+    async UnLoad(){
+        logger.info(`Unloading '${this.Name}' module:`);
+        logger.info("Clearing Mutes Checking Inverval...")
+        clearInterval(this.CheckerTimer);
+    }
+
     Test(mesage: Discord.Message){
         return mesage.content.toLowerCase().startsWith("!mute");
     }

@@ -4,6 +4,7 @@ import { Guild } from "../../Models/Guild";
 import { Utils, Emojis, Colors, CustomMessageSettings } from "../../Utils";
 import CommandsController from "../../CommandsController";
 import log4js from "log4js";
+import { User } from "../../Models/User";
 
 const logger = log4js.getLogger("command");
 
@@ -28,71 +29,79 @@ class JoinMgr implements ICommand{
     constructor(controller: CommandsController) {
         this.Controller = controller;
 
-        this.Controller.Client.on("RGuildMemberAdd", async (member, rguild, ruser) => {
-            if(rguild.JoinRolesIDs.length > 0){
-                logger.info(`[${this.Name}]`, `[${member.guild}]`, `[${member}]`, "Join Roles present:", `[${rguild.JoinRolesIDs.join(",")}]`);
+        this.Controller.Client.on("RGuildMemberAdd", this.onRGuildMemberAdd.bind(this));
+    }
 
-                var roles:Discord.Role[] = [];
-                for(var i in rguild.JoinRolesIDs){
-                    var role = await member.guild.roles.fetch(rguild.JoinRolesIDs[i]);
-                    if(role){
-                        roles.push(role);
-                    }else{
-                        rguild.JoinRolesIDs.splice(parseInt(i), 1);
-                    }
-                }
-                await Guild.update({ JoinRolesIDs: rguild.JoinRolesIDs }, { where: { ID: rguild.ID } }).catch(err => logger.error(`[${this.Name}]`, err));
+    private async onRGuildMemberAdd(member: Discord.GuildMember, rguild: Guild, ruser: User){
+        if(rguild.JoinRolesIDs.length > 0){
+            logger.info(`[${this.Name}]`, `[${member.guild}]`, `[${member}]`, "Join Roles present:", `[${rguild.JoinRolesIDs.join(",")}]`);
 
-                if(!roles.find(r => !r.editable)){
-                    await member.roles.add(roles);
-                    logger.info(`[${this.Name}]`, `[${member.guild}]`, `[${member}]`, "Added roles:", `[${roles.join(",")}]`);
+            var roles:Discord.Role[] = [];
+            for(var i in rguild.JoinRolesIDs){
+                var role = await member.guild.roles.fetch(rguild.JoinRolesIDs[i]);
+                if(role){
+                    roles.push(role);
                 }else{
-                    logger.info(`[${this.Name}]`, `[${member.guild}]`, `[${member}]`, "Not enougth permissions. Sending notification to sys. channel...");
-                    var channel: Discord.TextChannel;
-                    if(rguild.LogChannelID){
-                        channel = this.Controller.Client.channels.cache.find(c => c.id === rguild.LogChannelID) as Discord.TextChannel;
-                    }else{
-                        channel = member.guild.systemChannel as Discord.TextChannel;
-                    }
-                    await channel?.send(`${channel.guild.owner?.user}, RainbowBOT don't have permissons to add one of selected roles to joined user. Make RainbowBOT's role upper than join roles.`);
+                    rguild.JoinRolesIDs.splice(parseInt(i), 1);
                 }
             }
+            await Guild.update({ JoinRolesIDs: rguild.JoinRolesIDs }, { where: { ID: rguild.ID } }).catch(err => logger.error(`[${this.Name}]`, err));
 
-            if(rguild.IsJoinMessageEnabled && rguild.JoinMessageChannelID){
-                if(rguild.Meta.jmgr_msg){
-                    var msg_settings = rguild.Meta.jmgr_msg;
-                    msg_settings.Title = msg_settings.Title?.replace(/%user%/g, member.user.tag);
-                    msg_settings.Description = msg_settings.Description?.replace(/%blank%/g, "");
-                    msg_settings.Description = msg_settings.Description?.replace(/%user%/g, member.user.toString());
-                    var embd = new Discord.MessageEmbed({
-                        title: msg_settings.Title,
-                        description: msg_settings.Description,
-                        image: { url: msg_settings.Image },
-                        color: Colors.Success
-                    });
-                    var avatar_url = member.user.avatarURL();
-                    if(msg_settings.Avatar && avatar_url){
-                        embd.thumbnail = { url: avatar_url }
-                    }
-                    
-                    var channel = this.Controller.Client.channels.cache.find(c => c.id === rguild.JoinMessageChannelID) as Discord.TextChannel;
-                    return await channel.send(embd);
+            if(!roles.find(r => !r.editable)){
+                await member.roles.add(roles);
+                logger.info(`[${this.Name}]`, `[${member.guild}]`, `[${member}]`, "Added roles:", `[${roles.join(",")}]`);
+            }else{
+                logger.info(`[${this.Name}]`, `[${member.guild}]`, `[${member}]`, "Not enougth permissions. Sending notification to sys. channel...");
+                var channel: Discord.TextChannel;
+                if(rguild.LogChannelID){
+                    channel = this.Controller.Client.channels.cache.find(c => c.id === rguild.LogChannelID) as Discord.TextChannel;
                 }else{
-                    var embd = new Discord.MessageEmbed({
-                        title: `Welcome to ${member.guild}!`,
-                        description: `We are happy to see you there, ${member.user}!`,
-                        color: Colors.Success
-                    });
-                    var avatar_url = member.user.avatarURL();
-                    if(avatar_url){
-                        embd.thumbnail = { url: avatar_url }
-                    }
-                    
-                    var channel = this.Controller.Client.channels.cache.find(c => c.id === rguild.JoinMessageChannelID) as Discord.TextChannel;
-                    return await channel.send(embd);
+                    channel = member.guild.systemChannel as Discord.TextChannel;
                 }
+                await channel?.send(`${channel.guild.owner?.user}, RainbowBOT don't have permissons to add one of selected roles to joined user. Make RainbowBOT's role upper than join roles.`);
             }
-        });
+        }
+
+        if(rguild.IsJoinMessageEnabled && rguild.JoinMessageChannelID){
+            if(rguild.Meta.jmgr_msg){
+                var msg_settings = rguild.Meta.jmgr_msg;
+                msg_settings.Title = msg_settings.Title?.replace(/%user%/g, member.user.tag);
+                msg_settings.Description = msg_settings.Description?.replace(/%blank%/g, "");
+                msg_settings.Description = msg_settings.Description?.replace(/%user%/g, member.user.toString());
+                var embd = new Discord.MessageEmbed({
+                    title: msg_settings.Title,
+                    description: msg_settings.Description,
+                    image: { url: msg_settings.Image },
+                    color: Colors.Success
+                });
+                var avatar_url = member.user.avatarURL();
+                if(msg_settings.Avatar && avatar_url){
+                    embd.thumbnail = { url: avatar_url }
+                }
+                
+                var channel = this.Controller.Client.channels.cache.find(c => c.id === rguild.JoinMessageChannelID) as Discord.TextChannel;
+                return await channel.send(embd);
+            }else{
+                var embd = new Discord.MessageEmbed({
+                    title: `Welcome to ${member.guild}!`,
+                    description: `We are happy to see you there, ${member.user}!`,
+                    color: Colors.Success
+                });
+                var avatar_url = member.user.avatarURL();
+                if(avatar_url){
+                    embd.thumbnail = { url: avatar_url }
+                }
+                
+                var channel = this.Controller.Client.channels.cache.find(c => c.id === rguild.JoinMessageChannelID) as Discord.TextChannel;
+                return await channel.send(embd);
+            }
+        }
+    }
+
+    async UnLoad(){
+        logger.info(`Unloading '${this.Name}' module:`);
+        logger.info("Unsubscribing from RGuildMemberAdd Event...")
+        this.Controller.Client.removeListener("RGuildMemberAdd", this.onRGuildMemberAdd);
     }
     
     Test(mesage: Discord.Message){

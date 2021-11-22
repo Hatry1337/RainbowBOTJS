@@ -53,8 +53,11 @@ class Rooms implements ICommand{
     constructor(controller: CommandsController) {
         this.Controller = controller;
 
-        this.Controller.Client.on("message", async message => {
-            let ep = this.EnteredPlayers.get(message.author.id);
+        this.Controller.Client.on("message", this.onMessage.bind(this));
+    }
+
+    private async onMessage(message: Discord.Message){
+        let ep = this.EnteredPlayers.get(message.author.id);
             if(!ep) return;
             if(ep.Channel.id !== message.channel.id) return;
 
@@ -152,7 +155,12 @@ class Rooms implements ICommand{
                     return await message.channel.send(emb);
                 }
             }
-        });
+    }
+
+    async UnLoad(){
+        logger.info(`Unloading '${this.Name}' module:`);
+        logger.info("Unsubscribing from 'message' Event...")
+        this.Controller.Client.removeListener("message", this.onMessage);
     }
     
     Test(mesage: Discord.Message){

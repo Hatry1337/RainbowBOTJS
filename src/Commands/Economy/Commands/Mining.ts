@@ -37,33 +37,44 @@ class Mining implements ICommand{
     constructor(controller: CommandsController) {
         this.Controller = controller;
 
-        this.Controller.Client.on("RVoiceChannelJoin", async (vc, member) => {
-            var mining = this.MiningChannels.get(vc.guild.id);
-            if(!mining) return;
+        this.Controller.Client.on("RVoiceChannelJoin", this.onRVoiceChannelJoin.bind(this));
+        this.Controller.Client.on("RVoiceChannelQuit", this.onRVoiceChannelQuit.bind(this));
+    }
 
-            var pl = World.WORLD.getPlayer(member.id);
-            if(!pl){
-                pl = await Player.createOrLoadFromStorageSafe(member.id);
-                if(pl) World.WORLD.setPlayer(member.id, pl);
-            }
-            if(!pl) return;
-            
-            mining.addPlayer(pl);
-        });
+    private async onRVoiceChannelJoin(vc: Discord.VoiceChannel, member: Discord.GuildMember){
+        var mining = this.MiningChannels.get(vc.guild.id);
+        if(!mining) return;
 
-        this.Controller.Client.on("RVoiceChannelQuit", async (vc, member) => {
-            var mining = this.MiningChannels.get(vc.guild.id);
-            if(!mining) return;
+        var pl = World.WORLD.getPlayer(member.id);
+        if(!pl){
+            pl = await Player.createOrLoadFromStorageSafe(member.id);
+            if(pl) World.WORLD.setPlayer(member.id, pl);
+        }
+        if(!pl) return;
+        
+        mining.addPlayer(pl);
+    }
 
-            var pl = World.WORLD.getPlayer(member.id);
-            if(!pl){
-                pl = await Player.createOrLoadFromStorageSafe(member.id);
-                if(pl) World.WORLD.setPlayer(member.id, pl);
-            }
-            if(!pl) return;
-            
-            mining.rmPlayer(pl);
-        });
+    private async onRVoiceChannelQuit(vc: Discord.VoiceChannel, member: Discord.GuildMember){
+        var mining = this.MiningChannels.get(vc.guild.id);
+        if(!mining) return;
+
+        var pl = World.WORLD.getPlayer(member.id);
+        if(!pl){
+            pl = await Player.createOrLoadFromStorageSafe(member.id);
+            if(pl) World.WORLD.setPlayer(member.id, pl);
+        }
+        if(!pl) return;
+        
+        mining.rmPlayer(pl);
+    }
+
+    async UnLoad(){
+        logger.info(`Unloading '${this.Name}' module:`);
+        logger.info("Unsubscribing from RVoiceChannelJoin Event...")
+        this.Controller.Client.removeListener("RVoiceChannelJoin", this.onRVoiceChannelJoin);
+        logger.info("Unsubscribing from RVoiceChannelQuit Event...")
+        this.Controller.Client.removeListener("RVoiceChannelQuit", this.onRVoiceChannelQuit);
     }
 
     Init(){

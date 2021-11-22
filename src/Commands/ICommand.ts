@@ -13,6 +13,7 @@ interface ICommand{
     
     InitPriority?: number;
     Init?(): Promise<void>;
+    UnLoad?(): Promise<void>;
 
     Test(message: Discord.Message, guild?: Guild, user?: User): boolean;
     Test(message: Discord.Message, guild: Guild, user?: User): boolean;

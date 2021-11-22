@@ -26,22 +26,34 @@ class Economy implements ICommand{
     Category:    string = "Economy";
     Author:      string = "Thomasss#9258";
     InitPriority: number = 100;
-    Controller: CommandsController
+    Controller: CommandsController;
+    Modules: ICommand[]  = [];
 
+    private saveWorldInterval!: NodeJS.Timeout;
 
     constructor(controller: CommandsController) {
         this.Controller = controller; 
-        this.Controller.Commands.push(new Rooms(this.Controller));
-        this.Controller.Commands.push(new Invent(this.Controller));
-        this.Controller.Commands.push(new Mining(this.Controller));
-        /*
-        for(var i = 0; i < 0; i++){
-            var fnc = new TEFurnace();
-            TileEntity.REGISTRY.register(TileEntity.REGISTRY.getLastUsedId()+1, "te:furnace", fnc);
-            furnace.setInventorySlotContents(0, new ItemStack(Items.IRON_ORE, 4));
-            furnace.setInventorySlotContents(1, new ItemStack(Items.COAL));
+        
+        this.Modules.push(new Rooms(this.Controller));
+        this.Modules.push(new Invent(this.Controller));
+        this.Modules.push(new Mining(this.Controller));
+
+        for(let m of this.Modules){
+            this.Controller.Commands.push(m);
         }
-        */
+    }
+
+    async UnLoad(){
+        logger.info(`Unloading '${this.Name}' module:`);
+        for(let md of this.Modules){
+            logger.info(`Unloading ${md.Name} submodule...`);
+            await this.Controller.UnLoadCommand(md);
+        }
+        logger.info(`Stopping world...`);
+        clearInterval(this.saveWorldInterval);
+        await this.saveWorld();
+        World.WORLD.stopTicking();
+        World.WORLD.clear();
     }
 
     async saveWorld(){
@@ -124,7 +136,7 @@ class Economy implements ICommand{
                 World.WORLD.setRoom(r.name, new Room(r.name, ownr, mems, r.getMechs()));
             }
 
-            setInterval(this.saveWorld, 20 * 1000);
+            this.saveWorldInterval = setInterval(this.saveWorld, 20 * 1000);
 
             var sys = World.WORLD.getRoom("system_room");
             if(!sys){
