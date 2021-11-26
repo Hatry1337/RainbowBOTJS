@@ -3,23 +3,8 @@ import RClient from "./RClient";
 import { sequelize } from "./Database";
 import { Guild as RGuild } from "./Models/Guild";
 import { User as RUser } from "./Models/User";
-import log4js from "log4js";
 import Economy from "./Commands/Economy/Commands/Economy";
-
-log4js.configure({
-    appenders: {
-        console:  { type: 'console' },
-        file:     { type: 'file', filename: 'botlog.log' },
-        database: { type: 'file', filename: 'sql.log' }
-    },
-    categories: {
-        default:  { appenders: ['console', 'file'], level: 'info' },
-        root:     { appenders: ['console', 'file'], level: 'info' },
-        command:  { appenders: ['console', 'file'], level: 'info' },
-        economy:  { appenders: ['console', 'file'], level: 'info' },
-        database: { appenders: ['database'], level: 'info' }
-    }
-});
+import { GlobalLogger } from "./GlobalLogger";
 
 declare module 'discord.js' {
     interface ClientEvents {
@@ -31,7 +16,7 @@ declare module 'discord.js' {
     }
 }
 
-const logger = log4js.getLogger("root");
+const logger = GlobalLogger.root;
 const client = new RClient();
 const commandsController = new CommandsController(client);
 
@@ -91,33 +76,47 @@ client.once("ready", async () => {
 client.on("voiceStateUpdate", async (vs1, vs2) => {
     if(!vs1.channel && vs2.channel && vs2.member){
         client.emit("RVoiceChannelJoin", vs2.channel, vs2.member);
+        
+        let trace = GlobalLogger.Trace(vs1, vs2);
+        GlobalLogger.userlog.info(`${vs1.member} (${vs1.member?.user.tag}) joined ${vs2.channel} (${vs2.channel.name}) voice channel. TraceID: ${trace}`);
     }else if(vs1.channel && !vs2.channel && vs2.member){
         client.emit("RVoiceChannelQuit", vs1.channel, vs2.member);
+
+        let trace = GlobalLogger.Trace(vs1, vs2);
+        GlobalLogger.userlog.info(`${vs1.member} (${vs1.member?.user.tag}) leaved from ${vs1.channel} (${vs1.channel.name}) voice channel. TraceID: ${trace}`);
     }else if(vs1.channel && vs2.channel && vs2.member){
         client.emit("RVoiceChannelChange", vs1.channel, vs2.channel, vs2.member);
         if(vs1.channel.id !== vs2.channel.id){
             client.emit("RVoiceChannelQuit", vs1.channel, vs2.member);
             client.emit("RVoiceChannelJoin", vs2.channel, vs2.member);
         }
+
+        let trace = GlobalLogger.Trace(vs1, vs2);
+        GlobalLogger.userlog.info(`${vs1.member} (${vs1.member?.user.tag}) changed voice channel from ${vs1.channel} (${vs1.channel.name}) to ${vs2.channel} (${vs2.channel.name}). TraceID: ${trace}`);
     }
 });
 
 client.on('message', async message => {
     if(message.author.id === client.user?.id) return
-    if(message.channel.type === "dm") { 
+    if(message.channel.type === "dm" || !message.member) { 
         await message.channel.send("Команды в личных сообщениях не поддерживаются :cry:"); 
         return; 
     }
     if(message.author.bot) return;
     if(!message.content.startsWith("!")) return;
 
-    await commandsController.FindAndRun(message).catch(err => {
-        logger.error(`[Cmd.Run]`, err);
+    let trace = GlobalLogger.Trace(message);
+    GlobalLogger.userlog.info(`${message.member} (${message.member.user.tag}) requested command execution by typing "${message.content}". TraceID: ${trace}`);
+
+    let response = await commandsController.FindAndRun(message).catch(err => {
+        logger.error(`[Cmd.Run]`, err, `TraceID: ${GlobalLogger.Trace(err, message)}`);
     });
 });
 
 client.on("guildMemberAdd", async (member) => {
-    logger.info(`[GuildMemberAddEvent] Guild[${member.guild.id}] Member[${member.id}] Event fired.`);
+    let trace = GlobalLogger.Trace(member);
+    GlobalLogger.userlog.info(`${member} (${member.user.tag}) joined guild ${member.guild} (${member.guild.name}). TraceID: ${trace}`);
+
     RGuild.findOrCreate({
         where: {
             ID: member.guild?.id
@@ -147,11 +146,13 @@ client.on("guildMemberAdd", async (member) => {
             var user = u[0];
             client.emit("RGuildMemberAdd", member, guild, user);
         });
-    }).catch(err => { logger.error(`[root] [GuildMemberAddEvent]`, err) });
+    }).catch(err => { logger.error(`[root] [GuildMemberAddEvent]`, err, `TraceID: ${GlobalLogger.Trace(err)}`) });
 });
 
 client.on("guildMemberRemove", async (member) => {
-    logger.info(`[GuildMemberRemoveEvent] Guild[${member.guild.id}] Member[${member.id}] Event fired.`);
+    let trace = GlobalLogger.Trace(member);
+    GlobalLogger.userlog.info(`${member} (${member.user?.tag}) leaved guild ${member.guild} (${member.guild.name}). TraceID: ${trace}`);
+    
     RGuild.findOrCreate({
         where: {
             ID: member.guild?.id
@@ -165,7 +166,6 @@ client.on("guildMemberRemove", async (member) => {
             JoinRolesIDs: [],
         }
     }).then(async g => {
-        logger.info(`[GuildMemberRemoveEvent] Guild[${member.guild.id}] Member[${member.id}] Guild data fetched.`);
         RUser.findOrCreate({
             where: {
                 ID: member.id
@@ -176,10 +176,9 @@ client.on("guildMemberRemove", async (member) => {
                 Avatar: member.user?.avatarURL({ format: "png" }) || "No Avatar"
             }
         }).then(async u => {
-            logger.info(`[GuildMemberRemoveEvent] Member[${member.id}] User data fetched.`);
             var guild = g[0];
             var user = u[0];
             client.emit("RGuildMemberRemove", member, guild, user);
         });
-    }).catch(err => { logger.error(`[GuildMemberRemoveEvent]`, err) });
+    }).catch(err => { logger.error(`[GuildMemberRemoveEvent]`, err, `TraceID: ${GlobalLogger.Trace(err)}`) });
 });

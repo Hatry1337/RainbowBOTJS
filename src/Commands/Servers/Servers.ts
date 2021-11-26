@@ -35,10 +35,10 @@ class Servers implements ICommand{
                 var page = parseInt(args[0]);
                 var plen = parseInt(args[1]);
 
-                if(!page || isNaN(page) || !isFinite(page) || page <= 0){
+                if(!Utils.valNum(page, 1)){
                     page = 1;
                 }
-                if(!plen || isNaN(plen) || !isFinite(plen) || plen <= 0 || plen > 35){
+                if(!Utils.valNum(plen, 1, 35)){
                     plen = 15;
                 }
                 if(page * plen > this.Controller.Client.guilds.cache.size + plen){

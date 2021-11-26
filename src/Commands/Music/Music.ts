@@ -10,6 +10,7 @@ import ytsr from "ytsr";
 import ytpl from "ytpl";
 import ytdl from "ytdl-core";
 import { Thumbnail, TrackOptions } from "./TrackOptions";
+import { GlobalLogger } from "../../GlobalLogger";
 
 const logger = log4js.getLogger("command");
 
@@ -71,13 +72,17 @@ class Music implements ICommand{
             if(message.member?.roles.cache.get(manager.get("dj_role_id"))){
                 await this.exec_add_track(message, manager).catch(async err => {
                     await message.delete().catch(err => logger.warn(`[${this.Name}]`, "MessageEventCatchBlock.MessageDeletionError: ", err));
-                    logger.error(`[${this.Name}]`, "Add track error: ", err, "MusicManager: ", manager, "Message: ", message);
+
+                    let ertrace = GlobalLogger.Trace(message, manager, err);
+                    logger.error(`[${this.Name}]`, "Add track error: ", err, `TraceID: ${ertrace}`);
+
                     var embd = new Discord.MessageEmbed({
-                        title: `${Emojis.RedErrorCross} Unexpected error occured. Please contact with bot's support.`,
+                        title: `${Emojis.RedErrorCross} Unexpected error occured. Please contact bot's support with TraceID: ${ertrace}.`,
                         color: Colors.Error
                     });
                     return await message.channel.send(embd);
                 });
+                GlobalLogger.userlog.info(`[${this.Name}]`, `${message.author} added track "${message.content}" to player queue."`, `TraceID: ${GlobalLogger.Trace(message, manager)}`);
             }else{
                 await message.delete().catch(err => logger.warn(`[${this.Name}]`, "MessageEvent.MessageDeletionError: ", err));
             }
@@ -112,8 +117,10 @@ class Music implements ICommand{
                     case "⏯":{
                         if(plr.isPlaying){
                             await plr.Pause(vc);
+                            GlobalLogger.userlog.info(`[${this.Name}]`, `${user} paused player."`, `TraceID: ${GlobalLogger.Trace(user, reaction, manager)}`);
                         }else{
                             await plr.Play(await plr.GetCurrentTrack(), vc);
+                            GlobalLogger.userlog.info(`[${this.Name}]`, `${user} resumed player."`, `TraceID: ${GlobalLogger.Trace(user, reaction, manager)}`);
                         }
                         await this.update_queue(manager);
                         await reaction.users.remove(member.id);
@@ -124,6 +131,7 @@ class Music implements ICommand{
                         await plr.Stop(vc);
                         await this.update_queue(manager);
                         await reaction.users.remove(member.id);
+                        GlobalLogger.userlog.info(`[${this.Name}]`, `${user} stopped player."`, `TraceID: ${GlobalLogger.Trace(user, reaction, manager)}`);
                         break;
                     };
 
@@ -131,6 +139,7 @@ class Music implements ICommand{
                         await plr.Skip(vc);
                         await this.update_queue(manager);
                         await reaction.users.remove(member.id);
+                        GlobalLogger.userlog.info(`[${this.Name}]`, `${user} skipped track."`, `TraceID: ${GlobalLogger.Trace(user, reaction, manager)}`);
                         break;
                     };
 
@@ -138,6 +147,7 @@ class Music implements ICommand{
                         await plr.Repeat(!plr.isRepeated);
                         await this.update_queue(manager);
                         await reaction.users.remove(member.id);
+                        GlobalLogger.userlog.info(`[${this.Name}]`, `${user} repeated player."`, `TraceID: ${GlobalLogger.Trace(user, reaction, manager)}`);
                         break;
                     };
 
@@ -145,13 +155,13 @@ class Music implements ICommand{
                         await plr.QueueShuffle();
                         await this.update_queue(manager);
                         await reaction.users.remove(member.id);
+                        GlobalLogger.userlog.info(`[${this.Name}]`, `${user} shuffled queue."`, `TraceID: ${GlobalLogger.Trace(user, reaction, manager)}`);
                         break;
                     };
 
                     case "igniblprpl":{
-                        await plr.QueueShuffle();
-                        await this.update_queue(manager);
                         await reaction.users.remove(member.id);
+                        GlobalLogger.userlog.info(`[${this.Name}]`, `${user} pushed ingi."`, `TraceID: ${GlobalLogger.Trace(user, reaction, manager)}`);
                         break;
                     };
                 }

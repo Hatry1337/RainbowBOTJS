@@ -21,6 +21,7 @@ import Anek          from './Commands/Anek/Anek';
 import Servers       from './Commands/Servers/Servers';
 import Economy       from './Commands/Economy/Commands/Economy';
 import Module        from './Commands/Module/Module';
+import Chusr from './Commands/Chusr/Chusr';
 
 /*==========================================*/
 
@@ -45,8 +46,9 @@ class CommandsController{
         this.Commands.push(new Avatar   (this));
         this.Commands.push(new Anek     (this));
         this.Commands.push(new Servers  (this));
-        this.Commands.push(new Economy  (this));
+        //this.Commands.push(new Economy  (this));
         this.Commands.push(new Module   (this));
+        this.Commands.push(new Chusr    (this));
         
     }
 
@@ -66,8 +68,9 @@ class CommandsController{
             case "Avatar": return Avatar;
             case "Anek": return Anek;
             case "Servers": return Servers;
-            case "Economy": return Economy;
+            //case "Economy": return Economy;
             case "Module": return Module;
+            case "Chusr": return Chusr;
         }
     }
 
@@ -122,8 +125,12 @@ class CommandsController{
         }
     }
 
-    FindAndRun(message: Discord.Message): Promise<Discord.Message>{
+    FindAndRun(message: Discord.Message): Promise<Discord.Message | undefined>{
         return new Promise((resolve, reject) => {
+            let command = this.Commands.find(c => c.Test(message));
+            if(!command){
+                return resolve(undefined);
+            }
             Guild.findOrCreate({
                 where: {
                     ID: message.guild?.id
@@ -153,13 +160,7 @@ class CommandsController{
                 user.Avatar = message.author.avatarURL({ format: "png" }) || "No Avatar";
                                 
                 await user.save();
-
-                for(var cmd of this.Commands){
-                    if(cmd.Test(message)){
-                        return cmd.Run(message, guild, user).then(resolve).catch(reject);
-                    }
-                }
-                resolve(message);
+                return command!.Run(message, guild, user).then(resolve).catch(reject);
             }).catch(reject);
         });
     }

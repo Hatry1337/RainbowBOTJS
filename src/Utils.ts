@@ -57,6 +57,20 @@ export class Utils{
         }
     }
 
+    static valID(id: string){
+        return /[0-9]{18}$/.test(id);
+    }
+
+    static valNum(num: number, from?: number, to?: number){
+        let flag = !num || isNaN(num) || !isFinite(num);
+        if(from){
+            flag = flag || num <= from;
+        }
+        if(to){
+            flag = flag || num >= to;
+        }
+        return !flag || num === 0;
+    }
 
     static extractDashParam(text: string, param: string){
         var data;

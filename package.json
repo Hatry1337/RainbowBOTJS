@@ -22,6 +22,7 @@
     "reflect-metadata": "^0.1.13",
     "sequelize": "^6.6.2",
     "sequelize-typescript": "^2.1.0",
+    "treeify": "^1.1.0",
     "ytdl-core": "^4.9.1",
     "ytpl": "^2.2.3",
     "ytsr": "^3.5.3"
@@ -29,6 +30,7 @@
   "devDependencies": {
     "@types/node": "^15.12.2",
     "@types/sequelize": "^4.28.9",
+    "@types/treeify": "^1.0.0",
     "@types/validator": "^13.1.4"
   }
 }
