@@ -1,7 +1,17 @@
 import log4js, { Logger } from "log4js";
 import { Utils } from "./Utils";
 import crypto from "crypto";
-import treeify from "treeify"
+import util from "util";
+
+interface TraceObj{
+    Type: string;
+    Object: any;
+}
+
+interface Trace{
+    TraceID: string;
+    Objects: TraceObj[]
+}
 
 export class GlobalLogger{
     static {
@@ -33,11 +43,17 @@ export class GlobalLogger{
 
     public static Trace(...args: any[]): string{
         let traceid = `${new Date().getTime()}-${crypto.randomBytes(32).toString('hex')}`;
-        let out =`${traceid}\n`;
-        for(let a of args){
-            out += `${a?.constructor?.name || "Object"}\n${treeify.asTree(a, true, true)}\n`;
+        let trace_obj: Trace = {
+            TraceID: traceid,
+            Objects: []
         }
-        this.trace.info(out);
+        for(let a of args){
+            trace_obj.Objects.push({
+                Type: a?.constructor?.name || "Object",
+                Object: a
+            });
+        }
+        this.trace.info(`TraceID: ${traceid}\n${util.inspect(trace_obj, false, 6)}`);
         return traceid;
     }
 }
