@@ -7,9 +7,11 @@ import { User } from "../../Models/User";
 class RBFetch implements ICommand{
     Name:        string = "RBFetch";
     Trigger:     string = "!rbfetch";
-    Usage:       string = "`!rbfetch`\n\n" +
+    Usage:       string = "`!rbfetch[ -cf]`\n\n" +
                           "**Examples:**\n" +
-                          "`!rbfetch` - Shows RainbowBOTFetch (like neofetch/screenfetch in linux)\n\n";
+                          "`!rbfetch` - Shows RainbowBOTFetch (like neofetch/screenfetch in linux)\n\n" +
+                          "`!rbfetch -c` Force compact mode.\n\n" +
+                          "`!rbfetch -f` Force full mode.\n\n";
 
     Description: string = "Using this command you can view bot's stats, and it styled to linux's neofetch/screenfetch.";
     Category:    string = "Utility";
@@ -22,7 +24,7 @@ class RBFetch implements ICommand{
     
     
     Test(mesage: Discord.Message){
-        return mesage.content.toLowerCase() === "!rbfetch";
+        return mesage.content.startsWith("!rbfetch");
     }
     
     Run(message: Discord.Message){
@@ -39,8 +41,15 @@ class RBFetch implements ICommand{
             var rq_handl = "N/A"; //TODO
             var rq_handl_d = "N/A"; //TODO
             var rq_handl_h = "N/A"; //TODO
-            
-            var rbfetch = 
+
+            let compact = message.author.presence.clientStatus?.mobile || message.content.indexOf("-c") !== -1;
+            if(message.content.indexOf("-f") !== -1){
+                compact = false;
+            }
+
+            var rbfetch;
+            if(!compact){
+                rbfetch = 
                 `\`\`\`apache`                                                                   + "\n" +
                 `${user}@rainbowbot.xyz:~$ rbfetch`                                              + "\n" +
                 `           ..                               ${user}@rainbowbot.xyz`             + "\n" +
@@ -63,6 +72,25 @@ class RBFetch implements ICommand{
                 `          .,,,,,,,,,,,,,,,,,,,..          `                                     + "\n" +
                 `              ............                `                                     + "\n" +
                 `\`\`\``                                                                         ;
+            }else{
+                rbfetch = 
+                `\`\`\`apache`                       + "\n" +
+                `${user}@rainbowbot.xyz`             + "\n" +
+                `---------------`                    + "\n" +
+                `LNG: TypeScript`                    + "\n" +
+                `Node: ${nodev}`                     + "\n" +
+                `Uptime: ${uptime}`                  + "\n" +
+                `WS_Ping: ${ping} ms.`               + "\n" +
+                `Modules: ${modules} (cmd)`          + "\n" +
+                `DB_Users: ${db_users}`              + "\n" +
+                `Discord_Users: ${disc_users}`       + "\n" +
+                `Discord_Servers: ${disc_servs}`     + "\n" +
+                `Requests_Handled: ${rq_handl}`      + "\n" +
+                `Requests_Handled_1d: ${rq_handl_d}` + "\n" +
+                `Requests_Handled_1h: ${rq_handl_h}` + "\n" +
+                `\`\`\``                             ;
+            }
+            
             
             resolve(await message.channel.send(rbfetch));
         });

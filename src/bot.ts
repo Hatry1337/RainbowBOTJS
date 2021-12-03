@@ -98,10 +98,11 @@ client.on("voiceStateUpdate", async (vs1, vs2) => {
 
 client.on('message', async message => {
     if(message.author.id === client.user?.id) return
-    if(message.channel.type === "dm" || !message.member) { 
+    if(message.channel.type === "dm") { 
         await message.channel.send("Команды в личных сообщениях не поддерживаются :cry:"); 
         return; 
     }
+    if(!message.member) return;
     if(message.author.bot) return;
     if(!message.content.startsWith("!")) return;
 
