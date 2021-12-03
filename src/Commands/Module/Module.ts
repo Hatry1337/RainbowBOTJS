@@ -14,8 +14,8 @@ class Module implements ICommand{
     Trigger:     string = "!module";
     Usage:       string = "`!module <subcmd> ...`\n\n" +
                           "SubCommands:\n" + 
+                          "`load <mod_name>` - load module with specified name.\n" +
                           "`unload <mod_name>` - unload module with specified name.\n" +
-                          "~~`load <mod_name>` - unload module with specified name.~~\n" +
                           "`reload <mod_name>` - reload module with specified name.\n" +
                           "`list` - list of loaded modules.\n";
 
@@ -38,6 +38,20 @@ class Module implements ICommand{
                 let args = message.content.split(" ").slice(1);
 
                 switch(args[0]){
+                    case "load": {
+                        if(!args[1]){
+                            return resolve(await Utils.ErrMsg("No module name specified.", message.channel));
+                        }
+                        if(!this.Controller.IsModuleExist(args[1])){
+                            return resolve(await Utils.ErrMsg("This module not exists.", message.channel));
+                        }
+                        let cmd = await this.Controller.LoadCommand(args[1]);
+                        return resolve(await message.channel.send(new Discord.MessageEmbed({
+                            title: `Successfully loaded '${cmd?.Name}' module.`,
+                            color: Colors.Noraml
+                        })));
+                    }
+                    
                     case "reload": {
                         if(!args[1]){
                             return resolve(await Utils.ErrMsg("No module name specified.", message.channel));

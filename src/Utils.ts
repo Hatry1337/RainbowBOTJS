@@ -145,11 +145,96 @@ export class Utils{
         var s = Math.floor(seconds % 60);
         return `${d}:${h}:${m}:${s}`;
     };
+
+    static OsuRankEmoji(rank: string){
+        switch(rank){
+            case "A":{
+                return Emojis.OsuRankA;
+            }
+            case "B":{
+                return Emojis.OsuRankB;
+            }
+            case "C":{
+                return Emojis.OsuRankC;
+            }
+            case "D":{
+                return Emojis.OsuRankD;
+            }
+            case "S":{
+                return Emojis.OsuRankS;
+            }
+            case "SH":{
+                return Emojis.OsuRankSH;
+            }
+            case "SS":{
+                return Emojis.OsuRankSS;
+            }
+            case "SSH":{
+                return Emojis.OsuRankSSH;
+            }
+            default:{
+                return Emojis.OsuRankD;
+            }
+        }
+    }
+
+    static OsuModeEmoji(mode: number | string){
+        if(typeof mode === "number"){
+            switch(mode){
+                case 0:{
+                    return Emojis.OsuModeOsu;
+                }
+                case 1:{
+                    return Emojis.OsuModeTaiko;
+                }
+                case 2:{
+                    return Emojis.OsuModeCatch;
+                }
+                case 3:{
+                    return Emojis.OsuModeMania;
+                }
+                default:{
+                    return Emojis.OsuModeOsu;
+                }
+            }
+        }else{
+            switch(mode){
+                case "osu":{
+                    return Emojis.OsuModeOsu;
+                }
+                case "taiko":{
+                    return Emojis.OsuModeTaiko;
+                }
+                case "catch":{
+                    return Emojis.OsuModeCatch;
+                }
+                case "mania":{
+                    return Emojis.OsuModeMania;
+                }
+                default:{
+                    return Emojis.OsuModeOsu;
+                }
+            }
+        }
+    }
 }
 
 export enum Emojis{
-    BlueRoundedArrowRight = "<:r_blue_rounded_right_arrow:853561384070807582>",
-    RedErrorCross         = "❌",
+    BlueRoundedArrowRight   = "<:r_blue_rounded_right_arrow:853561384070807582>",
+    RedErrorCross           = "❌",
+    OsuModeOsu              = "<:osu_md0:756562448735010911>",
+    OsuModeMania            = "<:osu_md3:756562448688873522>",
+    OsuModeCatch            = "<:osu_md2:756562448701718619>",
+    OsuModeTaiko            = "<:osu_md1:756562448508780616>",
+
+    OsuRankA                = "<:rank_A:756574405337022494>",
+    OsuRankB                = "<:rank_B:756574405253005312>",
+    OsuRankC                = "<:rank_C:756574405131370687>",
+    OsuRankD                = "<:rank_D:756574405005410374>",
+    OsuRankS                = "<:rank_S:756574405080907777>",
+    OsuRankSH               = "<:rank_SH:756584598137208954>",
+    OsuRankSS               = "<:rank_SS:756574405110267955>",
+    OsuRankSSH              = "<:rank_SSH:756584598254911608>",
 }
 
 export enum Colors{

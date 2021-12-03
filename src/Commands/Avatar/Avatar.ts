@@ -42,7 +42,7 @@ class Avatar implements ICommand{
                     return resolve(await message.channel.send(embd));
                 }else{
                     var embd = new Discord.MessageEmbed({
-                        title: `${Emojis.RedErrorCross} Cannot your user's avatar!`,
+                        title: `${Emojis.RedErrorCross} Cannot get your avatar!`,
                         color: Colors.Error
                     });
                     return resolve(await message.channel.send(embd));

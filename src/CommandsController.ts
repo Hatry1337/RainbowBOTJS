@@ -21,56 +21,46 @@ import Anek          from './Commands/Anek/Anek';
 import Servers       from './Commands/Servers/Servers';
 import Economy       from './Commands/Economy/Commands/Economy';
 import Module        from './Commands/Module/Module';
-import Chusr from './Commands/Chusr/Chusr';
+import Chusr         from './Commands/Chusr/Chusr';
+import EiBall        from './Commands/8Ball/8Ball';
+import Command       from './Commands/Command';
+import OsuInfo from './Commands/OsuInfo/OsuInfo';
 
 /*==========================================*/
 
 class CommandsController{
-    Commands: ICommand[] = [];
-    Client: Discord.Client;
+    public Commands: ICommand[] = [];
+    public Client: Discord.Client;
+    private NameMap: Map<string, typeof Command> = new Map();
 
     constructor(client: Discord.Client){
         this.Client = client;
 
-        this.Commands.push(new JoinMgr  (this));
-        this.Commands.push(new RHelp    (this));
-        this.Commands.push(new Usage    (this));
-        this.Commands.push(new RBFetch  (this));
-        this.Commands.push(new Mute     (this));
-        this.Commands.push(new UnMute   (this));
-        this.Commands.push(new Config   (this));
-        this.Commands.push(new VL       (this));
-        this.Commands.push(new LeaveMgr (this));
-        this.Commands.push(new Clear    (this));
-        this.Commands.push(new Music    (this));
-        this.Commands.push(new Avatar   (this));
-        this.Commands.push(new Anek     (this));
-        this.Commands.push(new Servers  (this));
-        //this.Commands.push(new Economy  (this));
-        this.Commands.push(new Module   (this));
-        this.Commands.push(new Chusr    (this));
-        
+        this.RegisterModule(JoinMgr,  "JoinMgr",  true);
+        this.RegisterModule(RHelp,    "RHelp",    true);
+        this.RegisterModule(Usage,    "Usage",    true);
+        this.RegisterModule(RBFetch,  "RBFetch",  true);
+        this.RegisterModule(Mute,     "Mute",     true);
+        this.RegisterModule(UnMute,   "UnMute",   true);
+        this.RegisterModule(Config,   "Config",   true);
+        this.RegisterModule(VL,       "VL",       true);
+        this.RegisterModule(LeaveMgr, "LeaveMgr", true);
+        this.RegisterModule(Clear,    "Clear",    true);
+        this.RegisterModule(Music,    "Music",    true);
+        this.RegisterModule(Avatar,   "Avatar",   true);
+        this.RegisterModule(Anek,     "Anek",     true);
+        this.RegisterModule(Servers,  "Servers",  true);
+        this.RegisterModule(Economy,  "Economy",  false);
+        this.RegisterModule(Module,   "Module",   true);
+        this.RegisterModule(Chusr,    "Chusr",    true);
+        this.RegisterModule(EiBall,   "EiBall",   true);
+        this.RegisterModule(OsuInfo,  "OsuInfo",  true);
     }
 
-    GetCmdProto(name: string){
-        switch(name){
-            case "JoinMgr": return JoinMgr;
-            case "RHelp": return RHelp;
-            case "Usage": return Usage;
-            case "RBFetch": return RBFetch;
-            case "Mute": return Mute;
-            case "UnMute": return UnMute;
-            case "Config": return Config;
-            case "VL": return VL;
-            case "LeaveMgr": return LeaveMgr;
-            case "Clear": return Clear;
-            case "Music": return Music;
-            case "Avatar": return Avatar;
-            case "Anek": return Anek;
-            case "Servers": return Servers;
-            //case "Economy": return Economy;
-            case "Module": return Module;
-            case "Chusr": return Chusr;
+    RegisterModule(mod: typeof Command, name: string, load: boolean = false){
+        this.NameMap.set(name, mod);
+        if(load){
+            this.Commands.push(new mod(this))
         }
     }
 
@@ -89,6 +79,17 @@ class CommandsController{
         });
     }
 
+    async LoadCommand(name: string){
+        let mod = this.NameMap.get(name);
+        if(!mod) return;
+        let cmd = new mod(this);
+        this.Commands.push(cmd);
+        if(cmd.Init){
+            await cmd.Init();
+        }
+        return cmd;
+    }
+
     async UnLoadCommand(cmd: ICommand){
         let i = this.Commands.indexOf(cmd);
         if(i !== -1){
@@ -102,11 +103,13 @@ class CommandsController{
     async ReloadCommand(cmd: ICommand){
         let i = this.Commands.indexOf(cmd);
         if(i !== -1){
-            let prot = this.GetCmdProto(cmd.Name);
-            if(!prot) return;
             this.UnLoadCommand(cmd);
-            this.Commands.push(new prot(this));
+            this.LoadCommand(cmd.Name);
         }
+    }
+
+    IsModuleExist(name: string){
+        return this.NameMap.has(name);
     }
 
     IsCommandExist(message: Discord.Message){
