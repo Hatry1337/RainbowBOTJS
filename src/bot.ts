@@ -32,6 +32,7 @@ process.on("SIGINT", async () => {
     logger.info(`Clinet destroyed. Disconnecting Database.`)
     await sequelize.close();
     logger.info(`Soft unload successfully ended.`);
+    process.exit(0);
 });
 
 (async () => {
