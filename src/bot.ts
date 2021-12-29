@@ -42,35 +42,30 @@ process.on("SIGINT", async () => {
     logger.info(`Loggining to BOT Account...`);
     await client.login(process.env.TOKEN);
     logger.info(`Loggined In! (${client.user?.tag})`);
-    logger.info(`Running Commands Inititalization...`);
-    var inic = await commandsController.Init();
-    logger.info(`Initialized ${inic} Commands Initializers.`);
-    logger.info(`BOT Fully ready! Enjoy =)`);
 })();
 
 client.once("ready", async () => {
     logger.info("BOT Ready.");
 
     logger.info(`[GC]`, "Starting guilds caching...");
-    RGuild.findAll({
-        where:{
-            IsBanned: false
-        }
-    }).then(async guilds => {
-        for(var i in guilds){
-            await client.guilds.fetch(guilds[i].ID, true, true).catch(err => {
-                if(err.code === 50001){
-                    logger.warn(`[GC]`, guilds[i].ID, 'Guild Fetch Error: Missing Access');
-                }else{
-                    logger.warn(`[GC]`, 'Guild Fetch Error:', err);
-                }
-            });
-            logger.info(`[GC]`, `Guild ${parseInt(i)+1}/${guilds.length}`);
-        }
-        logger.info(`[GC]`, `Cached ${guilds.length} guilds.`);
-    }).catch(err => {
-        logger.error(`[GC]`, 'Guilds Caching error:', err);
-    });
+    let i = 0;
+    for(var g of client.guilds.cache){
+        await client.guilds.fetch(g[0], true, true).catch(err => {
+            if(err.code === 50001){
+                logger.warn(`[GC]`, g[0], 'Guild Fetch Error: Missing Access');
+            }else{
+                logger.warn(`[GC]`, 'Guild Fetch Error:', err);
+            }
+        });
+        i++;
+        logger.info(`[GC]`, `Guild ${i}/${client.guilds.cache.size}`);
+    }
+    logger.info(`[GC]`, `Cached ${client.guilds.cache.size} guilds.`);
+
+    logger.info(`Running Commands Inititalization...`);
+    var inic = await commandsController.Init();
+    logger.info(`Initialized ${inic} Commands Initializers.`);
+    logger.info(`BOT Fully ready! Enjoy =)`);
 });
 
 client.on("voiceStateUpdate", async (vs1, vs2) => {

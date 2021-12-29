@@ -92,7 +92,7 @@ export default class VoiceStats implements ICommand{
 
         this.save_timer = setInterval(async () => {
             await this.SaveData();
-        }, 20 * 1000);
+        }, 60 * 1000);
 
         this.Controller.Client.on("RVoiceChannelJoin", this.onRVoiceChannelJoin.bind(this));
         this.Controller.Client.on("RVoiceChannelQuit", this.onRVoiceChannelQuit.bind(this));
