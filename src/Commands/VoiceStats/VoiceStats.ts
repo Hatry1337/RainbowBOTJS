@@ -52,7 +52,7 @@ export default class VoiceStats implements ICommand{
             if(channel.id === channel.guild.afkChannelID){
                 return;
             }
-            
+
             this.CurrentSessions.set(member.id, {
                 Channel: channel,
                 Member: member,
@@ -115,6 +115,18 @@ export default class VoiceStats implements ICommand{
 
         if(this.save_timer){
             clearInterval(this.save_timer);
+        }
+
+        for(let e of this.CurrentSessions){
+            let session = e[1];
+            this.DataToSave.push({
+                ChannelID: session.Channel.id,
+                ChannelName: session.Channel.name,
+                GuildID: session.Channel.guild.id,
+                MemberID: session.Member.id,
+                Time: Math.floor((new Date().getTime() - session.StartedAt.getTime()) / 1000)
+            });
+            this.CurrentSessions.delete(session.Member.id);
         }
 
         await this.SaveData();

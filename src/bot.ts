@@ -21,8 +21,17 @@ const client = new RClient();
 const commandsController = new CommandsController(client);
 
 process.on("SIGINT", async () => {
-    var eco = commandsController.Commands.find(c => c instanceof Economy) as Economy;
-    await eco.saveWorld()
+    logger.info(`Accepted SIGINT. Running soft unload.`);
+    for(let c of commandsController.Commands){
+        if(c.UnLoad){
+            await c.UnLoad();
+        }
+    }
+    logger.info(`Commands unloaded. Destroying client.`);
+    client.destroy();
+    logger.info(`Clinet destroyed. Disconnecting Database.`)
+    await sequelize.close();
+    logger.info(`Soft unload successfully ended.`);
 });
 
 (async () => {
