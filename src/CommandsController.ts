@@ -4,27 +4,28 @@ import { Guild } from './Models/Guild';
 import { User } from './Models/User';
 
 /*============Commands Import===============*/
-import JoinMgr       from './Commands/JoinMgr/JoinMgr';
-import RHelp          from './Commands/RHelp/RHelp';
-import Placeholder   from './Commands/Placeholder';
-import Usage         from './Commands/Usage/Usage';
-import RBFetch       from './Commands/RBFetch/RBFetch';
-import Mute          from './Commands/Mute/Mute';
-import UnMute        from './Commands/UnMute/UnMute';
-import Config        from './Commands/Config/Config';
-import VL            from './Commands/VL/VL';
-import LeaveMgr      from './Commands/LeaveMgr/LeaveMgr';
-import Clear         from './Commands/Clear/Clear';
-import Music         from './Commands/Music/Music';
-import Avatar        from './Commands/Avatar/Avatar';
-import Anek          from './Commands/Anek/Anek';
-import Servers       from './Commands/Servers/Servers';
-import Economy       from './Commands/Economy/Commands/Economy';
-import Module        from './Commands/Module/Module';
-import Chusr         from './Commands/Chusr/Chusr';
-import EiBall        from './Commands/8Ball/8Ball';
-import Command       from './Commands/Command';
-import OsuInfo from './Commands/OsuInfo/OsuInfo';
+import JoinMgr          from './Commands/JoinMgr/JoinMgr';
+import RHelp            from './Commands/RHelp/RHelp';
+import Placeholder      from './Commands/Placeholder';
+import Usage            from './Commands/Usage/Usage';
+import RBFetch          from './Commands/RBFetch/RBFetch';
+import Mute             from './Commands/Mute/Mute';
+import UnMute           from './Commands/UnMute/UnMute';
+import Config           from './Commands/Config/Config';
+import VL               from './Commands/VL/VL';
+import LeaveMgr         from './Commands/LeaveMgr/LeaveMgr';
+import Clear            from './Commands/Clear/Clear';
+import Music            from './Commands/Music/Music';
+import Avatar           from './Commands/Avatar/Avatar';
+import Anek             from './Commands/Anek/Anek';
+import Servers          from './Commands/Servers/Servers';
+import Economy          from './Commands/Economy/Commands/Economy';
+import Module           from './Commands/Module/Module';
+import Chusr            from './Commands/Chusr/Chusr';
+import EiBall           from './Commands/8Ball/8Ball';
+import Command          from './Commands/Command';
+import OsuInfo          from './Commands/OsuInfo/OsuInfo';
+import VoiceStats from './Commands/VoiceStats/VoiceStats';
 
 /*==========================================*/
 
@@ -36,25 +37,26 @@ class CommandsController{
     constructor(client: Discord.Client){
         this.Client = client;
 
-        this.RegisterModule(JoinMgr,  "JoinMgr",  true);
-        this.RegisterModule(RHelp,    "RHelp",    true);
-        this.RegisterModule(Usage,    "Usage",    true);
-        this.RegisterModule(RBFetch,  "RBFetch",  true);
-        this.RegisterModule(Mute,     "Mute",     true);
-        this.RegisterModule(UnMute,   "UnMute",   true);
-        this.RegisterModule(Config,   "Config",   true);
-        this.RegisterModule(VL,       "VL",       true);
-        this.RegisterModule(LeaveMgr, "LeaveMgr", true);
-        this.RegisterModule(Clear,    "Clear",    true);
-        this.RegisterModule(Music,    "Music",    true);
-        this.RegisterModule(Avatar,   "Avatar",   true);
-        this.RegisterModule(Anek,     "Anek",     true);
-        this.RegisterModule(Servers,  "Servers",  true);
-        this.RegisterModule(Economy,  "Economy",  false);
-        this.RegisterModule(Module,   "Module",   true);
-        this.RegisterModule(Chusr,    "Chusr",    true);
-        this.RegisterModule(EiBall,   "EiBall",   true);
-        this.RegisterModule(OsuInfo,  "OsuInfo",  true);
+        this.RegisterModule(JoinMgr,        "JoinMgr",      true);
+        this.RegisterModule(RHelp,          "RHelp",        true);
+        this.RegisterModule(Usage,          "Usage",        true);
+        this.RegisterModule(RBFetch,        "RBFetch",      true);
+        this.RegisterModule(Mute,           "Mute",         true);
+        this.RegisterModule(UnMute,         "UnMute",       true);
+        this.RegisterModule(Config,         "Config",       true);
+        this.RegisterModule(VL,             "VL",           true);
+        this.RegisterModule(LeaveMgr,       "LeaveMgr",     true);
+        this.RegisterModule(Clear,          "Clear",        true);
+        this.RegisterModule(Music,          "Music",        true);
+        this.RegisterModule(Avatar,         "Avatar",       true);
+        this.RegisterModule(Anek,           "Anek",         true);
+        this.RegisterModule(Servers,        "Servers",      true);
+        this.RegisterModule(Economy,        "Economy",      false);
+        this.RegisterModule(Module,         "Module",       true);
+        this.RegisterModule(Chusr,          "Chusr",        true);
+        this.RegisterModule(EiBall,         "EiBall",       true);
+        this.RegisterModule(OsuInfo,        "OsuInfo",      true);
+        this.RegisterModule(VoiceStats,     "VoiceStats",   true);
     }
 
     RegisterModule(mod: typeof Command, name: string, load: boolean = false){
