@@ -49,6 +49,10 @@ export default class VoiceStats implements ICommand{
         let session = this.CurrentSessions.get(member.id);
 
         if(!session){
+            if(channel.id === channel.guild.afkChannelID){
+                return;
+            }
+            
             this.CurrentSessions.set(member.id, {
                 Channel: channel,
                 Member: member,
@@ -78,6 +82,9 @@ export default class VoiceStats implements ICommand{
         let loadc = 0;
         let channels = this.Controller.Client.channels.cache.filter(c => c instanceof Discord.VoiceChannel) as Discord.Collection<string, Discord.VoiceChannel>;
         for(let c of channels){
+            if(c[1].id === c[1].guild.afkChannelID){
+                continue;
+            }
             for(let m of c[1].members){
                 this.CurrentSessions.set(m[1].id, {
                     Channel: c[1],
