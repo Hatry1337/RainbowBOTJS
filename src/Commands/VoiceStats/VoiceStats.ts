@@ -8,6 +8,7 @@ import { VoiceLobby } from "../../Models/VoiceLobby";
 import { GlobalLogger } from "../../GlobalLogger";
 import { VoiceStatsData } from "../../Models/VoiceStatsData";
 import sequelize from "sequelize";
+import { User } from "../../Models/User";
 
 const logger = log4js.getLogger("command");
 
@@ -97,8 +98,28 @@ export default class VoiceStats implements ICommand{
 
         logger.info(`[${this.Name}] [Init] Loaded ${loadc} members from cache.`);
 
+        let sc = 0;
         this.save_timer = setInterval(async () => {
+            if(sc >= 5){
+                logger.info(`[${this.Name}] [SaveTimer] Saving current sessions...`);
+                for(let e of this.CurrentSessions){
+                    let session = e[1];
+                    this.DataToSave.push({
+                        ChannelID: session.Channel.id,
+                        ChannelName: session.Channel.name,
+                        GuildID: session.Channel.guild.id,
+                        MemberID: session.Member.id,
+                        Time: Math.floor((new Date().getTime() - session.StartedAt.getTime()) / 1000)
+                    });
+                    this.CurrentSessions.set(session.Member.id, {
+                        Channel: session.Channel,
+                        Member: session.Member,
+                        StartedAt: new Date()
+                    });
+                }
+            }
             await this.SaveData();
+            sc++;
         }, 60 * 1000);
 
         this.Controller.Client.on("RVoiceChannelJoin", this.onRVoiceChannelJoin.bind(this));
@@ -181,17 +202,34 @@ export default class VoiceStats implements ICommand{
         return mesage.content.toLowerCase().startsWith("!vcstats");
     }
     
-    Run(message: Discord.Message, guild: Guild){
+    Run(message: Discord.Message, guild: Guild, user: User){
         return new Promise<Discord.Message>(async (resolve, reject) => {
             var args = message.content.split(" ").slice(1);
             
             switch(args[0]){
                 default: {
+                    let guildid = Utils.parseID(args[0]);
+                    let targetGuild = this.Controller.Client.guilds.resolve(guildid);
+
+                    if(!guildid || guildid.length !== 18){
+                        guildid = guild.ID;
+                        targetGuild = message.guild;
+                    }else{
+                        if(user.Group !== "Admin"){
+                            return resolve(await Utils.ErrMsg("You don't have access to this command.", message.channel));
+                        }
+                    }
+
+                    if(!targetGuild){
+                        return resolve(await Utils.ErrMsg("Can't find this guild.", message.channel));
+                    }
+
                     let membs = await VoiceStatsData.findAll({
                         where: {
-                            GuildID: guild.ID
+                            GuildID: guildid
                         }
                     });
+
                     let usermap: Map<string, number> = new Map();
 
                     for(let m of membs){
@@ -208,9 +246,10 @@ export default class VoiceStats implements ICommand{
                     let i = 1;
                     for(let e of mtimetotal){
                         stat += `${i}. ${this.Controller.Client.users.cache.get(e[0])?.tag} - ${Utils.formatTime(e[1])} in voice channels\n`;
-                        if(i === 10){
+                        if(i >= 10){
                             break;
                         }
+                        i++;
                     }
 
                     let uindex = mtimetotal.findIndex(e => e[0] === message.author.id);
@@ -219,7 +258,7 @@ export default class VoiceStats implements ICommand{
                     }
 
                     var embd = new Discord.MessageEmbed({
-                        title: `Voice Channels Stats on ${message.guild?.name}`,
+                        title: `Voice Channels Stats on ${targetGuild.name}`,
                         description: stat,
                         color: Colors.Noraml
                     });
