@@ -195,6 +195,7 @@ export default class VoiceStats implements ICommand{
                 }
             }
             logger.info(`[${this.Name}] [SaveData] Created ${crtd}, updated ${updd} entries.`);
+            resolve();
         });
     }
 
