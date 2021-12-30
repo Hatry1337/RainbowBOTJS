@@ -26,16 +26,18 @@ import EiBall           from './Commands/8Ball/8Ball';
 import Command          from './Commands/Command';
 import OsuInfo          from './Commands/OsuInfo/OsuInfo';
 import VoiceStats from './Commands/VoiceStats/VoiceStats';
+import RClient from './RClient';
 
 /*==========================================*/
 
 class CommandsController{
     public Commands: ICommand[] = [];
-    public Client: Discord.Client;
+    public Client: RClient;
     private NameMap: Map<string, typeof Command> = new Map();
 
-    constructor(client: Discord.Client){
+    constructor(client: RClient){
         this.Client = client;
+        this.Client.CommandsController = this;
 
         this.RegisterModule(JoinMgr,        "JoinMgr",      true);
         this.RegisterModule(RHelp,          "RHelp",        true);
