@@ -117,6 +117,7 @@ export default class VoiceStats implements ICommand{
                         StartedAt: new Date()
                     });
                 }
+                sc = 0;
             }
             await this.SaveData();
             sc++;
