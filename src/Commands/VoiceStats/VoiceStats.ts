@@ -50,7 +50,7 @@ export default class VoiceStats implements ICommand{
         let session = this.CurrentSessions.get(member.id);
 
         if(!session){
-            if(channel.id === channel.guild.afkChannelID){
+            if(channel.id === channel.guild.afkChannelID || member.user.bot){
                 return;
             }
 
