@@ -39,6 +39,7 @@ export default class EiBall implements ICommand{
 
     constructor(controller: CommandsController) {
         this.Controller = controller;
+        this.Controller.Client.application?.commands.create()
     }
     
     Test(mesage: Discord.Message){

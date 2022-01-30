@@ -1,7 +1,8 @@
 import Discord from 'discord.js';
-import ICommand from './Commands/ICommand';
+import IModule from './Commands/IModule';
 import { Guild } from './Models/Guild';
 import { User } from './Models/User';
+import RainbowBOT from './RainbowBOT';
 
 /*============Commands Import===============*/
 import JoinMgr          from './Commands/JoinMgr/JoinMgr';
@@ -26,19 +27,15 @@ import EiBall           from './Commands/8Ball/8Ball';
 import Command          from './Commands/Command';
 import OsuInfo          from './Commands/OsuInfo/OsuInfo';
 import VoiceStats from './Commands/VoiceStats/VoiceStats';
-import RClient from './RClient';
+import { GlobalLogger } from './GlobalLogger';
 
 /*==========================================*/
 
-class CommandsController{
-    public Commands: ICommand[] = [];
-    public Client: RClient;
+export default class ModuleManager{
+    public Modules: IModule[] = [];
     private NameMap: Map<string, typeof Command> = new Map();
 
-    constructor(client: RClient){
-        this.Client = client;
-        this.Client.CommandsController = this;
-
+    constructor(public bot: RainbowBOT){
         this.RegisterModule(JoinMgr,        "JoinMgr",      true);
         this.RegisterModule(RHelp,          "RHelp",        true);
         this.RegisterModule(Usage,          "Usage",        true);
@@ -59,18 +56,24 @@ class CommandsController{
         this.RegisterModule(EiBall,         "EiBall",       true);
         this.RegisterModule(OsuInfo,        "OsuInfo",      true);
         this.RegisterModule(VoiceStats,     "VoiceStats",   true);
+
+        bot.client.on("interactionCreate", interaction => {
+            if(interaction.isCommand()){
+                
+            }
+        })
     }
 
-    RegisterModule(mod: typeof Command, name: string, load: boolean = false){
+    public RegisterModule(mod: typeof Command, name: string, load: boolean = false){
         this.NameMap.set(name, mod);
         if(load){
-            this.Commands.push(new mod(this))
+            this.Modules.push(new mod(this))
         }
     }
 
-    Init(){
+    public Init(){
         return new Promise<number>(async (resolve, reject) => {
-            var cmdc = this.Commands.slice(0);
+            var cmdc = this.Modules.slice(0);
             cmdc.sort((a, b) => ((b.InitPriority || 1) - (a.InitPriority || 1)));
             var count = 0;
             for(var c of cmdc){
@@ -83,61 +86,69 @@ class CommandsController{
         });
     }
 
-    async LoadCommand(name: string){
+    public async LoadModule(name: string){
         let mod = this.NameMap.get(name);
         if(!mod) return;
         let cmd = new mod(this);
-        this.Commands.push(cmd);
+        this.Modules.push(cmd);
         if(cmd.Init){
             await cmd.Init();
         }
         return cmd;
     }
 
-    async UnLoadCommand(cmd: ICommand){
-        let i = this.Commands.indexOf(cmd);
+    public async UnloadModule(cmd: IModule){
+        let i = this.Modules.indexOf(cmd);
         if(i !== -1){
             if(cmd.UnLoad){
                 await cmd.UnLoad()
             }
-            this.Commands.splice(i, 1);
+            this.Modules.splice(i, 1);
         }
     }
 
-    async ReloadCommand(cmd: ICommand){
-        let i = this.Commands.indexOf(cmd);
+    public async ReloadModule(cmd: IModule){
+        let i = this.Modules.indexOf(cmd);
         if(i !== -1){
-            this.UnLoadCommand(cmd);
-            this.LoadCommand(cmd.Name);
+            this.UnloadModule(cmd);
+            this.LoadModule(cmd.Name);
         }
     }
 
-    IsModuleExist(name: string){
+    public IsModuleExist(name: string){
         return this.NameMap.has(name);
     }
 
-    IsCommandExist(message: Discord.Message){
-        for(var cmd of this.Commands){
-            if(cmd.Test(message)){
-                return true;
-            }
-        }
-    }
-
-    FindCommand(message: Discord.Message){
-        for(var cmd of this.Commands){
-            if(cmd.Test(message)){
-                return cmd;
-            }
-        }
-    }
-
-    FindAndRun(message: Discord.Message): Promise<Discord.Message | undefined>{
+    public FindAndRun(interaction: Discord.Interaction): Promise<Discord.Message | undefined>{
         return new Promise((resolve, reject) => {
-            let command = this.Commands.find(c => c.Test(message));
-            if(!command){
+            let module = this.Modules.find(m => m.Test(interaction));
+            if(!module){
                 return resolve(undefined);
             }
+            User.findOrCreate({
+                
+
+            }).then(async ures => {
+                if(interaction.guild){
+                    let gres = await Guild.findOrCreate({
+                        where: {
+                            ID: interaction.guild.id
+                        },
+                        defaults: {
+                            ID: interaction.guild.id,
+                            Name: interaction.guild.name,
+                            OwnerID: interaction.guild.ownerId,
+                            Region: interaction.guild.preferredLocale,
+                            SystemChannelID: interaction.guild.systemChannelId,
+                            JoinRolesIDs: [],
+                        }
+                    });
+                }
+
+                
+
+                
+            }).catch(err => { GlobalLogger.root.error("ModuleManager.FindAndRun Error: ", err, "trace:", GlobalLogger.Trace(err)); return reject(err) });
             Guild.findOrCreate({
                 where: {
                     ID: message.guild?.id
@@ -145,9 +156,9 @@ class CommandsController{
                 defaults: {
                     ID: message.guild?.id,
                     Name: message.guild?.name,
-                    OwnerID: message.guild?.ownerID,
-                    Region: message.guild?.region,
-                    SystemChannelID: message.guild?.systemChannelID,
+                    OwnerID: message.guild?.ownerId,
+                    Region: message.guild?.preferredLocale,
+                    SystemChannelID: message.guild?.systemChannelId,
                     JoinRolesIDs: [],
                 }
             }).then(async res => {
@@ -172,5 +183,3 @@ class CommandsController{
         });
     }
 }
-
-export = CommandsController;

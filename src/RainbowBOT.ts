@@ -1,18 +1,18 @@
 import Discord from "discord.js";
-import CommandsController from "./CommandsController";
 import Events from "./Events";
 import { GlobalLogger } from "./GlobalLogger";
 import { Guild as RGuild } from "./Models/Guild";
+import ModuleManager from "./ModuleManager";
 
 
 const logger = GlobalLogger.root;
 
-export default class RClient extends Discord.Client{
-    public CommandsController!: CommandsController;
-    public Events!: Events;
+export default class RainbowBOT{
+    public moduleManager: ModuleManager;
+    public events!: Events;
     
-    constructor(){
-        super();
+    constructor(public client: Discord.Client){
+        this.moduleManager = new ModuleManager(this);
     }
 
     CacheGuilds(log: boolean = false){
