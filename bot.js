@@ -1,4 +1,4 @@
-const dev_mode = false;
+const dev_mode = true;
 
 const fs = require("fs");
 const Discord = require('discord.js');
@@ -75,6 +75,21 @@ client.on('message', async message => {
                 );
                 Utils.checkVip(message, user, async function () {
                     Utils.checkLvl(message, user, async function () {
+                        if(Math.random() < 0.2){
+                            let rbot_guild = client.guilds.cache.get("612220949206532106");
+                            let rbot_member = rbot_guild?.members?.resolve(message.author.id);
+                            if(!(rbot_member?.roles?.cache?.has("937126564691320842") || rbot_member?.roles?.cache?.has("769881102508097560"))){
+                                await message.channel.send(new Discord.MessageEmbed({
+                                    title: Utils.lng.patreon_ad[user.lang || "en"].title,
+                                    description: Utils.lng.patreon_ad[user.lang || "en"].description,
+                                    thumbnail: {
+                                        url: "https://media.discordapp.net/attachments/927189370874777620/937303120386609172/da861a_e657ee7c81334610a99412dc8c971d36mv2.png"
+                                    },
+                                    color: 0xFF00FF
+                                }));
+                            }
+                        }
+
                         if (message.content.startsWith(`!rhelp`)) {
                             await Utils.Modules.Rhelp.execute(message, user.lang);
                             return;

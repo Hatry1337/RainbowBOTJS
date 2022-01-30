@@ -1,4 +1,15 @@
 ﻿exports.lng = {
+    patreon_ad:{
+        ru: {
+            title: "Здравствуй, дорогой пользователь RainbowBOT'a!",
+            description: "Разработчик бота завёл свой Patreon и принимает пожертвования. Если тебе нравится RainbowBOT и ты хотел бы поддержать его разработку, то милости прошу [сюда](https://www.patreon.com/rainbowthomas)! ❤️",
+        }, 
+        en: {
+            title: "Hi Dear RainbowBOT User!",
+            description: "RainbowBOT developer created his Patreon and now accept donations. If you love RainbowBOT and want to support BOT development, you can donate [here](https://www.patreon.com/rainbowthomas)! ❤️",
+        }
+    },
+
     rhelp: {
         title: {
             ru: "Помощь по командам:",
