@@ -2,6 +2,7 @@ import log4js, { Logger } from "log4js";
 import { Utils } from "./Utils";
 import crypto from "crypto";
 import util from "util";
+import IModule from "./Modules/IModule";
 
 interface TraceObj{
     Type: string;
@@ -55,5 +56,33 @@ export class GlobalLogger{
         }
         this.trace.info(`TraceID: ${traceid}\n${util.inspect(trace_obj, false, 6)}`);
         return traceid;
+    }
+}
+
+export class ModuleLogger extends GlobalLogger{
+    private Module: IModule;
+    constructor(module: IModule){
+        super();
+        this.Module = module;
+    }
+
+    Info(message: any, ...args: any[]){
+        GlobalLogger.command.info(`[${this.Module.Name}]`, message, args);
+    }
+
+    Warn(message: any, ...args: any[]){
+        GlobalLogger.command.warn(`[${this.Module.Name}]`, message, args);
+    }
+
+    Error(message: any, ...args: any[]){
+        GlobalLogger.command.error(`[${this.Module.Name}]`, message, args);
+    }
+
+    Debug(message: any, ...args: any[]){
+        GlobalLogger.command.debug(`[${this.Module.Name}]`, message, args);
+    }
+    
+    Fatal(message: any, ...args: any[]){
+        GlobalLogger.command.fatal(`[${this.Module.Name}]`, message, args);
     }
 }

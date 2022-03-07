@@ -1,0 +1,8 @@
+{
+    "LineCount.excludes": [
+        "**/.vscode/**",
+        "**/node_modules/**",
+        "**/out/**",
+        "**/old_shit/**"
+    ]
+}

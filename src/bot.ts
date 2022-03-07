@@ -1,56 +1,92 @@
-import CommandsController from "./CommandsController";
-import RClient from "./RClient";
+import 'dotenv/config';
+import Discord from "discord.js";
+import RainbowBOT from "./RainbowBOT";
 import { sequelize } from "./Database";
 import { Guild as RGuild } from "./Models/Guild";
-import { User as RUser } from "./Models/User";
 import { GlobalLogger } from "./GlobalLogger";
-import Events from "./Events";
+import RUser from "./Structures/User";
+import { StorageUser } from "./Models/StorageUser";
+import { StorageUserEconomyInfo } from "./Models/StorageUserEconomyInfo";
+
+declare global {
+    namespace NodeJS {
+        interface ProcessEnv {
+            TOKEN: string;
+            DBURI: string;
+            MASTER_GUILD: string;
+            NODE_ENV: 'development' | 'production';
+        }
+    }
+}
 
 declare module 'discord.js' {
     interface ClientEvents {
-        RVoiceChannelJoin: [VoiceChannel, GuildMember],
-        RVoiceChannelQuit: [VoiceChannel, GuildMember],
-        RVoiceChannelChange: [VoiceChannel, VoiceChannel, GuildMember],
-        RGuildMemberAdd: [GuildMember, RGuild, RUser],
-        RGuildMemberRemove: [GuildMember | PartialGuildMember, RGuild, RUser],
+        RVoiceChannelJoin:   [VoiceBasedChannel, GuildMember],
+        RVoiceChannelQuit:   [VoiceBasedChannel, GuildMember],
+        RVoiceChannelChange: [VoiceBasedChannel, VoiceBasedChannel, GuildMember],
+        RGuildMemberAdd:     [GuildMember, RGuild, RUser],
+        RGuildMemberRemove:  [GuildMember | PartialGuildMember, RGuild, RUser],
     }
 }
 
 const logger = GlobalLogger.root;
-const client = new RClient();
-const events = new Events(client);
-const commandsController = new CommandsController(client);
+const bot = new RainbowBOT({
+    intents: [
+        Discord.Intents.FLAGS.DIRECT_MESSAGES,
+        Discord.Intents.FLAGS.GUILDS,
+        Discord.Intents.FLAGS.GUILD_MESSAGES,
+        Discord.Intents.FLAGS.GUILD_MEMBERS,
+        
+    ],
+    presence: {
+        status: "online",
+        activities: [
+            {
+                type: "LISTENING",
+                name: "Slash Commands🐊",
+            }
+        ]
+    }
+});
 
 (async () => {
     await sequelize.sync({force: false});
-    await RUser.findOrCreate({
+    let sys = await StorageUser.findOrCreate({
         where: { 
-            ID: "system" 
+            id: 0
         }, 
         defaults: { 
-            ID: "system", 
-            Tag: "System",
-            Avatar: "https://cdn.discordapp.com/avatars/571948993643544587/1ae2abe89523db2a74205763887e3e60.webp",
-            Group: "Admin"
+            id: 0, 
+            nickname: "System",
+            group: "Admin"
         }
     });
+    if(sys[1]){
+        await StorageUserEconomyInfo.create({
+            id: sys[0].id
+        });
+    }
     logger.info(`Database Synchronized.`);
     logger.info(`Loggining to BOT Account...`);
-    await client.login(process.env.TOKEN);
-    logger.info(`Loggined In! (${client.user?.tag})`);
+    await bot.login(process.env.TOKEN);
+    logger.info(`Loggined In! (${bot.client.user?.tag})`);
+    await bot.users.updateAssociations();
+    await bot.users.fetchOne(0, true);
 })();
 
-process.on("SIGINT", async () => {
-    logger.info(`Accepted SIGINT. Running soft unload.`);
-    for(let c of commandsController.Commands){
-        if(c.UnLoad){
-            await c.UnLoad();
-        }
-    }
-    logger.info(`Commands unloaded. Destroying client.`);
-    client.destroy();
-    logger.info(`Clinet destroyed. Disconnecting Database.`)
+async function handleExit(){
+    logger.info(`Accepted exit signal. Running graceful unload.`);
+    await bot.modules.UnloadAllModules();
+    logger.info(`Commands unloaded. Stopping Database Updates.`);
+    bot.users.stopUpdating();
+    await bot.users.syncStorage();
+    logger.info(`Database Updates stopped. Destroying client.`);
+    bot.client.destroy();
+    logger.info(`Clinet destroyed. Disconnecting Database.`);
     await sequelize.close();
-    logger.info(`Soft unload successfully ended.`);
+    logger.info(`Graceful unload successfully ended.`);
     process.exit(0);
-});
+}
+
+process.on("SIGINT", handleExit);
+process.on("SIGTERM", handleExit);
