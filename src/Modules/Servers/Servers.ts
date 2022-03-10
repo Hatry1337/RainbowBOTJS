@@ -1,9 +1,7 @@
-import Discord, { Message } from "discord.js";
-import Module from "../Module";
-import ModuleManager from "../../ModuleManager";
+import Discord from "discord.js";
 import { SlashCommandBuilder } from "@discordjs/builders";
-import User from "../../Structures/User";
-import { Colors, Utils } from "../../Utils";
+import { Colors, Module, ModuleManager, User, Utils } from "rainbowbot-core";
+
 
 export default class Servers extends Module{
     public Name:        string = "Servers";
@@ -32,11 +30,6 @@ export default class Servers extends Module{
                     .setMaxValue(35)
                 ) as SlashCommandBuilder
         );
-    }
-    
-    
-    public async Init(){
-        this.Controller.bot.PushSlashCommands(this.SlashCommands, process.env.NODE_ENV === "development" ? process.env.MASTER_GUILD : "global");
     }
     
     public Test(interaction: Discord.CommandInteraction){

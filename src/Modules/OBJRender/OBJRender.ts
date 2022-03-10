@@ -1,14 +1,11 @@
+import Discord from "discord.js";
 import { SlashCommandBuilder } from "@discordjs/builders";
-import Discord, { Message } from "discord.js";
 import got from "got";
-import ModuleManager from "../../ModuleManager";
-import { Emojis, Colors } from "../../Utils";
-import Module from "../Module";
 import IgniRender from "./IgniRender/IgniRender";
 import GIFEncoder from "gifencoder";
-import { createCanvas } from "canvas";
 import Camera from "./IgniRender/Scene/Camera";
 import { v3zero } from "./IgniRender/Utils3D";
+import { Colors, Module, ModuleManager } from "rainbowbot-core";
 
 export default class OBJRender extends Module{
     public Name:        string = "OBJRender";
@@ -78,10 +75,6 @@ export default class OBJRender extends Module{
         );
     }
 
-    public async Init(){
-        this.Controller.bot.PushSlashCommands(this.SlashCommands, process.env.NODE_ENV === "development" ? process.env.MASTER_GUILD : "global");
-    }
-
     public Test(interaction: Discord.CommandInteraction){
         return interaction.commandName.toLowerCase() === this.Name.toLowerCase();
     }
@@ -111,7 +104,7 @@ export default class OBJRender extends Module{
                     description: "Reply timedout or incorrect file provided.",
                     color: Colors.Noraml
                 });
-                return resolve(await interaction.editReply({ embeds: [embd] }).catch(reject) as Message); 
+                return resolve(await interaction.editReply({ embeds: [embd] }).catch(reject) as Discord.Message); 
             }else{
                 let attachment = message.attachments.find(a => (a.name?.endsWith(".obj") && a.size < 100 * 1024 * 1024) ? true : false )!;
                 got(attachment.url).then(async data => {

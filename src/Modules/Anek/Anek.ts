@@ -1,9 +1,6 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import Discord from "discord.js";
-import { Guild } from "../../Models/Guild";
-import ModuleManager from "../../ModuleManager";
-import { Emojis, Colors, Utils } from "../../Utils";
-import Module from "../Module";
+import { Colors, Emojis, Module, ModuleManager } from "rainbowbot-core";
 import { AnekAPI } from "./AnekAPI";
 
 export default class Anek extends Module{

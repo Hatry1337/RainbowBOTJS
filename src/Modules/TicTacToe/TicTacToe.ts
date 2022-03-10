@@ -1,9 +1,7 @@
-import Discord, { ButtonInteraction, InteractionReplyOptions, Message, MessageActionRow, MessageButton } from "discord.js";
-import { Utils, Emojis, Colors, CustomMessageSettings } from "../../Utils";
-import Module from "../Module";
-import ModuleManager from "../../ModuleManager";
+import Discord from "discord.js";
 import { SlashCommandBuilder } from "@discordjs/builders";
 import TicTacToeGame, { TicTacToePlayer, TicTacToeSymbol } from "./TicTacToeGame";
+import { Colors, Module, ModuleManager, Utils } from "rainbowbot-core";
 
 export default class TicTacToe extends Module{
     public Name:        string = "TicTacToe";
@@ -66,16 +64,11 @@ export default class TicTacToe extends Module{
         );
     }
     
-    
-    public async Init(){
-        this.Controller.bot.PushSlashCommands(this.SlashCommands, process.env.NODE_ENV === "development" ? process.env.MASTER_GUILD : "global");
-    }
-    
     public Test(interaction: Discord.CommandInteraction){
         return interaction.commandName.toLowerCase() === this.Name.toLowerCase();
     }
 
-    private async buttonEvent(interaction: ButtonInteraction){
+    private async buttonEvent(interaction: Discord.ButtonInteraction){
         let args = interaction.customId.split("-");
         let gm = this.TicTacToeGames.get(interaction.channelId);
         if(!gm || gm.isGameEnded){
@@ -98,7 +91,7 @@ export default class TicTacToe extends Module{
         }
     }
 
-    private makeMessage(game: TicTacToeGame): InteractionReplyOptions{
+    private makeMessage(game: TicTacToeGame): Discord.InteractionReplyOptions{
         let embd = new Discord.MessageEmbed({
             title: `Tic Tac Toe Game`,
             description: 
@@ -110,15 +103,15 @@ export default class TicTacToe extends Module{
                 "```",
             color: Colors.Noraml
         });
-        let compons: MessageActionRow[] = [];
+        let compons: Discord.MessageActionRow[] = [];
         
         for(let i = 0; i < game.fieldSize; i++){
-            let row = new MessageActionRow();
+            let row = new Discord.MessageActionRow();
             let j = i * game.fieldSize;
             for(let s of game.field.slice(i * game.fieldSize, game.fieldSize + (i*game.fieldSize))){
                 let btn_cid = `ttt-move-${game.interaction.channelId}-${j}`;
                 row.addComponents(
-                    new MessageButton()
+                    new Discord.MessageButton()
                         .setCustomId(btn_cid)
                         .setLabel(s ? (s === "cross" ? "❌" : "⭕") : j.toString())
                         .setStyle("PRIMARY")
@@ -133,7 +126,7 @@ export default class TicTacToe extends Module{
         return { embeds: [embd], components: compons };
     }
 
-    private makeResultMessage(game: TicTacToeGame): InteractionReplyOptions{
+    private makeResultMessage(game: TicTacToeGame): Discord.InteractionReplyOptions{
         let msg = "Game Over! ";
         let player = game.winner;
         if(player){

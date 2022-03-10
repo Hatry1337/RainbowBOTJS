@@ -1,9 +1,7 @@
 import Discord, { GuildMember } from "discord.js";
-import { Utils, Emojis, Colors } from "../../Utils";
-import Module from "../Module";
-import ModuleManager from "../../ModuleManager";
 import { SlashCommandBuilder } from "@discordjs/builders";
-/*
+import { Colors, Emojis, Module, ModuleManager, User, Utils } from "rainbowbot-core";
+
 export interface IMutedUser{
     user_id: number;
     discord_id: string;
@@ -15,7 +13,7 @@ export interface IMutedUser{
     mute_reason: string;
     unmute_reason?: string;
     muted_at: Date;
-    unmute_at?: Date;
+    unmute_at: Date;
     guild_id: string;
     muted_role_id: string;
     is_perm_muted: boolean;
@@ -55,39 +53,19 @@ export default class Mute extends Module{
                     .setDescription("Reason of mute.")
                     .setRequired(true)    
                 )
-                .addNumberOption(opt => opt
-                    .setName("secs")
-                    .setDescription("Seconds of mute time.")
-                    .setMinValue(1)
-                ) 
-                .addNumberOption(opt => opt
-                    .setName("mins")
-                    .setDescription("Minutes of mute time.")
-                    .setMinValue(1)
-                ) 
-                .addNumberOption(opt => opt
-                    .setName("hours")
-                    .setDescription("Hours of mute time.")
-                    .setMinValue(1)
-                ) 
-                .addNumberOption(opt => opt
-                    .setName("days")
-                    .setDescription("Days of mute time.")
-                    .setMinValue(1)
-                ) 
-                .addBooleanOption(opt => opt
-                    .setName("permanent")
-                    .setDescription("Mute user permanently")
-                    
+                .addStringOption(opt => opt
+                    .setName("time")
+                    .setDescription("Mute time (`1d` `1h` `1m` `1s` `perm`).")
+                    .setRequired(true)    
                 ) as SlashCommandBuilder,
 
-                new SlashCommandBuilder()
+            new SlashCommandBuilder()
                 .setName("unmute")
                 .setDescription("Using this command admins and mods can unmute users.")
                 .addUserOption(opt => opt
                     .setName("target")
                     .setDescription("Good boy")
-                    .setRequired(true)    
+                    .setRequired(true)
                 ) 
                 .addStringOption(opt => opt
                     .setName("reason")
@@ -97,14 +75,15 @@ export default class Mute extends Module{
         );
         
         this.CheckerTimer = setInterval(async () => {
-            this.Logger.Info(`[Checker]`, "Muted users checking...");
-            let data = await this.Controller.dataManager.getContainer(this.UUID);
+            let data = await this.Controller.data.getContainer(this.UUID);
             let muted_users = data.get("muted_users") as IMutedUser[] | undefined;
             if(!muted_users){
-                this.Logger.Info(`[Checker]`, "No muted users. Skip check.");
                 return;
             }
             muted_users = muted_users.filter(u => u.is_muted);
+            if(muted_users.length === 0){
+                return;
+            }
 
             for(let mu of muted_users){
                 if(!mu.is_perm_muted && (mu.unmute_at || new Date()) < new Date()){
@@ -119,6 +98,13 @@ export default class Mute extends Module{
         }, 120 * 1000);
     }
     
+    public async Init() {
+        await this.Controller.bot.config.setIfNotExist("guild", "moderator_role", {}, "role");
+        await this.Controller.bot.config.setIfNotExist("guild", "muted_role", {}, "role");
+
+        this.Controller.bot.PushSlashCommands(this.SlashCommands, this.Controller.bot.moduleGlobalLoading ? "global" : this.Controller.bot.masterGuildId);
+    }
+
     public async UnLoad(){
         this.Logger.Info(`Unloading '${this.Name}' module:`);
         this.Logger.Info("Clearing Mutes Checking Inverval...")
@@ -130,161 +116,131 @@ export default class Mute extends Module{
                 interaction.commandName.toLowerCase() === "unmute";
     }
     
-    public Run(interaction: Discord.CommandInteraction){
-        return new Promise<Discord.Message>(async (resolve, reject) => {
-            if(!interaction.member  || !(interaction.member instanceof GuildMember)){
-                return interaction.reply({ embeds: [ Utils.ErrMsg("This command is guild-only.") ] });
-            }
-            let cfg = this.Controller.bot.Config;
-
-            if(!(interaction.member.permissions.has("ADMINISTRATOR") || interaction.member.roles.cache.get( || ""))){
-                var embd = new Discord.MessageEmbed({
-                    title: `${Emojis.RedErrorCross} Only administrators or moderators can use this command.`,
-                    color: Colors.Error
-                });
-                return resolve(await message.channel.send(embd));
+    private mute(interaction: Discord.CommandInteraction, user: User, target_user: Discord.User, reason: string, mod_role_id: string, muted_role_id: string){
+        return new Promise<Discord.Message | void>(async (resolve, reject) => {
+            if(!interaction.guild  || !(interaction.guild instanceof Discord.Guild) || !interaction.member  || !(interaction.member instanceof GuildMember)){
+                return resolve(await interaction.reply({ embeds: [ Utils.ErrMsg("This command is guild-only.") ] }));
             }
 
-
-            var args = message.content.split(" ").slice(1);
-            if(args.length < 3){
-                var embd = new Discord.MessageEmbed({
-                    title: `${Emojis.RedErrorCross} Not enough parameters.`,
-                    description: `Command Usage: \n${this.Usage}`,
-                    color: Colors.Error
-                });
-                return resolve(await message.channel.send(embd));
-            }
-
-            var user_id = Utils.parseID(args[0]);
-            var time    = Utils.parseShortTime(args[1]);
-            var reason  = message.content.slice(this.Trigger.length + args[0].length + args[1].length + 2);
-            var is_perm = args[1].toLowerCase() === "perm"; 
+            let member = interaction.guild.members.resolve(target_user)!;
+            let time           = interaction.commandName === "mute" ? Utils.parseShortTime(interaction.options.getString("time", true)) : undefined;
+            let is_perm        = interaction.commandName === "mute" ? interaction.options.getString("time", true) === "perm" : false;
 
             if(is_perm){
                 time = 1;
             }
 
-            if(user_id && user_id.length === 18){
-                var user = message.guild?.members.cache.get(user_id);
-                if(!user){
-                    var embd = new Discord.MessageEmbed({
-                        title: `${Emojis.RedErrorCross} Cannot find this user. Check your user's id, it may be incorrect.`,
-                        color: Colors.Error
-                    });
-                    return resolve(await message.channel.send(embd));
+            if(interaction.member.roles.highest.position >= member.roles.highest.position || interaction.member.permissions.has("ADMINISTRATOR")){
+                if(!time || time === 0){
+                    return resolve(await interaction.reply({ embeds: [ Utils.ErrMsg("Mute time not specified.") ] }));
+                }
+                let data = await this.Controller.data.getContainer(this.UUID);
+                let muted_users = (data.get("muted_users") || []) as IMutedUser[];
+
+                if(muted_users.find(mu => mu.discord_id === target_user.id)){
+                    return resolve(await interaction.reply({ embeds: [ Utils.ErrMsg("This User is already muted.") ] }));
                 }
 
-                if(message.member.roles.highest.position >= user.roles.highest.position || message.member?.hasPermission("ADMINISTRATOR")){
-                    if(!time || time === 0){
-                        var embd = new Discord.MessageEmbed({
-                            title: `${Emojis.RedErrorCross} Mute time not specified.`,
-                            color: Colors.Error
-                        });
-                        return resolve(await message.channel.send(embd));
-                    }
+                await member.roles.add(muted_role_id);
+
+                let ruser_id = this.Controller.bot.users.idFromDiscordId(target_user.id);
+                if(!ruser_id){
+                    await this.Controller.bot.users.createFromDiscord(target_user);
+                    ruser_id = this.Controller.bot.users.idFromDiscordId(target_user.id)!;
+                }
+                
+                let muted = {
+                    user_id: ruser_id,
+                    discord_id: target_user.id,
+                    discord_tag: target_user.tag,
                     
-                    if(!reason){
-                        var embd = new Discord.MessageEmbed({
-                            title: `${Emojis.RedErrorCross} Mute reason not specified.`,
-                            color: Colors.Error
-                        });
-                        return resolve(await message.channel.send(embd));
-                    }
+                    muter_id: user.id,
+                    muter_discord_id: interaction.user.id,
 
-                    if(!guild.MutedRoleID){
-                        var embd = new Discord.MessageEmbed({
-                            title: `${Emojis.RedErrorCross} No mute role configured.`,
-                            description: "Plese contact with your server's administrator to configure muted role.",
-                            color: Colors.Error
-                        });
-                        return resolve(await message.channel.send(embd));
-                    }
+                    mute_reason: reason,
+                    muted_at: new Date(),
+                    unmute_at: new Date(new Date().getTime() + time * 1000),
+                    guild_id: interaction.guild.id,
+                    muted_role_id: muted_role_id,
+                    is_perm_muted: is_perm,
+                    is_muted: true
+                };
+                muted_users.push(muted);
+                data.set("muted_users", muted_users);
 
-                    await user.roles.add(guild.MutedRoleID);
-
-                    MutedUser.findOrCreate({
-                        where: {
-                            DsID: user.id,
-                            GuildID: message.guild?.id
-                        },
-                        defaults: {
-                            DsID: user.id,
-                            Tag: user.user.tag,
-                            GuildID: message.guild?.id,
-                            MuterID: message.author.id,
-                            Reason: reason,
-                            MuteDate: new Date(),
-                            UnmuteDate: new Date(new Date().getTime() + time * 1000),
-                            IsMuted: true,
-                            IsPermMuted: is_perm,
-                            MuteRoleID: guild.MutedRoleID
-                        }
-                    }).then(async res => {
-                        var muser = res[0];
-                        if(!muser || !user){
-                            var embd = new Discord.MessageEmbed({
-                                title: `${Emojis.RedErrorCross} Something went wrong. Try again`,
-                                color: Colors.Error
-                            });
-                            return resolve(await message.channel.send(embd));
-                        }
-
-                        if(!guild.MutedRoleID){
-                            var embd = new Discord.MessageEmbed({
-                                title: `${Emojis.RedErrorCross} No mute role configured.`,
-                                description: "Please contact with your server's administrator to configure muted role.",
-                                color: Colors.Error
-                            });
-                            return resolve(await message.channel.send(embd));
-                        }
-
-                        if(!res[1]){
-                            muser.Tag = user.user.tag;
-                            muser.MuterID = message.author.id;
-                            muser.Reason = reason;
-                            muser.MuteDate = new Date();
-                            muser.UnmuteDate = new Date(new Date().getTime() + time * 1000);
-                            muser.IsMuted = true;
-                            muser.IsPermMuted = is_perm;
-                            muser.MuteRoleID = guild.MutedRoleID;
-                            await muser.save();
-                        }
-
-                        logger.info(`[${this.Name}]`, `User ${message.author.tag}(${message.author.id}) muted ${user.user.tag}(${user.id}). Unmute at: ${Utils.ts(muser.UnmuteDate)}`);
-                        var embd = new Discord.MessageEmbed({
-                            description: `**User ${message.author} muted ${user} on ${args[1]}.\nReason: ${reason}\nUnmute at: ${ is_perm ? "Never" : Utils.ts(muser.UnmuteDate)}**`,
-                            color: Colors.Success
-                        });
-                        await message.delete();
-                        return resolve(await message.channel.send(embd));
-                    }).catch(async res => {
-                        logger.error(`[${this.Name}]`, res);
-                        var embd = new Discord.MessageEmbed({
-                            title: `${Emojis.RedErrorCross} Unexpected error occured. Please contact with bot's support.`,
-                            color: Colors.Error
-                        });
-                        return resolve(await message.channel.send(embd));
-                    });
-                }else{
-                    var embd = new Discord.MessageEmbed({
-                        title: `${Emojis.RedErrorCross} You can't mute user, that upper than your highest role.`,
-                        description: `Contact with server administrator/member with higher role.`,
-                        color: Colors.Error
-                    });
-                    return resolve(await message.channel.send(embd));
-                }
+                this.Logger.Info(`User ${interaction.user.tag}(${interaction.user.id}) muted ${target_user.tag}(${target_user.id}). Unmute at: ${Utils.ts(muted.unmute_at)}`);
+                let embd = new Discord.MessageEmbed({
+                    description: `**User ${interaction.user} muted ${target_user} on ${interaction.options.getString("time", true)}.\nReason: ${reason}\nUnmute at: ${ is_perm ? "Never" : Utils.ts(muted.unmute_at)}**`,
+                    color: Colors.Success
+                });
+                return resolve(await interaction.reply({ embeds: [ embd ] }));
 
             }else{
-                var embd = new Discord.MessageEmbed({
-                    title: `${Emojis.RedErrorCross} User ID is invalid. Please, check it, and try again.`,
+                let embd = new Discord.MessageEmbed({
+                    title: `${Emojis.RedErrorCross} You can't mute user, that upper than your highest role.`,
+                    description: `Contact with server administrator/member with higher role.`,
                     color: Colors.Error
                 });
-                return resolve(await message.channel.send(embd));
+                return resolve(await interaction.reply({ embeds: [ embd ] }));
+            }
+
+        });
+    }
+
+    private unmute(interaction: Discord.CommandInteraction, user: User, reason: string, target_user: Discord.User){
+        return new Promise<Discord.Message | void>(async (resolve, reject) => {
+            if(!interaction.guild  || !(interaction.guild instanceof Discord.Guild) || !interaction.member  || !(interaction.member instanceof GuildMember)){
+                return resolve(await interaction.reply({ embeds: [ Utils.ErrMsg("This command is guild-only.") ] }));
+            }
+
+            let data = await this.Controller.data.getContainer(this.UUID);
+            let muted_users = (data.get("muted_users") || []) as IMutedUser[];
+            let muted = muted_users.find(mu => mu.discord_id === target_user.id);
+            if(muted && muted.is_muted){
+                muted.is_muted = false;
+                let target_member = interaction.guild.members.resolve(target_user);
+                await target_member?.roles.remove(muted.muted_role_id);
+
+                this.Logger.Info(`User ${interaction.user.tag}(${interaction.user.id}) unmuted ${target_user.tag}(${target_user.id})`);
+                let embd = new Discord.MessageEmbed({
+                    description: `**User ${interaction.user} unmuted ${target_user}. Reason: ${reason}**`,
+                    color: Colors.Success
+                });
+                return resolve(await interaction.reply({ embeds: [ embd ] }));
+            }else{
+                return resolve(await interaction.reply({ embeds: [ Utils.ErrMsg("This user not muted.") ] }));
+            }
+        });
+    }
+
+    public Run(interaction: Discord.CommandInteraction, user: User){
+        return new Promise<Discord.Message | void>(async (resolve, reject) => {
+            if(!interaction.guild  || !(interaction.guild instanceof Discord.Guild) || !interaction.member  || !(interaction.member instanceof GuildMember)){
+                return resolve(await interaction.reply({ embeds: [ Utils.ErrMsg("This command is guild-only.") ] }));
+            }
+
+            let mod_role_id = (await this.Controller.bot.config.get("guild", "moderator_role"))[interaction.guild.id] as string | undefined;
+            let muted_role_id = (await this.Controller.bot.config.get("guild", "muted_role"))[interaction.guild.id] as string | undefined;
+
+            if(!(interaction.member.permissions.has("ADMINISTRATOR") || interaction.member.roles.cache.get(mod_role_id || ""))){
+                return resolve(await interaction.reply({ embeds: [ Utils.ErrMsg("Only administrators or moderators can use this command.") ] }));
+            }
+
+            if(!mod_role_id){
+                return resolve(await interaction.reply({ embeds: [ Utils.ErrMsg("Moderator Role is not configured. Configure them with command `/config guild set field:moderator_role value_role:@Role`") ] }));
+            }
+            if(!muted_role_id){
+                return resolve(await interaction.reply({ embeds: [ Utils.ErrMsg("Muted Role is not configured. Configure them with command `/config guild set field:moderator_role value_role:@Role`. Or generate with `/rolegen mute`") ] }));
+            }
+
+            let target_user    = interaction.options.getUser("target", true);
+            let reason         = interaction.options.getString("reason", true);
+            
+            if(interaction.commandName === "mute"){
+                return resolve(await this.mute(interaction, user, target_user, reason, mod_role_id, muted_role_id));
+            }else if(interaction.commandName === "unmute"){
+                return resolve(await this.unmute(interaction, user, reason, target_user));
             }
         });
     }
 }
-
-export = Mute;
-*/

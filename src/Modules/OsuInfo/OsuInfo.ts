@@ -1,9 +1,8 @@
 import Discord, { Message } from "discord.js";
-import { Utils, Emojis, Colors, CustomMessageSettings } from "../../Utils";
-import { OsuAPI, OsuGameMode, OsuMap } from "./OsuAPI";
-import Module from "../Module";
-import ModuleManager from "../../ModuleManager";
 import { SlashCommandBuilder } from "@discordjs/builders";
+import { Colors, Emojis, Module, ModuleManager, Utils } from "rainbowbot-core";
+import { OsuAPI, OsuMap } from "./OsuAPI";
+
 
 export default class OsuInfo extends Module{
     public Name:        string = "OsuInfo";
@@ -36,11 +35,6 @@ export default class OsuInfo extends Module{
                     .addChoice("Catch",    2)
                 ) as SlashCommandBuilder
         );
-    }
-    
-    
-    public async Init(){
-        this.Controller.bot.PushSlashCommands(this.SlashCommands, process.env.NODE_ENV === "development" ? process.env.MASTER_GUILD : "global");
     }
     
     public Test(interaction: Discord.CommandInteraction){

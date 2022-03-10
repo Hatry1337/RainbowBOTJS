@@ -1,9 +1,6 @@
-import { SlashCommandBuilder } from "@discordjs/builders";
 import Discord from "discord.js";
-import { Guild } from "../../Models/Guild";
-import ModuleManager from "../../ModuleManager";
-import { Emojis, Colors, Utils } from "../../Utils";
-import Module from "../Module";
+import { SlashCommandBuilder } from "@discordjs/builders";
+import { Colors, Module, ModuleManager, Utils }  from "rainbowbot-core";
 
 export default class EiBall extends Module{
     public Name:        string = "8Ball";
@@ -50,7 +47,6 @@ export default class EiBall extends Module{
     public Run(interaction: Discord.CommandInteraction){
         return new Promise<Discord.Message | void>(async (resolve, reject) => {
             let question = interaction.options.getString("question", true);
-
             let flag = Math.random() < 0.5;
             let phrase = flag ? Utils.arrayRandElement(this.PhrasesYes) : Utils.arrayRandElement(this.PhrasesNo);
 
