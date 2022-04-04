@@ -69,6 +69,7 @@
     "forceConsistentCasingInFileNames": true        /* Disallow inconsistently-cased references to the same file. */
   },
   "exclude": [
-    "old_shit"
+    "old_shit",
+    "src/Modules/[BROKEN]"
   ]
 }

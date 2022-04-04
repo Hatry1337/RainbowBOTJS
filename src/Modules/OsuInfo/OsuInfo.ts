@@ -1,24 +1,21 @@
 import Discord, { Message } from "discord.js";
 import { SlashCommandBuilder } from "@discordjs/builders";
-import { Colors, Emojis, Module, ModuleManager, Utils } from "rainbowbot-core";
+import { Access, Colors, Emojis, Module, ModuleManager, RainbowBOT, Utils } from "rainbowbot-core";
 import { OsuAPI, OsuMap } from "./OsuAPI";
 
 
 export default class OsuInfo extends Module{
     public Name:        string = "OsuInfo";
-    public Usage:       string = "`!osuinfo <nickname>[ <mode>]`\n\n" +
-                          "**Examples:**\n" +
-                          "`!osuinfo HatryYT` - Shows HatryYT's osu! profile.\n\n";
-
     public Description: string = "Using this command users can view osu! profiles.";
     public Category:    string = "Utility";
     public Author:      string = "Thomasss#9258";
 
-    constructor(Controller: ModuleManager, UUID: string) {
-        super(Controller, UUID);
+    public Access: string[] = [ Access.PLAYER() ];
+
+    constructor(bot: RainbowBOT, UUID: string) {
+        super(bot, UUID);
         this.SlashCommands.push(
-            new SlashCommandBuilder()
-                .setName(this.Name.toLowerCase())
+            this.bot.interactions.createCommand(this.Name.toLowerCase(), this.Access, this, this.bot.moduleGlobalLoading ? undefined : this.bot.masterGuildId)
                 .setDescription(this.Description)
                 .addStringOption(opt => opt
                     .setName("nickname")
@@ -33,16 +30,14 @@ export default class OsuInfo extends Module{
                     .addChoice("Mania",    3)
                     .addChoice("Taiko",    1)
                     .addChoice("Catch",    2)
-                ) as SlashCommandBuilder
+                )
+                .onExecute(this.Run.bind(this))
+                .commit()
         );
-    }
-    
-    public Test(interaction: Discord.CommandInteraction){
-        return interaction.commandName.toLowerCase() === this.Name.toLowerCase();
     }
 
     public Run(interaction: Discord.CommandInteraction){
-        return new Promise<Discord.Message | void>(async (resolve, reject) => {
+        return new Promise<void>(async (resolve, reject) => {
             let nickname = interaction.options.getString("nickname", true);
             let mode = interaction.options.getNumber("mode") || 0;
 
@@ -54,7 +49,8 @@ export default class OsuInfo extends Module{
                     title: `${Emojis.RedErrorCross} No osu! player with this nickname!`,
                     color: Colors.Error
                 });
-                return resolve(await interaction.editReply({ embeds: [embd] }).catch(reject) as Message<boolean>);
+                await interaction.editReply({ embeds: [embd] }).catch(reject);
+                return resolve();
             }
             let scores = await OsuAPI.getOsuUserBestScores(nickname, mode);
             let maps: OsuMap[] = [];
@@ -101,7 +97,8 @@ export default class OsuInfo extends Module{
                 ]
             });
 
-            return resolve(await interaction.editReply({ embeds: [embd] }).catch(reject) as Message<boolean>);
+            await interaction.editReply({ embeds: [embd] }).catch(reject);
+            return resolve();
         });
     }
 

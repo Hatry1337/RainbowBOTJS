@@ -1,23 +1,22 @@
 import Discord from "discord.js";
-import { SlashCommandBuilder } from "@discordjs/builders";
 import TicTacToeGame, { TicTacToePlayer, TicTacToeSymbol } from "./TicTacToeGame";
-import { Colors, Module, ModuleManager, Utils } from "rainbowbot-core";
+import { Access, Colors, Module, RainbowBOT, Utils } from "rainbowbot-core";
+import { InteractiveButton, InteractiveCommand } from "rainbowbot-core/dist/InteractionsManager";
 
 export default class TicTacToe extends Module{
     public Name:        string = "TicTacToe";
-    public Usage:       string = "Play Tic Tac toe game.";
-
     public Description: string = "Using this command users can play Tic Tac toe game.";
     public Category:    string = "Game";
     public Author:      string = "Thomasss#9258";
 
+    public Access: string[] = [ Access.PLAYER() ];
+
     private TicTacToeGames: Map<string, TicTacToeGame> = new Map();
 
-    constructor(Controller: ModuleManager, UUID: string) {
-        super(Controller, UUID);
+    constructor(bot: RainbowBOT, UUID: string) {
+        super(bot, UUID);
         this.SlashCommands.push(
-            new SlashCommandBuilder()
-                .setName(this.Name.toLowerCase())
+            (this.bot.interactions.createCommand(this.Name.toLowerCase(), this.Access, this, this.bot.moduleGlobalLoading ? undefined : this.bot.masterGuildId)
                 .setDescription(this.Description)
                 .addSubcommand(opt => opt
                     .setName("new")
@@ -60,19 +59,16 @@ export default class TicTacToe extends Module{
                 .addSubcommand(opt => opt
                     .setName("cancel")
                     .setDescription("Cancel current game.")
-                ) as SlashCommandBuilder
+                ) as InteractiveCommand)
+                .onExecute(this.Run.bind(this))
+                .commit()
         );
     }
-    
-    public Test(interaction: Discord.CommandInteraction){
-        return interaction.commandName.toLowerCase() === this.Name.toLowerCase();
-    }
 
-    private async buttonEvent(interaction: Discord.ButtonInteraction){
-        let args = interaction.customId.split("-");
+    private async buttonEvent(interaction: Discord.ButtonInteraction, button: InteractiveButton, buttonNumber: number){
         let gm = this.TicTacToeGames.get(interaction.channelId);
         if(!gm || gm.isGameEnded){
-            this.Controller.bot.events.ButtonEventUnSubscribe(interaction.customId);
+            button.destroy();
             return;
         }
         let player;
@@ -83,7 +79,9 @@ export default class TicTacToe extends Module{
         }else{
             return;
         }
-        gm.makeMove(player, parseInt(args[3]));
+        if(button.label && !isNaN(parseInt(button.label))){
+            gm.makeMove(player, parseInt(button.label)); //FIXME: use buttonNumber instead of this hack, but something is wrong with callback.
+        }
         if(gm.isGameEnded){
             await interaction.update(this.makeResultMessage(gm));
         }else{
@@ -105,19 +103,23 @@ export default class TicTacToe extends Module{
         });
         let compons: Discord.MessageActionRow[] = [];
         
+        for(let c of game.controls){
+            c.destroy();
+        }
+        game.controls = [];
+        
         for(let i = 0; i < game.fieldSize; i++){
             let row = new Discord.MessageActionRow();
             let j = i * game.fieldSize;
             for(let s of game.field.slice(i * game.fieldSize, game.fieldSize + (i*game.fieldSize))){
-                let btn_cid = `ttt-move-${game.interaction.channelId}-${j}`;
-                row.addComponents(
-                    new Discord.MessageButton()
-                        .setCustomId(btn_cid)
-                        .setLabel(s ? (s === "cross" ? "❌" : "⭕") : j.toString())
-                        .setStyle("PRIMARY")
-                        .setDisabled(s ? true : false)
-                );
-                this.Controller.bot.events.ButtonEventSubscribe(btn_cid, this.buttonEvent.bind(this));
+                let button = this.bot.interactions.createButton()
+                    .setLabel(s ? (s === "cross" ? "❌" : "⭕") : j.toString())
+                    .setStyle("PRIMARY")
+                    .setDisabled(s ? true : false)
+                    .onClick(async int => await this.buttonEvent(int, button, j))
+
+                row.addComponents(button);
+                game.controls.push(button);
                 j++;
             }
             compons.push(row);
@@ -150,7 +152,7 @@ export default class TicTacToe extends Module{
     }
 
     private CreateNew(interaction: Discord.CommandInteraction){
-        return new Promise<Discord.Message | void>(async (resolve, reject) => {
+        return new Promise<void>(async (resolve, reject) => {
             if(this.TicTacToeGames.has(interaction.channelId)){
                 let embd = new Discord.MessageEmbed({
                     title: `Tic Tac Toe Game`,
@@ -193,9 +195,10 @@ export default class TicTacToe extends Module{
             });
 
             game.on("game_over", async (player?: TicTacToePlayer) => {
-                for(let i = 0; i < game.field.length; i++){
-                    this.Controller.bot.events.ButtonEventUnSubscribe(`ttt-move-${game.interaction.channelId}-${i}`);
+                for(let c of game.controls){
+                    c.destroy();
                 }
+                game.controls = [];
                 this.TicTacToeGames.delete(interaction.channelId);
             });
 
@@ -206,7 +209,7 @@ export default class TicTacToe extends Module{
     }
 
     private CreateAI_AI(interaction: Discord.CommandInteraction){
-        return new Promise<Discord.Message | void>(async (resolve, reject) => {
+        return new Promise<void>(async (resolve, reject) => {
             if(this.TicTacToeGames.has(interaction.channelId)){
                 let embd = new Discord.MessageEmbed({
                     title: `Tic Tac Toe Game`,
@@ -240,9 +243,10 @@ export default class TicTacToe extends Module{
             });
 
             game.on("game_over", async (player?: TicTacToePlayer) => {
-                for(let i = 0; i < game.field.length; i++){
-                    this.Controller.bot.events.ButtonEventUnSubscribe(`ttt-move-${game.interaction.channelId}-${i}`);
+                for(let c of game.controls){
+                    c.destroy();
                 }
+                game.controls = [];
                 this.TicTacToeGames.delete(interaction.channelId);
             });
 
@@ -253,7 +257,7 @@ export default class TicTacToe extends Module{
     }
 
     private CancelCurrent(interaction: Discord.CommandInteraction){
-        return new Promise<Discord.Message | void>(async (resolve, reject) => {
+        return new Promise<void>(async (resolve, reject) => {
             let game = this.TicTacToeGames.get(interaction.channelId);
             if(game){
                 if(game.player1.user?.id === interaction.user.id || game.player2.user?.id === interaction.user.id){
@@ -291,7 +295,7 @@ export default class TicTacToe extends Module{
     }
 
     public Run(interaction: Discord.CommandInteraction){
-        return new Promise<Discord.Message | void>(async (resolve, reject) => {
+        return new Promise<void>(async (resolve, reject) => {
             let sub = interaction.options.getSubcommand();
 
             if(!sub){

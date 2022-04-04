@@ -1,16 +1,13 @@
 import Discord from "discord.js";
-import { SlashCommandBuilder } from "@discordjs/builders";
-import { Colors, Module, ModuleManager, Utils }  from "rainbowbot-core";
+import { Access, Colors, Module, RainbowBOT, Utils }  from "rainbowbot-core";
 
 export default class EiBall extends Module{
     public Name:        string = "8Ball";
-    public Usage:       string = "`!8ball <question>`\n\n" +
-                          "**Example:**\n" +
-                          "`!8ball Does she love me?` - Get answer on a question from 8Ball.\n\n";
-
     public Description: string = "Using this command you can ask 8Ball something.";
     public Category:    string = "Utility";
     public Author:      string = "Thomasss#9258";
+
+    public Access: string[] = [ Access.PLAYER() ];
 
     private PhrasesYes: string[] = [
         "I think yes.",
@@ -30,22 +27,23 @@ export default class EiBall extends Module{
         "I don't think so.",
     ]
 
-    constructor(Controller: ModuleManager, UUID: string) {
-        super(Controller, UUID);
+    constructor(bot: RainbowBOT, UUID: string) {
+        super(bot, UUID);
         this.SlashCommands.push(
-            new SlashCommandBuilder()
-                .setName(this.Name.toLowerCase())
+            this.bot.interactions.createCommand(this.Name.toLowerCase(), this.Access, this, this.bot.moduleGlobalLoading ? undefined : this.bot.masterGuildId)
                 .setDescription(this.Description)
                 .addStringOption(opt => opt
                     .setName("question")
                     .setDescription("Question to ask Magic Eight Ball.")
                     .setRequired(true)
-                ) as SlashCommandBuilder
+                )
+                .onExecute(this.Run.bind(this))
+                .commit()
         );
     }
     
     public Run(interaction: Discord.CommandInteraction){
-        return new Promise<Discord.Message | void>(async (resolve, reject) => {
+        return new Promise<void>(async (resolve, reject) => {
             let question = interaction.options.getString("question", true);
             let flag = Math.random() < 0.5;
             let phrase = flag ? Utils.arrayRandElement(this.PhrasesYes) : Utils.arrayRandElement(this.PhrasesNo);

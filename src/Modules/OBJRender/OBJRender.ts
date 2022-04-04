@@ -5,25 +5,20 @@ import IgniRender from "./IgniRender/IgniRender";
 import GIFEncoder from "gifencoder";
 import Camera from "./IgniRender/Scene/Camera";
 import { v3zero } from "./IgniRender/Utils3D";
-import { Colors, Module, ModuleManager } from "rainbowbot-core";
+import { Access, Colors, Module, ModuleManager, RainbowBOT } from "rainbowbot-core";
 
 export default class OBJRender extends Module{
     public Name:        string = "OBJRender";
-    public Usage:       string = "`!rhelp [<page> <category>] `\n\n" +
-                          "**Examples:**\n" +
-                          "`!rhelp` - Shows first page of help menu.\n\n" +
-                          "`!rhelp 2` - Shows second page of help menu.\n\n" +
-                          "`!rhelp 1 Info` - Shows first page of \`Info\` category commands.\n\n";
-
     public Description: string = "Using this command you can render your .obj model file into image.";
     public Category:    string = "Graphics";
     public Author:      string = "Thomasss#9258";
+
+    public Access: string[] = [ Access.PLAYER() ];
     
-    constructor(Controller: ModuleManager, UUID: string) {
-        super(Controller, UUID);
+    constructor(bot: RainbowBOT, UUID: string) {
+        super(bot, UUID);
         this.SlashCommands.push(
-            new SlashCommandBuilder()
-                .setName(this.Name.toLowerCase())
+            this.bot.interactions.createCommand(this.Name.toLowerCase(), this.Access, this, this.bot.moduleGlobalLoading ? undefined : this.bot.masterGuildId)
                 .setDescription(this.Description)
                 .addNumberOption(opt => opt
                     .setName("scale")
@@ -71,16 +66,14 @@ export default class OBJRender extends Module{
                 .addBooleanOption(opt => opt
                     .setName("gif_rot")
                     .setDescription("Render as rotation gif animation.")
-                ) as SlashCommandBuilder
+                )
+                .onExecute(this.Run.bind(this))
+                .commit()
         );
     }
 
-    public Test(interaction: Discord.CommandInteraction){
-        return interaction.commandName.toLowerCase() === this.Name.toLowerCase();
-    }
-    
     public Run(interaction: Discord.CommandInteraction){
-        return new Promise<Discord.Message | void>(async (resolve, reject) => {
+        return new Promise<void>(async (resolve, reject) => {
             let embd = new Discord.MessageEmbed({
                 title: `OBJ Model Render`,
                 description: "Reply with attached model file on this message. `(size < 1.5MB, .obj extension)`",
@@ -104,7 +97,8 @@ export default class OBJRender extends Module{
                     description: "Reply timedout or incorrect file provided.",
                     color: Colors.Noraml
                 });
-                return resolve(await interaction.editReply({ embeds: [embd] }).catch(reject) as Discord.Message); 
+                await interaction.editReply({ embeds: [embd] }).catch(reject);
+                return resolve(); 
             }else{
                 let attachment = message.attachments.find(a => (a.name?.endsWith(".obj") && a.size < 100 * 1024 * 1024) ? true : false )!;
                 got(attachment.url).then(async data => {
@@ -150,7 +144,8 @@ export default class OBJRender extends Module{
 
                     if(!gif_anim){
                         let img = await cam.Render();
-                        return resolve(message!.reply({ files: [ { attachment: img.toBuffer("image/png"), name: "render.png" } ]}).catch(reject));
+                        await message!.reply({ files: [ { attachment: img.toBuffer("image/png"), name: "render.png" } ]}).catch(reject);
+                        return resolve();
                     }else{
                         let encoder = new GIFEncoder(960, 540);
                         encoder.setDelay(100);
@@ -162,7 +157,8 @@ export default class OBJRender extends Module{
                             encoder.addFrame(f.getContext("2d"));
                         }
                         encoder.finish();
-                        return resolve(await message!.reply({ files: [ { attachment: encoder.out.getData(), name: "out.gif" } ]}).catch(reject));
+                        await message!.reply({ files: [ { attachment: encoder.out.getData(), name: "out.gif" } ]}).catch(reject);
+                        return resolve();
                     }
                 }).catch(reject);
             }

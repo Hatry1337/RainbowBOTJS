@@ -1,5 +1,6 @@
 import { CommandInteraction, User } from "discord.js";
 import EventEmitter from "events";
+import { InteractiveButton } from "rainbowbot-core/dist/InteractionsManager";
 import ttt_ai, { HardAI } from "tictactoe-complex-ai";
 
 export type TicTacToeSymbol = "cross" | "circle";
@@ -40,6 +41,7 @@ export default class TicTacToeGame extends EventEmitter{
     public currentMove: TicTacToeSymbol = "cross";
     public field: (TicTacToeSymbol | null)[] = new Array(9).fill(null);
     public isGameEnded: boolean = false;
+    public controls: InteractiveButton[] = [];
     public winner?: TicTacToePlayer;
 
     constructor(public interaction: CommandInteraction, public fieldSize: number, player1: TicTacToePlayer, player2?: TicTacToePlayer){
