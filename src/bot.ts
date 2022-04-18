@@ -13,6 +13,7 @@ import Clear from './Modules/Clear/Clear';
 import RBFetch from './Modules/RBFetch/RBFetch';
 import Servers from './Modules/Servers/Servers';
 import VoiceStats from './Modules/VoiceStats/VoiceStats';
+import MathTools from './Modules/MathTools/MathTools';
 
 declare global {
     namespace NodeJS {
@@ -44,6 +45,7 @@ const modules: {
     { Module: Servers,      UUID: "c988ffed-5578-5121-95c4-7f8b7566f0df"},
     { Module: TicTacToe,    UUID: "ef61bc11-cb82-5ecb-b392-ba50db2355ab"},
     { Module: VoiceStats,   UUID: "6a308390-96a1-5b61-a348-6fdcca0734fe"},
+    { Module: MathTools,    UUID: "c9242a7e-9d29-50b8-8f5a-3bf976739d95"},
     
 ]
 

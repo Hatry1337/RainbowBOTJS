@@ -54,12 +54,14 @@ export default class RBFetch extends Module{
         
         if(stats.last_hour !== date.getHours()){
             stats.rq_h = 0;
+            stats.last_hour = date.getHours();
         }else{
             stats.rq_h++;
         }
 
         if(stats.last_day !== date.getDate()){
             stats.rq_d = 0;
+            stats.last_day = date.getDate();
         }else{
             stats.rq_d++;
         }
@@ -87,7 +89,8 @@ export default class RBFetch extends Module{
         let mem = await si.mem();
         let load = await si.currentLoad();
 
-        let meminfo = `${Math.floor(mem.available / 1024 / 1024)}M/${Math.floor(mem.total / 1024 / 1024)}M, BOT: ${Math.floor(process.memoryUsage().rss / 1024 /1024)}M`;
+        let meminfo = `${Math.floor(mem.available / 1024 / 1024)}MiB / ${Math.floor(mem.total / 1024 / 1024)}MiB`;
+        let botmem = `${Math.floor(process.memoryUsage().rss / 1024 /1024)}MiB`;
         let cpuinfo = `${Math.floor(load.currentLoad)}%, AVG: ${load.avgLoad}`;
 
         let compact = false;
@@ -112,7 +115,7 @@ export default class RBFetch extends Module{
             `       .*///,.        ..  *///*.            Node: ${nodev}`                     + "\n" +
             `      ,*/////,       ,*,  ,*////*,          Uptime: ${uptime}`                  + "\n" +
             `    .,///////,      .**,. ,*///////,.       WS_Ping: ${ping} ms.`               + "\n" +
-            `    ,////////,    .,/,.  .*/////////*.      Modules: ${modules} (cmd)`          + "\n" +
+            `    ,////////,    .,/,.  .*/////////*.      Modules: ${modules} (rbc)`          + "\n" +
             `   ,*/(//////*.         ,*////////////,     DB_Users: ${cache_users}`           + "\n" +
             `   ,*/////////*.      .,*/////////////,.    Discord_Users: ${disc_users}`       + "\n" +
             `   **//////////*,   .**///////////*****,    Discord_Servers: ${disc_servs}`     + "\n" +
@@ -120,8 +123,8 @@ export default class RBFetch extends Module{
             `   ,******//////////**************,,,,,.    Requests_1d: ${rq_handl_d}`         + "\n" +
             `   ,*//////***************,,,,,,,,,,,,,.    Requests_1h: ${rq_handl_h}`         + "\n" +
             `   .*//////**********,,,,,,,,,,,,,,,,,,.    Memory: ${meminfo}`                 + "\n" +
-            `    ,//////**,,,,,,,,,,,,,,,,,,,,,,,,,.     CPU_Load: ${cpuinfo}`               + "\n" +
-            `     .********,,,,,,,,,,,,,,,,,,,,,,.     `                                     + "\n" +
+            `    ,//////**,,,,,,,,,,,,,,,,,,,,,,,,,.     Memory_BOT: ${botmem}`              + "\n" +
+            `     .********,,,,,,,,,,,,,,,,,,,,,,.       CPU_Load: ${cpuinfo}`               + "\n" +
             `       .,***,,,,,,,,,,,,,,,,,,,,,,,       `                                     + "\n" +
             `          .,,,,,,,,,,,,,,,,,,,..          `                                     + "\n" +
             `              ............                `                                     + "\n" +
