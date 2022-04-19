@@ -676,6 +676,7 @@ export default class MathTools extends Module{
         let x = x_start;
         let scope = { x, y: 0 };
         let out_of_bounds_flag = true;
+        let func_gap = false;
 
         ctx.beginPath();
         while(x <= x_end){
@@ -686,6 +687,29 @@ export default class MathTools extends Module{
                 throw new RainbowBOTUserError("Error parsing expression:", err?.message || undefined)
             }
             let y = scope.y;
+            if(isNaN(y) || y === undefined){
+                func_gap = true;
+            }
+        
+            if(func_gap){
+                while((isNaN(y) || y === undefined) && x <= x_end){
+                    x += h;
+                    scope.x = x;
+                    try {
+                        math_expr.evaluate(scope);
+                    } catch (err: any) {
+                        throw new RainbowBOTUserError("Error parsing expression:", err?.message || undefined)
+                    }
+                    y = scope.y;
+                }
+                func_gap = false;
+                let x1 = Math.trunc(x * zoom) + x0;
+                let y1 = Math.trunc(-y * zoom) + y0;
+                ctx.moveTo(x1, y1);
+                func_gap = false;
+                x += h;
+                continue;
+            }
 
             let x1 = Math.trunc(x * zoom) + x0;
             let y1 = Math.trunc(-y * zoom) + y0;
