@@ -35,7 +35,13 @@ export default class Quote extends Module{
 
         let img;
         try {
-            let data = await got<Buffer>(interaction.user.avatarURL({format: "png", size: 512}) || interaction.user.defaultAvatarURL);
+            let url;
+            if(interaction.inCachedGuild()){
+                url = interaction.targetMessage.author.avatarURL({ format: "png", size: 512 });
+            }else{
+                url = `https://cdn.discordapp.com/avatars/${interaction.targetMessage.author.id}/${interaction.targetMessage.author.avatar}.png?size=512`;
+            }
+            let data = await got<Buffer>(url || interaction.user.defaultAvatarURL);
             img = await loadImage(data.rawBody);
         } catch (error: any) {
             if(error?.message?.startsWith("Unsupported image type")){
@@ -47,7 +53,7 @@ export default class Quote extends Module{
             throw error;
         }
 
-        let quote = await Quote.drawQuoteCard(img, 1200, 300, interaction.targetMessage.content, interaction.user.tag);
+        let quote = await Quote.drawQuoteCard(img, 1200, 300, interaction.targetMessage.content, interaction.targetMessage.author.username + "#" + interaction.targetMessage.author.discriminator);
         await interaction.editReply({files: [quote.toBuffer("image/png")]});
     }
 
@@ -108,7 +114,7 @@ export default class Quote extends Module{
         }
         
         ctx.font = "italic 24px Comfortaa";
-        ctx.fillText("- Thomasss#9258", half_width + (pic_fact_width / 2) - (margin_right / 2), margin_y + text_pos);
+        ctx.fillText("- " + author, half_width + (pic_fact_width / 2) - (margin_right / 2), margin_y + text_pos);
         return canvas;
     }
 }
