@@ -1,8 +1,9 @@
-import Discord from "discord.js";
-import { Access, InteractiveCommand, Module, RainbowBOT, RainbowBOTUserError } from "rainbowbot-core";
+import Discord, { ApplicationCommand } from "discord.js";
+import { Access, InteractiveCommand, InteractiveSlashCommand, Module, RainbowBOT, RainbowBOTUserError } from "rainbowbot-core";
 import { create, all, } from "mathjs";
 import { Canvas, createCanvas } from "canvas";
 import _ from "lodash";
+import { ContextMenuCommandBuilder } from "@discordjs/builders";
 
 export default class MathTools extends Module{
     public Name:        string = "MathTools";
@@ -16,7 +17,8 @@ export default class MathTools extends Module{
         super(bot, UUID);
 
         this.SlashCommands.push(
-            (this.bot.interactions.createCommand("math", this.Access, this, this.bot.moduleGlobalLoading ? undefined : this.bot.masterGuildId)
+            this.bot.interactions.createSlashCommand("math", this.Access, this, this.bot.moduleGlobalLoading ? undefined : this.bot.masterGuildId)
+            .build(builder => builder
                 .setDescription("Math functions, constants, and other useful stuff. Use `/math commands` to view list of commands.")
                 
                 .addSubcommand(scmd => scmd
@@ -357,9 +359,10 @@ export default class MathTools extends Module{
                         .setName("random")
                         .setDescription("Returns random number between 0 and 1.")
                     )
-                ) as InteractiveCommand)
-                .onExecute(this.Run.bind(this))
-                .commit(),
+                )
+            )
+            .onExecute(this.Run.bind(this))
+            .commit(),
         );
     }
 
@@ -369,7 +372,7 @@ export default class MathTools extends Module{
             .setDescription("\`\`\`" + answ + "\`\`\`")
             .setColor(0x1483de);
     }
-
+    
     public async Run(interaction: Discord.CommandInteraction){
         let subcmd = interaction.options.getSubcommand(true);
         
@@ -533,11 +536,11 @@ export default class MathTools extends Module{
                 let width = 1000;
                 let height = 1000;
                 
-                let canvas = this.prepareCanvas(width, height, zoom);
+                let canvas = MathTools.prepareCanvas(width, height, zoom);
 
                 let colors = [ "#0000FF", "#00FF00", "#FF0000" ]
                 for(let c of compiled.slice(0, 3)){
-                    await this.drawMathCurve(canvas, c, colors.pop()!, zoom, resolution);
+                    await MathTools.drawMathCurve(canvas, c, colors.pop()!, zoom, resolution);
                 }
 
                 let img = new Discord.MessageAttachment(canvas.toBuffer("image/png"), "graph.png");
@@ -599,7 +602,7 @@ export default class MathTools extends Module{
         }
     }
 
-    private prepareCanvas(width: number, height: number, zoom: number){
+    public static prepareCanvas(width: number, height: number, zoom: number){
         let x0 = Math.floor(width / 2);
         let y0 = Math.floor(height / 2);
 
@@ -659,7 +662,7 @@ export default class MathTools extends Module{
         return canvas;
     }
 
-    private async drawMathCurve(canvas: Canvas, math_expr: math.EvalFunction, color: string, zoom: number, resolution: number){
+    public static async drawMathCurve(canvas: Canvas, math_expr: math.EvalFunction, color: string, zoom: number, resolution: number){
         let ctx = canvas.getContext("2d");
         ctx.strokeStyle = color;
         ctx.lineWidth = 3;

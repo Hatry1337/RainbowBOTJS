@@ -24,15 +24,17 @@ export default class RBFetch extends Module{
         this.bot.client.on("interactionCreate", this.onInteraction.bind(this));
 
         this.SlashCommands.push(
-            this.bot.interactions.createCommand(this.Name.toLowerCase(), this.Access, this, this.bot.moduleGlobalLoading ? undefined : this.bot.masterGuildId)
+            this.bot.interactions.createSlashCommand(this.Name.toLowerCase(), this.Access, this, this.bot.moduleGlobalLoading ? undefined : this.bot.masterGuildId)
+            .build(builder => builder
                 .setDescription(this.Description)
                 .addBooleanOption(opt => opt
                     .setName("compact")
                     .setDescription("Show rbfetch in compact mode.")
                     .setRequired(false)
                 )
-                .onExecute(this.Run.bind(this))
-                .commit(),
+            )
+            .onExecute(this.Run.bind(this))
+            .commit(),
         );
     }
 

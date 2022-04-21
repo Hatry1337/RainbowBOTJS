@@ -13,7 +13,8 @@ export default class Anek extends Module{
     constructor(bot: RainbowBOT, UUID: string) {
         super(bot, UUID);
         this.SlashCommands.push(
-            this.bot.interactions.createCommand(this.Name.toLowerCase(), this.Access, this, this.bot.moduleGlobalLoading ? undefined : this.bot.masterGuildId)
+            this.bot.interactions.createSlashCommand(this.Name.toLowerCase(), this.Access, this, this.bot.moduleGlobalLoading ? undefined : this.bot.masterGuildId)
+            .build(builder => builder
                 .setDescription(this.Description)
                 .addStringOption(opt => opt
                     .setName("tag")
@@ -25,8 +26,9 @@ export default class Anek extends Module{
                     .setDescription("BAnek query id.")
                     .setRequired(false)
                 )
-                .onExecute(this.Run.bind(this))
-                .commit()
+            )
+            .onExecute(this.Run.bind(this))
+            .commit()
         );
     }
     

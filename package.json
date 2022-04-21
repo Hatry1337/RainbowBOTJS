@@ -33,6 +33,7 @@
     "reflect-metadata": "^0.1.13",
     "sequelize": "^6.6.2",
     "sequelize-typescript": "^2.1.0",
+    "sharp": "^0.30.4",
     "systeminformation": "^5.11.9",
     "tictactoe-complex-ai": "^1.0.1",
     "treeify": "^1.1.0",
@@ -45,6 +46,7 @@
     "@types/gm": "^1.18.11",
     "@types/node": "^17.0.24",
     "@types/sequelize": "^4.28.9",
+    "@types/sharp": "^0.30.2",
     "@types/treeify": "^1.0.0",
     "@types/validator": "^13.1.4"
   }

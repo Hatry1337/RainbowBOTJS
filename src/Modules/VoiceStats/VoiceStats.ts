@@ -30,7 +30,8 @@ export default class VoiceStats extends Module{
     constructor(bot: RainbowBOT, UUID: string) {
         super(bot, UUID);
         this.SlashCommands.push(
-            this.bot.interactions.createCommand("vcstats", this.Access, this, this.bot.moduleGlobalLoading ? undefined : this.bot.masterGuildId)
+            this.bot.interactions.createSlashCommand("vcstats", this.Access, this, this.bot.moduleGlobalLoading ? undefined : this.bot.masterGuildId)
+            .build(builder => builder
                 .setDescription(this.Description)
                 .addChannelOption(opt => opt
                     .setName("channel")
@@ -42,8 +43,9 @@ export default class VoiceStats extends Module{
                     .setDescription("Guild ID to watch top on.")
                     .setRequired(false)
                 )
-                .onExecute(this.Run.bind(this))
-                .commit(),
+            )
+            .onExecute(this.Run.bind(this))
+            .commit(),
         );
     }
 

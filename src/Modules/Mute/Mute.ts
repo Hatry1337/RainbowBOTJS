@@ -33,7 +33,8 @@ export default class Mute extends Module{
     constructor(bot: RainbowBOT, UUID: string) {
         super(bot, UUID);
         this.SlashCommands.push(
-            this.bot.interactions.createCommand("mute", this.Access, this, this.bot.moduleGlobalLoading ? undefined : this.bot.masterGuildId)
+            this.bot.interactions.createSlashCommand("mute", this.Access, this, this.bot.moduleGlobalLoading ? undefined : this.bot.masterGuildId)
+            .build(builder => builder
                 .setDescription("Using this command admins and mods can mute users.")
                 .addUserOption(opt => opt
                     .setName("target")
@@ -50,10 +51,12 @@ export default class Mute extends Module{
                     .setDescription("Mute time (`1d` `1h` `1m` `1s` `perm`).")
                     .setRequired(true)    
                 )
-                .onExecute(this.Run.bind(this))
-                .commit(),
+            )
+            .onExecute(this.Run.bind(this))
+            .commit(),
 
-            this.bot.interactions.createCommand("unmute", this.Access, this,  this.bot.moduleGlobalLoading ? undefined : this.bot.masterGuildId)
+            this.bot.interactions.createSlashCommand("unmute", this.Access, this,  this.bot.moduleGlobalLoading ? undefined : this.bot.masterGuildId)
+            .build(builder => builder
                 .setDescription("Using this command admins and mods can unmute users.")
                 .addUserOption(opt => opt
                     .setName("target")
@@ -65,8 +68,9 @@ export default class Mute extends Module{
                     .setDescription("Reason of unmute.")
                     .setRequired(true)  
                 )
-                .onExecute(this.Run.bind(this))
-                .commit()
+            )
+            .onExecute(this.Run.bind(this))
+            .commit()
         );
         
         this.CheckerTimer = setInterval(async () => {

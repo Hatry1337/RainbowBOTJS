@@ -1,5 +1,5 @@
 import Discord from "discord.js";
-import { Access, Colors, InteractiveCommand, Module, RainbowBOT, RainbowBOTUserError, User } from "rainbowbot-core";
+import { Access, Colors, InteractiveCommand, InteractiveSlashCommand, Module, RainbowBOT, RainbowBOTUserError, User } from "rainbowbot-core";
 
 
 export default class Servers extends Module{
@@ -13,7 +13,8 @@ export default class Servers extends Module{
     constructor(bot: RainbowBOT, UUID: string) {
         super(bot, UUID);
         this.SlashCommands.push(
-            (this.bot.interactions.createCommand(this.Name.toLowerCase(), this.Access, this, this.bot.moduleGlobalLoading ? undefined : this.bot.masterGuildId)
+            this.bot.interactions.createSlashCommand(this.Name.toLowerCase(), this.Access, this, this.bot.moduleGlobalLoading ? undefined : this.bot.masterGuildId)
+            .build(builder => builder
                 .setDescription(this.Description)
                 .addSubcommand(sub => sub
                     .setName("list")
@@ -38,9 +39,10 @@ export default class Servers extends Module{
                         .setDescription("Guild ID to leave from.")
                         .setRequired(true)    
                     )
-                ) as InteractiveCommand)
-                .onExecute(this.Run.bind(this))
-                .commit()
+                )
+            )
+            .onExecute(this.Run.bind(this))
+            .commit()
         );
     }
 

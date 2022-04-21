@@ -1,7 +1,7 @@
 import Discord from "discord.js";
 import TicTacToeGame, { TicTacToePlayer, TicTacToeSymbol } from "./TicTacToeGame";
 import { Access, Colors, Module, RainbowBOT, Utils } from "rainbowbot-core";
-import { InteractiveButton, InteractiveCommand } from "rainbowbot-core/dist/InteractionsManager";
+import { InteractiveButton, InteractiveCommand, InteractiveSlashCommand } from "rainbowbot-core/dist/InteractionsManager";
 
 export default class TicTacToe extends Module{
     public Name:        string = "TicTacToe";
@@ -16,7 +16,8 @@ export default class TicTacToe extends Module{
     constructor(bot: RainbowBOT, UUID: string) {
         super(bot, UUID);
         this.SlashCommands.push(
-            (this.bot.interactions.createCommand(this.Name.toLowerCase(), this.Access, this, this.bot.moduleGlobalLoading ? undefined : this.bot.masterGuildId)
+            this.bot.interactions.createSlashCommand(this.Name.toLowerCase(), this.Access, this, this.bot.moduleGlobalLoading ? undefined : this.bot.masterGuildId)
+            .build(builder => builder
                 .setDescription(this.Description)
                 .addSubcommand(opt => opt
                     .setName("new")
@@ -59,9 +60,10 @@ export default class TicTacToe extends Module{
                 .addSubcommand(opt => opt
                     .setName("cancel")
                     .setDescription("Cancel current game.")
-                ) as InteractiveCommand)
-                .onExecute(this.Run.bind(this))
-                .commit()
+                )
+            )
+            .onExecute(this.Run.bind(this))
+            .commit()
         );
     }
 
