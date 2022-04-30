@@ -13,14 +13,14 @@ export default class IgniRender{
     public PrepareScene(cam_pos: vec3, cam_rot: vec3){
         this.Faces = [];
         for(let obj of this.Scene.filter(o => o instanceof PolyObject) as PolyObject[]){
-            for(let f of obj.Faces){
+            obj.CalculateMash();
+            for(let f of obj.calculatedMash){
                 let face: Face = {
                     vertices: [],
                     color: 0xFFFFFF
                 }
                 for(let v of f.vertices){
-                    let vert = v3sum(v3rotate(v, obj.Rotation), obj.Position);
-                    vert = v3sum(v3rotate(vert, cam_rot), cam_pos);
+                    let vert = v3sum(v3rotate(v, cam_rot), cam_pos);
                     face.vertices.push(vert);
                 }
                 face.center = getFaceCenter(face);
@@ -30,7 +30,28 @@ export default class IgniRender{
                 }
             }
         }
-        this.Faces.sort((a, b) => v3distance(cam_pos, a.center!) - v3distance(cam_pos, b.center!));
+
+        let fcs = [];
+
+        for(let f of this.Faces){
+            let nearest = v3distance(cam_pos, f.vertices[0]);
+            for(let v of f.vertices){
+                let dist = v3distance(cam_pos, v);
+                if(dist < nearest){
+                    nearest = dist;
+                }
+            }
+            fcs.push({
+                distance: nearest,
+                face: f
+            });
+        }
+        console.log(fcs);
+        fcs.sort((a, b) => b.distance - a.distance);
+        this.Faces = [];
+        for(let f of fcs){
+            this.Faces.push(f.face);
+        }
     }
 
     public Render(rwidth: number, rheight: number, focal: number, cam_pos: vec3, cam_rot: vec3, cam_size: vec2, style: RenderStyle, projection: RenderProjection): Canvas {
@@ -40,6 +61,7 @@ export default class IgniRender{
         ctx.fillRect(0,0, canvas.width, canvas.height);
         ctx.fillStyle = "black";
 
+        this.PrepareScene(cam_pos, cam_rot);
         for(let f of this.Faces){
             ctx.beginPath();
             

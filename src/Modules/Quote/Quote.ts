@@ -1,4 +1,4 @@
-import { Access, Module, RainbowBOT, RainbowBOTUserError } from "rainbowbot-core";
+import { Access, Module, Synergy, SynergyUserError } from "synergy3";
 import Discord from "discord.js";
 import { createCanvas, Image, loadImage } from "canvas";
 import got, { HTTPError } from "got/dist/source";
@@ -6,13 +6,13 @@ import RainbowBOTUtils from "../../RainbowBOTUtils";
 
 export default class Quote extends Module{
     public Name:        string = "Quote";
-    public Description: string = "Quote Module.";
+    public Description: string = "Using this module you can create quotes from messages (Click RMB on message -> Applications -> Quote)";
     public Category:    string = "Utility";
     public Author:      string = "Thomasss#9258";
 
-    public Access: string[] = [ Access.PLAYER(), Access.BANNED() ]
+    public Access: string[] = [ Access.PLAYER() ]
 
-    constructor(bot: RainbowBOT, UUID: string) {
+    constructor(bot: Synergy, UUID: string) {
         super(bot, UUID);
         this.bot.interactions.createMenuCommand(this.Name, this.Access, this, this.bot.moduleGlobalLoading ? undefined : this.bot.masterGuildId)
         .build(builder => builder
@@ -24,11 +24,11 @@ export default class Quote extends Module{
 
     public async Run(interaction: Discord.ContextMenuInteraction){
         if(!interaction.isMessageContextMenu()){
-            throw new RainbowBOTUserError("This command works only with User context menu action.");
+            throw new SynergyUserError("This command works only with User context menu action.");
         }
 
         if(interaction.targetMessage.content.length === 0){
-            throw new RainbowBOTUserError("Message must contains text.");
+            throw new SynergyUserError("Message must contains text.");
         }
 
         await interaction.deferReply();
@@ -45,10 +45,10 @@ export default class Quote extends Module{
             img = await loadImage(data.rawBody);
         } catch (error: any) {
             if(error?.message?.startsWith("Unsupported image type")){
-                throw new RainbowBOTUserError("This type of images not supported. Sorry :'(");
+                throw new SynergyUserError("This type of images not supported. Sorry :'(");
             }
             if(error instanceof HTTPError){
-                throw new RainbowBOTUserError("Can't fetch user's avatar.", `HTTP Error Code: ${error.code}`);
+                throw new SynergyUserError("Can't fetch user's avatar.", `HTTP Error Code: ${error.code}`);
             }
             throw error;
         }

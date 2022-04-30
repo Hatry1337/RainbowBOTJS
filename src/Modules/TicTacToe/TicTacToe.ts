@@ -1,8 +1,6 @@
 import Discord from "discord.js";
 import TicTacToeGame, { TicTacToePlayer, TicTacToeSymbol } from "./TicTacToeGame";
-import { Access, Colors, Module, RainbowBOT, Utils } from "rainbowbot-core";
-import { InteractiveButton, InteractiveCommand, InteractiveSlashCommand } from "rainbowbot-core/dist/InteractionsManager";
-
+import { Access, Colors, InteractiveComponent, Module, Synergy, Utils } from "synergy3";
 export default class TicTacToe extends Module{
     public Name:        string = "TicTacToe";
     public Description: string = "Using this command users can play Tic Tac toe game.";
@@ -13,7 +11,7 @@ export default class TicTacToe extends Module{
 
     private TicTacToeGames: Map<string, TicTacToeGame> = new Map();
 
-    constructor(bot: RainbowBOT, UUID: string) {
+    constructor(bot: Synergy, UUID: string) {
         super(bot, UUID);
         this.SlashCommands.push(
             this.bot.interactions.createSlashCommand(this.Name.toLowerCase(), this.Access, this, this.bot.moduleGlobalLoading ? undefined : this.bot.masterGuildId)
@@ -67,7 +65,7 @@ export default class TicTacToe extends Module{
         );
     }
 
-    private async buttonEvent(interaction: Discord.ButtonInteraction, button: InteractiveButton, buttonNumber: number){
+    private async buttonEvent(interaction: Discord.ButtonInteraction, button: InteractiveComponent<Discord.MessageButton>, buttonNumber: number){
         let gm = this.TicTacToeGames.get(interaction.channelId);
         if(!gm || gm.isGameEnded){
             button.destroy();
@@ -81,8 +79,8 @@ export default class TicTacToe extends Module{
         }else{
             return;
         }
-        if(button.label && !isNaN(parseInt(button.label))){
-            gm.makeMove(player, parseInt(button.label)); //FIXME: use buttonNumber instead of this hack, but something is wrong with callback.
+        if(button.builder.label && !isNaN(parseInt(button.builder.label || ""))){
+            gm.makeMove(player, parseInt(button.builder.label || "")); //FIXME: use buttonNumber instead of this hack, but something is wrong with callback.
         }
         if(gm.isGameEnded){
             await interaction.update(this.makeResultMessage(gm));
@@ -110,17 +108,23 @@ export default class TicTacToe extends Module{
         }
         game.controls = [];
         
+        let btn_access = [];
+        game.player1.user ? btn_access.push(Access.USER(game.player1.user.id)) : 0;
+        game.player2.user ? btn_access.push(Access.USER(game.player2.user.id)) : 0;
+
         for(let i = 0; i < game.fieldSize; i++){
             let row = new Discord.MessageActionRow();
             let j = i * game.fieldSize;
             for(let s of game.field.slice(i * game.fieldSize, game.fieldSize + (i*game.fieldSize))){
-                let button = this.bot.interactions.createButton()
+                let button = this.bot.interactions.createButton(`${game.interaction.channelId}-btn${j}-tictactoe`, btn_access, this)
+                .build(bld => bld
                     .setLabel(s ? (s === "cross" ? "❌" : "⭕") : j.toString())
                     .setStyle("PRIMARY")
                     .setDisabled(s ? true : false)
-                    .onClick(async int => await this.buttonEvent(int, button, j))
+                )
+                .onExecute((async int => await this.buttonEvent(int, button, j)));
 
-                row.addComponents(button);
+                row.addComponents(button.builder);
                 game.controls.push(button);
                 j++;
             }

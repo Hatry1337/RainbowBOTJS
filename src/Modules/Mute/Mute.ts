@@ -1,6 +1,6 @@
 import Discord from "discord.js";
 import { SlashCommandBuilder } from "@discordjs/builders";
-import { Access, Colors, Emojis, GuildOnlyError, Module, ModuleManager, NoConfigEntryError, RainbowBOT, RainbowBOTUserError, User, Utils } from "rainbowbot-core";
+import { Access, Colors, Emojis, GuildOnlyError, Module, ModuleManager, NoConfigEntryError, Synergy, SynergyUserError, User, Utils } from "synergy3";
 
 export interface IMutedUser{
     user_id: number;
@@ -30,7 +30,7 @@ export default class Mute extends Module{
 
     private CheckerTimer: NodeJS.Timeout;
 
-    constructor(bot: RainbowBOT, UUID: string) {
+    constructor(bot: Synergy, UUID: string) {
         super(bot, UUID);
         this.SlashCommands.push(
             this.bot.interactions.createSlashCommand("mute", this.Access, this, this.bot.moduleGlobalLoading ? undefined : this.bot.masterGuildId)
@@ -127,13 +127,13 @@ export default class Mute extends Module{
 
         if(interaction.member.roles.highest.position >= member.roles.highest.position || interaction.member.permissions.has("ADMINISTRATOR")){
             if(!time || time === 0){
-                throw new RainbowBOTUserError("Mute time not specified.");
+                throw new SynergyUserError("Mute time not specified.");
             }
             let data = await this.bot.modules.data.getContainer(this.UUID);
             let muted_users = (data.get("muted_users") || []) as IMutedUser[];
 
             if(muted_users.find(mu => mu.discord_id === target_user.id && mu.is_muted)){
-                throw new RainbowBOTUserError("This User is already muted.");
+                throw new SynergyUserError("This User is already muted.");
             }
 
             await member.roles.add(muted_role_id);
@@ -171,7 +171,7 @@ export default class Mute extends Module{
             return await interaction.reply({ embeds: [ embd ] });
 
         }else{
-            throw new RainbowBOTUserError("You can't mute user, that upper than your highest role.", "Contact with server administrator/member with higher role.")
+            throw new SynergyUserError("You can't mute user, that upper than your highest role.", "Contact with server administrator/member with higher role.")
         }
     }
 
@@ -199,7 +199,7 @@ export default class Mute extends Module{
             });
             return await interaction.reply({ embeds: [ embd ] });
         }else{
-            throw new RainbowBOTUserError("This user is not muted.");
+            throw new SynergyUserError("This user is not muted.");
         }
     }
 

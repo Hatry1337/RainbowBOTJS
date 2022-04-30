@@ -1,9 +1,8 @@
-import Discord, { ApplicationCommand } from "discord.js";
-import { Access, InteractiveCommand, InteractiveSlashCommand, Module, RainbowBOT, RainbowBOTUserError } from "rainbowbot-core";
+import Discord from "discord.js";
+import { Access, Module, Synergy, SynergyUserError } from "synergy3";
 import { create, all, } from "mathjs";
 import { Canvas, createCanvas } from "canvas";
 import _ from "lodash";
-import { ContextMenuCommandBuilder } from "@discordjs/builders";
 
 export default class MathTools extends Module{
     public Name:        string = "MathTools";
@@ -13,7 +12,7 @@ export default class MathTools extends Module{
 
     public Access: string[] = [ Access.PLAYER() ]
 
-    constructor(bot: RainbowBOT, UUID: string) {
+    constructor(bot: Synergy, UUID: string) {
         super(bot, UUID);
 
         this.SlashCommands.push(
@@ -492,19 +491,19 @@ export default class MathTools extends Module{
                 const limitedEvaluate = math.evaluate
 
                 math.import({
-                    import: function () { throw new RainbowBOTUserError('Function import is disabled') },
-                    createUnit: function () { throw new RainbowBOTUserError('Function createUnit is disabled') },
-                    evaluate: function () { throw new RainbowBOTUserError('Function evaluate is disabled') },
-                    parse: function () { throw new RainbowBOTUserError('Function parse is disabled') },
-                    simplify: function () { throw new RainbowBOTUserError('Function simplify is disabled') },
-                    derivative: function () { throw new RainbowBOTUserError('Function derivative is disabled') }
+                    import: function () { throw new SynergyUserError('Function import is disabled') },
+                    createUnit: function () { throw new SynergyUserError('Function createUnit is disabled') },
+                    evaluate: function () { throw new SynergyUserError('Function evaluate is disabled') },
+                    parse: function () { throw new SynergyUserError('Function parse is disabled') },
+                    simplify: function () { throw new SynergyUserError('Function simplify is disabled') },
+                    derivative: function () { throw new SynergyUserError('Function derivative is disabled') }
                 }, { override: true })
                 let expr = interaction.options.getString("expr", true);
                 let result;
                 try {
                     result = limitedEvaluate(expr);
                 } catch (err: any) {
-                    throw new RainbowBOTUserError("Error parsing expression:", err?.message || undefined)
+                    throw new SynergyUserError("Error parsing expression:", err?.message || undefined)
                 }
                 return interaction.reply({ embeds: [ this.makeMessage(`${expr} = ${result}`, "Math Expression") ] });
             }
@@ -512,11 +511,11 @@ export default class MathTools extends Module{
                 await interaction.deferReply();
                 const math = create(all)
                 math.import({
-                    import: function () { throw new RainbowBOTUserError('Function import is disabled') },
-                    createUnit: function () { throw new RainbowBOTUserError('Function createUnit is disabled') },
-                    evaluate: function () { throw new RainbowBOTUserError('Function evaluate is disabled') },
-                    simplify: function () { throw new RainbowBOTUserError('Function simplify is disabled') },
-                    derivative: function () { throw new RainbowBOTUserError('Function derivative is disabled') }
+                    import: function () { throw new SynergyUserError('Function import is disabled') },
+                    createUnit: function () { throw new SynergyUserError('Function createUnit is disabled') },
+                    evaluate: function () { throw new SynergyUserError('Function evaluate is disabled') },
+                    simplify: function () { throw new SynergyUserError('Function simplify is disabled') },
+                    derivative: function () { throw new SynergyUserError('Function derivative is disabled') }
                 }, { override: true })
                 let expr = interaction.options.getString("expr", true).split(";;");
                 let compiled = [];
@@ -524,7 +523,7 @@ export default class MathTools extends Module{
                     try {
                         compiled.push(math.compile(e));
                     } catch (err: any) {
-                        throw new RainbowBOTUserError("Error parsing expression:", err?.message || undefined)
+                        throw new SynergyUserError("Error parsing expression:", err?.message || undefined)
                     }
                 }
 
@@ -687,7 +686,7 @@ export default class MathTools extends Module{
             try {
                 math_expr.evaluate(scope);
             } catch (err: any) {
-                throw new RainbowBOTUserError("Error parsing expression:", err?.message || undefined)
+                throw new SynergyUserError("Error parsing expression:", err?.message || undefined)
             }
             let y = scope.y;
             if(isNaN(y) || y === undefined){
@@ -701,7 +700,7 @@ export default class MathTools extends Module{
                     try {
                         math_expr.evaluate(scope);
                     } catch (err: any) {
-                        throw new RainbowBOTUserError("Error parsing expression:", err?.message || undefined)
+                        throw new SynergyUserError("Error parsing expression:", err?.message || undefined)
                     }
                     y = scope.y;
                 }
@@ -732,7 +731,7 @@ export default class MathTools extends Module{
                     try {
                         math_expr.evaluate(scope);
                     } catch (err: any) {
-                        throw new RainbowBOTUserError("Error parsing expression:", err?.message || undefined)
+                        throw new SynergyUserError("Error parsing expression:", err?.message || undefined)
                     }
                     y = scope.y;
                     y1 = Math.trunc(-y * zoom) + y0;

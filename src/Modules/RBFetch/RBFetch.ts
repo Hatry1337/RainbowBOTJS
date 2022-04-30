@@ -1,6 +1,6 @@
 import Discord from "discord.js";
 import si from "systeminformation";
-import { Access, Module, RainbowBOT, Utils } from "rainbowbot-core";
+import { Access, Module, Synergy, Utils } from "synergy3";
 
 interface RBFetchStats {
     rq:   number;
@@ -19,7 +19,7 @@ export default class RBFetch extends Module{
 
     public Access: string[] = [ Access.PLAYER() ];
 
-    constructor(bot: RainbowBOT, UUID: string) {
+    constructor(bot: Synergy, UUID: string) {
         super(bot, UUID);
         this.bot.client.on("interactionCreate", this.onInteraction.bind(this));
 

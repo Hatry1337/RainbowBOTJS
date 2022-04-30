@@ -1,4 +1,4 @@
-import { Access, Module, RainbowBOT, RainbowBOTUserError } from "rainbowbot-core";
+import { Access, Module, SynergyUserError, Synergy } from "synergy3";
 import Discord from "discord.js";
 import { createCanvas, loadImage, registerFont, Image, Canvas} from "canvas";
 import got, { HTTPError } from "got/dist/source";
@@ -24,7 +24,7 @@ export default class Demotivator extends Module{
 
     public Access: string[] = [ Access.PLAYER() ]
 
-    constructor(bot: RainbowBOT, UUID: string) {
+    constructor(bot: Synergy, UUID: string) {
         super(bot, UUID);
         this.bot.interactions.createMenuCommand(this.Name, this.Access, this, this.bot.moduleGlobalLoading ? undefined : this.bot.masterGuildId)
         .build(builder => builder
@@ -36,7 +36,7 @@ export default class Demotivator extends Module{
 
     public async Run(interaction: Discord.ContextMenuInteraction){
         if(!interaction.isMessageContextMenu()){
-            throw new RainbowBOTUserError("This command works only with User context menu action.");
+            throw new SynergyUserError("This command works only with User context menu action.");
         }
 
         let attachment;
@@ -46,11 +46,11 @@ export default class Demotivator extends Module{
             attachment = interaction.targetMessage.attachments.at(0);
         }
         if(!attachment){
-            throw new RainbowBOTUserError("Message must contains the Image.");
+            throw new SynergyUserError("Message must contains the Image.");
         }
         
         if(interaction.targetMessage.content.length === 0){
-            throw new RainbowBOTUserError("Message must contains text (1 or 2 lines).");
+            throw new SynergyUserError("Message must contains text (1 or 2 lines).");
         }
 
         await interaction.deferReply();
@@ -64,7 +64,7 @@ export default class Demotivator extends Module{
             img = await loadImage(png);
         } catch (error: any) {
             if(error instanceof HTTPError){
-                throw new RainbowBOTUserError("Can't fetch this image.", `HTTP Error Code: ${error.code}`);
+                throw new SynergyUserError("Can't fetch this image.", `HTTP Error Code: ${error.code}`);
             }
             throw error;
         }

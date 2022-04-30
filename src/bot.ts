@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import Discord from "discord.js";
-import { Module, RainbowBOT } from "rainbowbot-core";
-import { CoreModules } from 'rainbowbot-core';
+import { Module, Synergy } from "synergy3";
+import { CoreModules } from "synergy3";
 
 import EiBall from './Modules/8Ball/8Ball';
 import Anek from './Modules/Anek/Anek';
@@ -16,6 +16,7 @@ import VoiceStats from './Modules/VoiceStats/VoiceStats';
 import MathTools from './Modules/MathTools/MathTools';
 import Demotivator from './Modules/Demotivator/Demotivator';
 import Quote from './Modules/Quote/Quote';
+import GetRole from './Modules/GetRole/GetRole';
 
 declare global {
     namespace NodeJS {
@@ -50,9 +51,10 @@ const modules: {
     { Module: MathTools,    UUID: "c9242a7e-9d29-50b8-8f5a-3bf976739d95"},
     { Module: Demotivator,  UUID: "a23ea2ac-6a0e-5cce-99ef-8179276544a3"},
     { Module: Quote,        UUID: "1e0edfbb-8357-525c-b33b-53e71c3a014d"},
+    { Module: GetRole,      UUID: "fa04251d-d106-5b30-aba1-b63df36afed8"},
 ]
 
-const bot = new RainbowBOT({
+const bot = new Synergy({
     sequelizeURI: process.env.DBURI,
     masterGuildId: process.env.MASTER_GUILD,
     moduleGlobalLoading: process.env.NODE_ENV === "production",

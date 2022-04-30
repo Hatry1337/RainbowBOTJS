@@ -5,7 +5,7 @@ import IgniRender from "./IgniRender/IgniRender";
 import GIFEncoder from "gifencoder";
 import Camera from "./IgniRender/Scene/Camera";
 import { v3zero } from "./IgniRender/Utils3D";
-import { Access, Colors, Module, ModuleManager, RainbowBOT } from "rainbowbot-core";
+import { Access, Colors, Module, ModuleManager, Synergy } from "synergy3";
 
 export default class OBJRender extends Module{
     public Name:        string = "OBJRender";
@@ -15,7 +15,7 @@ export default class OBJRender extends Module{
 
     public Access: string[] = [ Access.PLAYER() ];
     
-    constructor(bot: RainbowBOT, UUID: string) {
+    constructor(bot: Synergy, UUID: string) {
         super(bot, UUID);
         this.SlashCommands.push(
             this.bot.interactions.createSlashCommand(this.Name.toLowerCase(), this.Access, this, this.bot.moduleGlobalLoading ? undefined : this.bot.masterGuildId)

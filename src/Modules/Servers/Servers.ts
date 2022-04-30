@@ -1,5 +1,5 @@
 import Discord from "discord.js";
-import { Access, Colors, InteractiveCommand, InteractiveSlashCommand, Module, RainbowBOT, RainbowBOTUserError, User } from "rainbowbot-core";
+import { Access, Colors, Module, Synergy, SynergyUserError, User } from "synergy3";
 
 
 export default class Servers extends Module{
@@ -10,7 +10,7 @@ export default class Servers extends Module{
 
     public Access: string[] = [ Access.ADMIN() ];
 
-    constructor(bot: RainbowBOT, UUID: string) {
+    constructor(bot: Synergy, UUID: string) {
         super(bot, UUID);
         this.SlashCommands.push(
             this.bot.interactions.createSlashCommand(this.Name.toLowerCase(), this.Access, this, this.bot.moduleGlobalLoading ? undefined : this.bot.masterGuildId)
@@ -63,7 +63,7 @@ export default class Servers extends Module{
                 let plen = interaction.options.getNumber("page_size", false) || 15;
         
                 if(page * plen > interaction.client.guilds.cache.size + plen){
-                    throw new RainbowBOTUserError("This page doesen't exist.");
+                    throw new SynergyUserError("This page doesen't exist.");
                 }
                 
                 var svlist = "";
@@ -82,7 +82,7 @@ export default class Servers extends Module{
                 return await interaction.reply({ embeds: [ embd ] });
             }
             default: {
-                throw new RainbowBOTUserError("This command require subcommand to be sent.");
+                throw new SynergyUserError("This command require subcommand to be sent.");
             }
         }        
     }

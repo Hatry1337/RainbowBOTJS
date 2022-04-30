@@ -1,5 +1,5 @@
 import Discord from "discord.js";
-import { Access, Colors, Module, RainbowBOT, Utils }  from "rainbowbot-core";
+import { Access, Colors, Module, Synergy, Utils }  from "synergy3";
 
 export default class EiBall extends Module{
     public Name:        string = "8Ball";
@@ -27,7 +27,7 @@ export default class EiBall extends Module{
         "I don't think so.",
     ]
 
-    constructor(bot: RainbowBOT, UUID: string) {
+    constructor(bot: Synergy, UUID: string) {
         super(bot, UUID);
         this.SlashCommands.push(
             this.bot.interactions.createSlashCommand(this.Name.toLowerCase(), this.Access, this, this.bot.moduleGlobalLoading ? undefined : this.bot.masterGuildId)

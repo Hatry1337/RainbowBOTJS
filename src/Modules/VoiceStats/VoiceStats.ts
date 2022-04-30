@@ -1,5 +1,5 @@
 import Discord from "discord.js";
-import { Access, Colors, GlobalLogger, GuildOnlyError, MissingPermissionsError, Module, RainbowBOT, RainbowBOTUserError, User, Utils } from "rainbowbot-core";
+import { Access, Colors, GlobalLogger, GuildOnlyError, MissingPermissionsError, Module, Synergy, SynergyUserError, User, Utils } from "synergy3";
 
 interface VSession{
     Channel: Discord.VoiceChannel;
@@ -27,7 +27,7 @@ export default class VoiceStats extends Module{
     private DataToSave: DataToSave[] = [];
     private save_timer?: NodeJS.Timeout;
 
-    constructor(bot: RainbowBOT, UUID: string) {
+    constructor(bot: Synergy, UUID: string) {
         super(bot, UUID);
         this.SlashCommands.push(
             this.bot.interactions.createSlashCommand("vcstats", this.Access, this, this.bot.moduleGlobalLoading ? undefined : this.bot.masterGuildId)
@@ -205,7 +205,7 @@ export default class VoiceStats extends Module{
         }
 
         if(!targetGuild){
-            throw new RainbowBOTUserError("Can't find this guild.");
+            throw new SynergyUserError("Can't find this guild.");
         }
 
         let container = await this.bot.modules.data.getContainer(this.UUID);

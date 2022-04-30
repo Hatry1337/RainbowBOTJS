@@ -29,7 +29,7 @@
     "mathjs": "^10.4.3",
     "pg": "^8.6.0",
     "pg-hstore": "^2.3.4",
-    "rainbowbot-core": "file:../RainbowBOT-Core",
+    "synergy3": "file:../Synergy3",
     "reflect-metadata": "^0.1.13",
     "sequelize": "^6.6.2",
     "sequelize-typescript": "^2.1.0",

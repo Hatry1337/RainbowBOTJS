@@ -79,39 +79,38 @@ import WebSocket from "ws";
         if(!last_rendered) return;
         last_rendered = false;
 
-        if(frames / 2 === 0){
-            model2.Rotation.y += 0.0174533;
-        }
+        //model2.Rotation.y += 0.0174533;
 
         let canv = cam.Render();
         let ctx = canv.getContext("2d");
+        ctx.fillStyle = "black";
+        ctx.fillText(`FPS: ${fps}`, 0, 10);
+        ctx.fillText(`CAM_POS_X: ${cam.Position.x}`, 0, 30);
+        ctx.fillText(`CAM_POS_Y: ${cam.Position.y}`, 0, 40);
+        ctx.fillText(`CAM_POS_Z: ${cam.Position.z}`, 0, 50);
 
-        ctx.strokeText(`FPS: ${fps}`, 0, 10);
-        ctx.strokeText(`CAM_POS_X: ${cam.Position.x}`, 0, 30);
-        ctx.strokeText(`CAM_POS_Y: ${cam.Position.y}`, 0, 40);
-        ctx.strokeText(`CAM_POS_Z: ${cam.Position.z}`, 0, 50);
+        ctx.fillText(`CAM_ROT_X: ${cam.Rotation.x}`, 0, 70);
+        ctx.fillText(`CAM_ROT_Y: ${cam.Rotation.y}`, 0, 80);
+        ctx.fillText(`CAM_ROT_Z: ${cam.Rotation.z}`, 0, 90);
 
-        ctx.strokeText(`CAM_ROT_X: ${cam.Rotation.x}`, 0, 70);
-        ctx.strokeText(`CAM_ROT_Y: ${cam.Rotation.y}`, 0, 80);
-        ctx.strokeText(`CAM_ROT_Z: ${cam.Rotation.z}`, 0, 90);
+        ctx.fillText(`MODEL2_POS_X: ${model2.Position.x}`, 0, 110);
+        ctx.fillText(`MODEL2_POS_Y: ${model2.Position.y}`, 0, 120);
+        ctx.fillText(`MODEL2_POS_Z: ${model2.Position.z}`, 0, 130);
 
-        ctx.strokeText(`MODEL2_POS_X: ${model2.Position.x}`, 0, 110);
-        ctx.strokeText(`MODEL2_POS_Y: ${model2.Position.y}`, 0, 120);
-        ctx.strokeText(`MODEL2_POS_Z: ${model2.Position.z}`, 0, 130);
+        ctx.fillText(`MODEL2_ROT_X: ${model2.Rotation.x}`, 0, 150);
+        ctx.fillText(`MODEL2_ROT_Y: ${model2.Rotation.y}`, 0, 160);
+        ctx.fillText(`MODEL2_ROT_Z: ${model2.Rotation.z}`, 0, 170);
 
-        ctx.strokeText(`MODEL2_ROT_X: ${model2.Rotation.x}`, 0, 150);
-        ctx.strokeText(`MODEL2_ROT_Y: ${model2.Rotation.y}`, 0, 160);
-        ctx.strokeText(`MODEL2_ROT_Z: ${model2.Rotation.z}`, 0, 170);
-
-        let idata = canv.toBuffer();
+        let idata = canv.toDataURL("image/jpeg"); //.toBuffer();
         for(let c of wsServer.clients){
-            c.send(JSON.stringify({ image_data: idata.toString("base64"), width: canv.width, height: canv.height }));
+            c.send(JSON.stringify({ image_data: idata, width: canv.width, height: canv.height }));
         }
         frames++;
         last_rendered = true;
-    }, 20);
+    }, 16);
     setInterval(() => {
         fps = frames;
+        console.log(fps);
         frames = 0;
     }, 1000);
 })();

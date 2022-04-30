@@ -26,7 +26,6 @@ export default class Camera extends SceneObject{
     }
 
     public Render(): Canvas {
-        this.Renderrer.PrepareScene(this.Position, this.Rotation);
         return this.Renderrer.Render(
             this.RenderResolution.Width, 
             this.RenderResolution.Height, 

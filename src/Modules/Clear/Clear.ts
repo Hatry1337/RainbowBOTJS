@@ -1,5 +1,5 @@
 import Discord from "discord.js";
-import { Access, GuildOnlyError, Module, RainbowBOT, Utils } from "rainbowbot-core";
+import { Access, GuildOnlyError, Module, Synergy, Utils } from "synergy3";
 
 export default class Clear extends Module{
     public Name:        string = "Clear";
@@ -9,7 +9,7 @@ export default class Clear extends Module{
 
     public Access: string[] = [ Access.PERM("MANAGE_MESSAGES") ];
 
-    constructor(bot: RainbowBOT, UUID: string) {
+    constructor(bot: Synergy, UUID: string) {
         super(bot, UUID);
         this.SlashCommands.push(
             this.bot.interactions.createSlashCommand(this.Name.toLowerCase(), this.Access, this, this.bot.moduleGlobalLoading ? undefined : this.bot.masterGuildId)

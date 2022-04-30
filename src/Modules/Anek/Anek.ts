@@ -1,5 +1,5 @@
 import Discord from "discord.js";
-import { Access, Colors, Emojis, Module, RainbowBOT, RainbowBOTUserError } from "rainbowbot-core";
+import { Access, Colors, Emojis, Module, Synergy, SynergyUserError } from "synergy3";
 import { AnekAPI, Anek as AAnek } from "./AnekAPI";
 
 export default class Anek extends Module{
@@ -10,7 +10,7 @@ export default class Anek extends Module{
 
     public Access: string[] = [ Access.PLAYER() ];
 
-    constructor(bot: RainbowBOT, UUID: string) {
+    constructor(bot: Synergy, UUID: string) {
         super(bot, UUID);
         this.SlashCommands.push(
             this.bot.interactions.createSlashCommand(this.Name.toLowerCase(), this.Access, this, this.bot.moduleGlobalLoading ? undefined : this.bot.masterGuildId)
@@ -55,7 +55,7 @@ export default class Anek extends Module{
                     tags = await AnekAPI.GetTags();
                 } catch (err) {
                     this.Logger.Error("Anek.Tags.RequestFailedError:", err);
-                    throw new RainbowBOTUserError("Cannot get aneks tags. Please try again later, or contact with support.");
+                    throw new SynergyUserError("Cannot get aneks tags. Please try again later, or contact with support.");
                 }
 
                 let embd = new Discord.MessageEmbed({
@@ -70,7 +70,7 @@ export default class Anek extends Module{
                     anek = await AnekAPI.GetTaggedRandomAnek(tag);
                 } catch (err) {
                     this.Logger.Error("Anek.AnekID.RequestFailedError:", err);
-                    throw new RainbowBOTUserError("Cannot get this anek. Is it exist? If you're sure, contact with support.");
+                    throw new SynergyUserError("Cannot get this anek. Is it exist? If you're sure, contact with support.");
                 }
             }
         }else if(id){
@@ -78,14 +78,14 @@ export default class Anek extends Module{
                 anek = await AnekAPI.GetAnek(id);
             } catch (err) {
                 this.Logger.Error("Anek.AnekID.RequestFailedError:", err);
-                throw new RainbowBOTUserError("Cannot get this anek. Is it exist? If you're sure, contact with support.");
+                throw new SynergyUserError("Cannot get this anek. Is it exist? If you're sure, contact with support.");
             }
         }else{
             try {
                 anek = await AnekAPI.GetRandomAnek();
             } catch (err) {
                 this.Logger.Error("Anek.RandomAnek.RequestFailedError:", err);
-                throw new RainbowBOTUserError("Cannot get this anek. Is it exist? If you're sure, contact with support.");
+                throw new SynergyUserError("Cannot get this anek. Is it exist? If you're sure, contact with support.");
             }
         }
 

@@ -1,6 +1,6 @@
 import Discord, { Message } from "discord.js";
 import { SlashCommandBuilder } from "@discordjs/builders";
-import { Access, Colors, Emojis, Module, ModuleManager, RainbowBOT, Utils } from "rainbowbot-core";
+import { Access, Colors, Emojis, Module, ModuleManager, Synergy, Utils } from "synergy3";
 import { OsuAPI, OsuMap } from "./OsuAPI";
 
 
@@ -12,7 +12,7 @@ export default class OsuInfo extends Module{
 
     public Access: string[] = [ Access.PLAYER() ];
 
-    constructor(bot: RainbowBOT, UUID: string) {
+    constructor(bot: Synergy, UUID: string) {
         super(bot, UUID);
         this.SlashCommands.push(
             this.bot.interactions.createSlashCommand(this.Name.toLowerCase(), this.Access, this, this.bot.moduleGlobalLoading ? undefined : this.bot.masterGuildId)
