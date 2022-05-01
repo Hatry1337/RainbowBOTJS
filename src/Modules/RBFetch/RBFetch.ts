@@ -117,7 +117,7 @@ export default class RBFetch extends Module{
             `       .*///,.        ..  *///*.            Node: ${nodev}`                     + "\n" +
             `      ,*/////,       ,*,  ,*////*,          Uptime: ${uptime}`                  + "\n" +
             `    .,///////,      .**,. ,*///////,.       WS_Ping: ${ping} ms.`               + "\n" +
-            `    ,////////,    .,/,.  .*/////////*.      Modules: ${modules} (rbc)`          + "\n" +
+            `    ,////////,    .,/,.  .*/////////*.      Modules: ${modules} (synergy3)`     + "\n" +
             `   ,*/(//////*.         ,*////////////,     DB_Users: ${cache_users}`           + "\n" +
             `   ,*/////////*.      .,*/////////////,.    Discord_Users: ${disc_users}`       + "\n" +
             `   **//////////*,   .**///////////*****,    Discord_Servers: ${disc_servs}`     + "\n" +

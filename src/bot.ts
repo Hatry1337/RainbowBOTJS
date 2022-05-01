@@ -16,7 +16,10 @@ import VoiceStats from './Modules/VoiceStats/VoiceStats';
 import MathTools from './Modules/MathTools/MathTools';
 import Demotivator from './Modules/Demotivator/Demotivator';
 import Quote from './Modules/Quote/Quote';
-import GetRole from './Modules/GetRole/GetRole';
+import RoleManager from './Modules/RoleManager/RoleManager';
+import UkrMova from './Modules/UkrMova/UkrMova';
+import Roll from './Modules/Roll/Roll';
+import RandCat from './Modules/RandCat/RandCat';
 
 declare global {
     namespace NodeJS {
@@ -51,7 +54,10 @@ const modules: {
     { Module: MathTools,    UUID: "c9242a7e-9d29-50b8-8f5a-3bf976739d95"},
     { Module: Demotivator,  UUID: "a23ea2ac-6a0e-5cce-99ef-8179276544a3"},
     { Module: Quote,        UUID: "1e0edfbb-8357-525c-b33b-53e71c3a014d"},
-    { Module: GetRole,      UUID: "fa04251d-d106-5b30-aba1-b63df36afed8"},
+    { Module: RoleManager,  UUID: "fa04251d-d106-5b30-aba1-b63df36afed8"},
+    { Module: UkrMova,      UUID: "4bc1b819-2d5e-5feb-9547-03e9736e685e"},
+    { Module: Roll,         UUID: "e4f820d5-60d5-5028-9d22-60d50e1d232a"},
+    { Module: RandCat,      UUID: "5360a651-a0b9-527b-a958-7de82d124175"},
 ]
 
 const bot = new Synergy({
