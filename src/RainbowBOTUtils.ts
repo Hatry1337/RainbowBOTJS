@@ -1,5 +1,7 @@
 import { Canvas } from "canvas";
 
+type NonFunctionPropertyNames<T> = { [K in keyof T]: T[K] extends Function ? never : K; }[keyof T];
+export type ExcludeMethods<T> = Pick<T, NonFunctionPropertyNames<T>>;
 
 export default class RainbowBOTUtils{
     public static splitTextToLines(canvas: Canvas, text: string, max_width: number){
