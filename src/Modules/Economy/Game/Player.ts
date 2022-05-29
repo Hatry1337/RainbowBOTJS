@@ -10,10 +10,18 @@ export default class Player {
 
     }
 
+    public updateInventory() {
+        for(let i = 0; i < this.inventory.length; i++){
+            if(this.inventory[i].size <= 0){
+                this.inventory.splice(i, 1);
+            }
+        }
+    }
+
     public toObject(): IPlayerObject{
         return {
             userId: this.user.id,
-            inventory: this.inventory.map(i => ({ itemId: i.item.id, size: i.size, uuid: i.uuid })),
+            inventory: this.inventory.map(i => i.toObject()),
             rooms: this.rooms.map(r => r.toObject())
         }
     }

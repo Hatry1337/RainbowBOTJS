@@ -1,11 +1,10 @@
 import ItemStack from "../ItemStack";
 import Player from "../Player";
-import Room from "../Room";
 import Item from "./Item";
 import ItemUsable from "./ItemUsable";
 
-export default class ItemRoom extends ItemUsable {
-    constructor(item: Item, public powerGrid: number, public slots: number, public weeklyFee: number){
+export class ItemPoints extends ItemUsable {
+    constructor(item: Item, public ammount: number){
         super(item);
     }
 
@@ -16,7 +15,7 @@ export default class ItemRoom extends ItemUsable {
     public async use(itemStack: ItemStack, player: Player) {
         if(itemStack.size <= 0) return player.updateInventory();
 
-        player.rooms.push(new Room(this));
+        player.user.economy.points += this.ammount;
         itemStack.size -= 1;
         player.updateInventory();
     }

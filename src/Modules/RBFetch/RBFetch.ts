@@ -109,7 +109,7 @@ export default class RBFetch extends Module{
         let rbfetch;
         if(!compact){
             rbfetch = 
-            `\`\`\`apache`                                                                   + "\n" +
+            `\`\`\`elm`                                                                      + "\n" +
             `${user}@rainbowbot.xyz:~$ rbfetch`                                              + "\n" +
             `           ..                               ${user}@rainbowbot.xyz`             + "\n" +
             `          .*(*          ...                 ---------------`                    + "\n" +

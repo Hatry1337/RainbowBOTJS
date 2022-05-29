@@ -11,8 +11,19 @@ import CachedInstance from "./CachedInstance";
 
 export class StorageWrapper{
     public cachePlayers: Map<number, CachedInstance<Player>> = new Map();
+    private timer: NodeJS.Timeout;
     constructor(public bot: Synergy, private UUID: string){
+        this.timer = setInterval(() => {
+            this.cachePlayers.forEach((val, key) => {
+                if(!val.isValid()){
+                    this.cachePlayers.delete(key);
+                }
+            })
+        }, 60000);
 
+        bot.events.once("Stop", () => {
+            clearInterval(this.timer);
+        });
     }
 
     public async createRootObject(force: boolean = false){

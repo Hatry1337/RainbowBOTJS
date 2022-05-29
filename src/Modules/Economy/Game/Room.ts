@@ -29,7 +29,7 @@ export default class Room {
     public toObject(): IRoomObject {
         return {
             referenceId: this.reference.id,
-            placedItems: this.placedItems.map(i => ({ itemId: i.item.id, size: i.size, uuid: i.uuid }))
+            placedItems: this.placedItems.map(i => i.toObject())
         }
     }
 }

@@ -89,7 +89,7 @@ export default class TicTacToe extends Module{
         }
     }
 
-    private makeMessage(game: TicTacToeGame): Discord.InteractionReplyOptions{
+    private makeMessage(game: TicTacToeGame): Discord.InteractionUpdateOptions & Discord.InteractionReplyOptions{
         let embd = new Discord.MessageEmbed({
             title: `Tic Tac Toe Game`,
             description: 
@@ -134,7 +134,7 @@ export default class TicTacToe extends Module{
         return { embeds: [embd], components: compons };
     }
 
-    private makeResultMessage(game: TicTacToeGame): Discord.InteractionReplyOptions{
+    private makeResultMessage(game: TicTacToeGame): Discord.InteractionUpdateOptions & Discord.InteractionReplyOptions{
         let msg = "Game Over! ";
         let player = game.winner;
         if(player){

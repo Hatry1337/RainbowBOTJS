@@ -1,8 +1,10 @@
 import ItemPlaceable from "./ItemPlaceable";
+import ItemUsable from "./ItemUsable";
 
 export default class Item{
-    private is_placeable: boolean = false;
-    constructor(public readonly id: number, public name: string, public description: string, private is_sellable: boolean = false, private is_tradeable: boolean = false){
+    protected is_placeable: boolean = false;
+    protected is_usable: boolean = false;
+    constructor(public readonly id: number, public name: string, public description: string, protected is_sellable: boolean = false, protected is_tradeable: boolean = false){
 
     }
 
@@ -16,5 +18,9 @@ export default class Item{
 
     public isPlaceable(): this is ItemPlaceable {
         return this.is_placeable;
+    }
+
+    public isUsable(): this is ItemUsable {
+        return this.is_usable;
     }
 }

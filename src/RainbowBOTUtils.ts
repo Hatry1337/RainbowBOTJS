@@ -3,6 +3,10 @@ import { Canvas } from "canvas";
 type NonFunctionPropertyNames<T> = { [K in keyof T]: T[K] extends Function ? never : K; }[keyof T];
 export type ExcludeMethods<T> = Pick<T, NonFunctionPropertyNames<T>>;
 
+export enum CEmojis{
+    PointCoin="<:pointcoin:979098338462941254>"
+}
+
 export default class RainbowBOTUtils{
     public static splitTextToLines(canvas: Canvas, text: string, max_width: number){
         let ctx = canvas.getContext("2d");

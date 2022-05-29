@@ -20,6 +20,8 @@ import RoleManager from './Modules/RoleManager/RoleManager';
 import UkrMova from './Modules/UkrMova/UkrMova';
 import Roll from './Modules/Roll/Roll';
 import RandCat from './Modules/RandCat/RandCat';
+import Economy from './Modules/Economy/Economy';
+import UTS from './Modules/UnifiedTestSuite/UTS';
 
 declare global {
     namespace NodeJS {
@@ -36,10 +38,10 @@ const modules: {
     UUID: string;
     Module: typeof Module;
 }[] = [
-    { Module: CoreModules.Avatar,      UUID: "20d84fb5-ecb5-546e-b8c1-d5b6afd5083f"},
-    { Module: CoreModules.Config,      UUID: "20d84fb5-ecb5-546e-b8c1-d5b6afd5083f"},
-    { Module: CoreModules.Profile,     UUID: "20d84fb5-ecb5-546e-b8c1-d5b6afd5083f"},
-    { Module: CoreModules.RHelp,       UUID: "20d84fb5-ecb5-546e-b8c1-d5b6afd5083f"},
+    { Module: CoreModules.Avatar,      UUID: "f7d74560-f8cc-5ac3-9ef0-fe1469d347c1"},
+    { Module: CoreModules.Config,      UUID: "a64e42fc-a4ae-5616-ba62-f3ce06793690"},
+    { Module: CoreModules.Profile,     UUID: "95208d7b-c81a-5b09-b3ba-ccb9a95d765b"},
+    { Module: CoreModules.RHelp,       UUID: "75f838f1-be5b-5ac2-8bf5-788c0ade4e28"},
 
     { Module: EiBall,       UUID: "20d84fb5-ecb5-546e-b8c1-d5b6afd5083f"},
     { Module: Anek,         UUID: "7d67a2e9-0f03-5906-a536-17b72777adba"},
@@ -58,6 +60,8 @@ const modules: {
     { Module: UkrMova,      UUID: "4bc1b819-2d5e-5feb-9547-03e9736e685e"},
     { Module: Roll,         UUID: "e4f820d5-60d5-5028-9d22-60d50e1d232a"},
     { Module: RandCat,      UUID: "5360a651-a0b9-527b-a958-7de82d124175"},
+    { Module: Economy,      UUID: "38ff4a68-9f7d-58ed-bbea-0c8859a1a490"},
+    { Module: UTS,          UUID: "1fffad32-ac42-5793-a932-89f2c39f7b70"},
 ]
 
 const bot = new Synergy({
@@ -87,4 +91,7 @@ const bot = new Synergy({
 
 (async () => {
     await bot.login(process.env.TOKEN);
+    bot.client.on("ready", async () => {
+        //await bot.interactions.overwriteInteractiveCommands();
+    })
 })();
