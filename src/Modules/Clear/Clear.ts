@@ -1,5 +1,5 @@
 import Discord from "discord.js";
-import { Access, GuildOnlyError, Module, Synergy, Utils } from "synergy3";
+import { Access, AccessTarget, GuildOnlyError, Module, Synergy, Utils } from "synergy3";
 
 export default class Clear extends Module{
     public Name:        string = "Clear";
@@ -7,7 +7,7 @@ export default class Clear extends Module{
     public Category:    string = "Utility";
     public Author:      string = "Thomasss#9258";
 
-    public Access: string[] = [ Access.PERM("MANAGE_MESSAGES") ];
+    public Access: AccessTarget[] = [ Access.PERM("MANAGE_MESSAGES") ];
 
     constructor(bot: Synergy, UUID: string) {
         super(bot, UUID);

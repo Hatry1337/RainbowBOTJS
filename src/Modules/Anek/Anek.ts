@@ -1,5 +1,5 @@
 import Discord from "discord.js";
-import { Access, Colors, Emojis, Module, Synergy, SynergyUserError } from "synergy3";
+import { Access, AccessTarget, Colors, Emojis, Module, Synergy, SynergyUserError } from "synergy3";
 import { AnekAPI, Anek as AAnek } from "./AnekAPI";
 
 export default class Anek extends Module{
@@ -8,7 +8,7 @@ export default class Anek extends Module{
     public Category:    string = "Fun";
     public Author:      string = "Thomasss#9258";
 
-    public Access: string[] = [ Access.PLAYER() ];
+    public Access: AccessTarget[] = [ Access.PLAYER() ];
 
     constructor(bot: Synergy, UUID: string) {
         super(bot, UUID);

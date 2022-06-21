@@ -1,5 +1,5 @@
 import Discord from "discord.js";
-import { Access, Module, Synergy, SynergyUserError } from "synergy3";
+import { Access, AccessTarget, Module, Synergy, SynergyUserError } from "synergy3";
 import { create, all, } from "mathjs";
 import { Canvas, createCanvas } from "canvas";
 import _ from "lodash";
@@ -10,7 +10,7 @@ export default class MathTools extends Module{
     public Category:    string = "Utility";
     public Author:      string = "Thomasss#9258";
 
-    public Access: string[] = [ Access.PLAYER() ]
+    public Access: AccessTarget[] = [ Access.PLAYER() ]
 
     constructor(bot: Synergy, UUID: string) {
         super(bot, UUID);

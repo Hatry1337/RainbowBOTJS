@@ -1,4 +1,4 @@
-import { Access, Colors, Module, Synergy, SynergyUserError } from "synergy3";
+import { Access, AccessTarget, Colors, Module, Synergy, SynergyUserError } from "synergy3";
 import Discord from "discord.js";
 
 interface ITestPoint{
@@ -15,7 +15,7 @@ export default class UTS extends Module{
     public Category:    string = "BOT";
     public Author:      string = "Thomasss#9258";
 
-    public Access: string[] = [ Access.ADMIN() ]
+    public Access: AccessTarget[] = [ Access.ADMIN() ]
 
     constructor(bot: Synergy, UUID: string) {
         super(bot, UUID);

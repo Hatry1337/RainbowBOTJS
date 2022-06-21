@@ -1,5 +1,5 @@
 import Discord from "discord.js";
-import { Access, Colors, Module, Synergy, Utils }  from "synergy3";
+import { Access, AccessTarget, Colors, Module, Synergy, Utils }  from "synergy3";
 
 export default class EiBall extends Module{
     public Name:        string = "8Ball";
@@ -7,7 +7,7 @@ export default class EiBall extends Module{
     public Category:    string = "Utility";
     public Author:      string = "Thomasss#9258";
 
-    public Access: string[] = [ Access.PLAYER() ];
+    public Access: AccessTarget[] = [ Access.PLAYER() ];
 
     private PhrasesYes: string[] = [
         "I think yes.",

@@ -1,4 +1,4 @@
-import { Access, Colors, Module, Synergy } from "synergy3";
+import { Access, AccessTarget, Colors, Module, Synergy } from "synergy3";
 import Discord from "discord.js";
 import got from "got";
 
@@ -62,7 +62,7 @@ export default class RandCat extends Module{
     public Category:    string = "Fun";
     public Author:      string = "Thomasss#9258";
 
-    public Access: string[] = [ Access.PLAYER() ]
+    public Access: AccessTarget[] = [ Access.PLAYER() ]
 
     constructor(bot: Synergy, UUID: string) {
         super(bot, UUID);

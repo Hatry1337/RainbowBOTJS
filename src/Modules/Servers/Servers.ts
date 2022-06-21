@@ -1,5 +1,5 @@
 import Discord from "discord.js";
-import { Access, Colors, Module, Synergy, SynergyUserError, User } from "synergy3";
+import { Access, AccessTarget, Colors, Module, Synergy, SynergyUserError, User } from "synergy3";
 
 
 export default class Servers extends Module{
@@ -8,7 +8,7 @@ export default class Servers extends Module{
     public Category:    string = "BOT";
     public Author:      string = "Thomasss#9258";
 
-    public Access: string[] = [ Access.ADMIN() ];
+    public Access: AccessTarget[] = [ Access.ADMIN() ];
 
     constructor(bot: Synergy, UUID: string) {
         super(bot, UUID);

@@ -1,4 +1,4 @@
-import { Access, Module, SynergyUserError, Synergy } from "synergy3";
+import { Access, Module, SynergyUserError, Synergy, AccessTarget } from "synergy3";
 import Discord from "discord.js";
 import { createCanvas, loadImage, registerFont, Image, Canvas} from "canvas";
 import got, { HTTPError } from "got/dist/source";
@@ -22,7 +22,7 @@ export default class Demotivator extends Module{
     public Category:    string = "Fun";
     public Author:      string = "Thomasss#9258";
 
-    public Access: string[] = [ Access.PLAYER() ]
+    public Access: AccessTarget[] = [ Access.PLAYER() ]
 
     constructor(bot: Synergy, UUID: string) {
         super(bot, UUID);

@@ -5,7 +5,7 @@ import IgniRender from "./IgniRender/IgniRender";
 import GIFEncoder from "gifencoder";
 import Camera from "./IgniRender/Scene/Camera";
 import { v3zero } from "./IgniRender/Utils3D";
-import { Access, Colors, Module, ModuleManager, Synergy } from "synergy3";
+import { Access, AccessTarget, Colors, Module, ModuleManager, Synergy } from "synergy3";
 
 export default class OBJRender extends Module{
     public Name:        string = "OBJRender";
@@ -13,7 +13,7 @@ export default class OBJRender extends Module{
     public Category:    string = "Graphics";
     public Author:      string = "Thomasss#9258";
 
-    public Access: string[] = [ Access.PLAYER() ];
+    public Access: AccessTarget[] = [ Access.PLAYER() ];
     
     constructor(bot: Synergy, UUID: string) {
         super(bot, UUID);

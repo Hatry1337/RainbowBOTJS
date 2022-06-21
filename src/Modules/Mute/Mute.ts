@@ -1,6 +1,6 @@
 import Discord from "discord.js";
 import { SlashCommandBuilder } from "@discordjs/builders";
-import { Access, Colors, Emojis, GuildOnlyError, Module, ModuleManager, NoConfigEntryError, Synergy, SynergyUserError, User, Utils } from "synergy3";
+import { Access, AccessTarget, Colors, Emojis, GuildOnlyError, Module, ModuleManager, NoConfigEntryError, Synergy, SynergyUserError, User, Utils } from "synergy3";
 
 export interface IMutedUser{
     user_id: number;
@@ -26,7 +26,7 @@ export default class Mute extends Module{
     public Category:    string = "Moderation";
     public Author:      string = "Thomasss#9258";
 
-    public Access: string[] = [ Access.SERVER_MOD(), Access.SERVER_ADMIN() ];
+    public Access: AccessTarget[] = [ Access.SERVER_MOD(), Access.SERVER_ADMIN() ];
 
     private CheckerTimer: NodeJS.Timeout;
 

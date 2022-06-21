@@ -1,6 +1,6 @@
 import Discord from "discord.js";
 import si from "systeminformation";
-import { Access, Module, Synergy, Utils } from "synergy3";
+import { Access, AccessTarget, Module, Synergy, Utils } from "synergy3";
 
 interface RBFetchStats {
     rq:   number;
@@ -17,7 +17,7 @@ export default class RBFetch extends Module{
     public Category:    string = "Utility";
     public Author:      string = "Thomasss#9258";
 
-    public Access: string[] = [ Access.PLAYER() ];
+    public Access: AccessTarget[] = [ Access.PLAYER() ];
 
     constructor(bot: Synergy, UUID: string) {
         super(bot, UUID);

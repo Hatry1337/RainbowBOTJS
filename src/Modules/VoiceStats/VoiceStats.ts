@@ -1,5 +1,5 @@
 import Discord from "discord.js";
-import { Access, Colors, GlobalLogger, GuildOnlyError, MissingPermissionsError, Module, Synergy, SynergyUserError, User, Utils } from "synergy3";
+import { Access, AccessTarget, Colors, GlobalLogger, GuildOnlyError, MissingPermissionsError, Module, Synergy, SynergyUserError, User, Utils } from "synergy3";
 
 interface VSession{
     Channel: Discord.VoiceChannel;
@@ -21,7 +21,7 @@ export default class VoiceStats extends Module{
     public Category:    string = "Utility";
     public Author:      string = "Thomasss#9258";
 
-    public Access: string[] = [ Access.PLAYER() ];
+    public Access: AccessTarget[] = [ Access.PLAYER() ];
 
     private CurrentSessions: Map<string, VSession> = new Map();
     private DataToSave: DataToSave[] = [];

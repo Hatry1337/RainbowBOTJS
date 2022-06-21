@@ -59,31 +59,16 @@ export default class Shop {
         }
     }
 
-    public embedMessage(){
-        let emb = new Discord.MessageEmbed({
-            title: "Shop",
-            description: "/shop buy ...",
-            color: 0xFFFF00
-        });
-        for(let c in this.categories){
-            let cat = this.categories[c]; 
-            let txt = "";
-            for(let i in cat.entries){
-                let item = cat.entries[i];
-                let cross = item.stock === 0 ? "~~" : "";
-                txt += `**${c}.${i}** ${cross}${item.item.item.name} - ${item.item.item.description} x${item.item.size} [${item.price} ${CEmojis.PointCoin}, ${item.stock}/${item.maxStock} 📦]${cross}\n`;
-            }
-            emb.addField(cat.name, txt);
-        }
-
-        return emb;
-    }
-
+    /**
+     * `-1` - Not enough item stock
+     * `-2` - Not enough points on player balance
+     * `1` - Purchased successfully
+     */
     public buy(player: Player, category: number, entry: number, count: number = 1){
         let item = this.categories[category].entries[entry];
         
-        if(item.stock < item.item.size * count) return;
-        if(item.price * count > player.user.economy.points) return;
+        if(item.stock < item.item.size * count) return -1;
+        if(item.price * count > player.user.economy.points) return -2;
 
         item.stock -= item.item.size * count;
         player.user.economy.points -= item.price * count;
@@ -99,56 +84,6 @@ export default class Shop {
         if(!stackflag){
             player.inventory.push(item.item.copy().setSize(item.item.size * count));
         }
-    }
-
-    public async handleInteraction(interaction: Discord.CommandInteraction, user: User){
-        let sub = interaction.options.getSubcommand(false);
-        if(!sub || sub === "view"){
-            let emb = this.embedMessage();
-            return await interaction.reply({ embeds: [emb] });
-        }
-
-        if(sub === "buy"){
-            let slot = interaction.options.getString("slot", true);
-            let count = interaction.options.getInteger("count", false) || 1;
-
-            if(!slot || !/^([0-9]+)\.([0-9]+)$/gm.test(slot)) {
-                throw new SynergyUserError("Invalid slot number provided.");
-            }
-
-            let matches = /^([0-9]+)\.([0-9]+)$/gm.exec(slot)!;
-            let c = parseInt(matches[1]);
-            let i = parseInt(matches[2]);
-
-            let item = this.categories[c].entries[i];
-
-            if(item.stock === 0){
-                throw new SynergyUserError("This item is out of stock.");
-            }
-
-            if(item.stock < count){
-                throw new SynergyUserError("Not enough items in shop.");
-            }
-
-            if(item.price * count > user.economy.points) {
-                throw new SynergyUserError(`You don't have enough Points to purchase this. (Needed: ${item.price * count})`);
-            }
-
-            let player = await this.storage.getPlayer(user);
-            if(!player){
-                player = await this.storage.createPlayer(user);
-            }
-
-            this.buy(player, c, i, count);
-
-            await this.storage.savePlayer(player);
-            
-            let emb =  new Discord.MessageEmbed({
-                title: 'You are sucessfully purchased "' + item.item.item.name + '" x' + count,
-                color: Colors.Noraml
-            });
-    
-            return await interaction.reply({embeds: [emb]});
-        }
+        return 1;
     }
 }

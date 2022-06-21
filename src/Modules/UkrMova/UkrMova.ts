@@ -1,4 +1,4 @@
-import { Access, Colors, Module, Synergy, Utils } from "synergy3";
+import { Access, AccessTarget, Colors, Module, Synergy, Utils } from "synergy3";
 import Discord from "discord.js";
 
 export default class UkrMova extends Module{
@@ -7,7 +7,7 @@ export default class UkrMova extends Module{
     public Category:    string = "Fun";
     public Author:      string = "Thomasss#9258";
 
-    public Access: string[] = [ Access.PLAYER() ]
+    public Access: AccessTarget[] = [ Access.PLAYER() ]
 
     public words = [
         "Гинеколог - пихвозаглядач",

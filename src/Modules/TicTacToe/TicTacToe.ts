@@ -1,13 +1,13 @@
 import Discord from "discord.js";
 import TicTacToeGame, { TicTacToePlayer, TicTacToeSymbol } from "./TicTacToeGame";
-import { Access, Colors, InteractiveComponent, Module, Synergy, Utils } from "synergy3";
+import { Access, AccessTarget, Colors, InteractiveComponent, Module, Synergy, Utils } from "synergy3";
 export default class TicTacToe extends Module{
     public Name:        string = "TicTacToe";
     public Description: string = "Using this command users can play Tic Tac toe game.";
     public Category:    string = "Game";
     public Author:      string = "Thomasss#9258";
 
-    public Access: string[] = [ Access.PLAYER() ];
+    public Access: AccessTarget[] = [ Access.PLAYER() ];
 
     private TicTacToeGames: Map<string, TicTacToeGame> = new Map();
 
@@ -108,7 +108,7 @@ export default class TicTacToe extends Module{
         }
         game.controls = [];
         
-        let btn_access = [];
+        let btn_access: AccessTarget[] = [];
         game.player1.user ? btn_access.push(Access.USER(game.player1.user.id)) : 0;
         game.player2.user ? btn_access.push(Access.USER(game.player2.user.id)) : 0;
 

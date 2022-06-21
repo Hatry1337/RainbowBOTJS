@@ -1,6 +1,6 @@
 import Discord, { Message } from "discord.js";
 import { SlashCommandBuilder } from "@discordjs/builders";
-import { Access, Colors, Emojis, Module, ModuleManager, Synergy, Utils } from "synergy3";
+import { Access, AccessTarget, Colors, Emojis, Module, ModuleManager, Synergy, Utils } from "synergy3";
 import { OsuAPI, OsuMap } from "./OsuAPI";
 
 
@@ -10,7 +10,7 @@ export default class OsuInfo extends Module{
     public Category:    string = "Utility";
     public Author:      string = "Thomasss#9258";
 
-    public Access: string[] = [ Access.PLAYER() ];
+    public Access: AccessTarget[] = [ Access.PLAYER() ];
 
     constructor(bot: Synergy, UUID: string) {
         super(bot, UUID);

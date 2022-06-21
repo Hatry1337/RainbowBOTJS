@@ -1,4 +1,4 @@
-import { Access, GuildOnlyError, Module, NoConfigEntryError, Synergy, Utils } from "synergy3";
+import { Access, AccessTarget, GuildOnlyError, Module, NoConfigEntryError, Synergy, Utils } from "synergy3";
 import Discord from "discord.js";
 import _ from "lodash";
 
@@ -8,7 +8,7 @@ export default class RoleManager extends Module{
     public Category:    string = "Moderation";
     public Author:      string = "Thomasss#9258";
 
-    public Access: string[] = [ Access.PLAYER() ]
+    public Access: AccessTarget[] = [ Access.PLAYER() ]
 
     constructor(bot: Synergy, UUID: string) {
         super(bot, UUID);

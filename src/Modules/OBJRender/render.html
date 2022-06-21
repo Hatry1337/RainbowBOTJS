@@ -1,0 +1,47 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IgniRenderEngine</title>
+</head>
+<body>
+    <image id="main_view" height="1000" width="1000"></canvas>
+
+    <script>
+        let image = document.getElementById("main_view");
+        let sock = new WebSocket('ws://localhost:9000');
+        sock.onmessage = function (message) {
+            let data = JSON.parse(message.data);
+            image.width !== data.width ? image.width = data.width : 0;
+            image.height !== data.height ? image.height = data.height : 0;
+            image.src = data.image_data;
+        };
+
+        document.addEventListener('keydown', (event) => {
+            const keyName = event.key;
+            console.log(event.key);
+            if(sock.OPEN){
+                sock.send(JSON.stringify({ input: { type: "keydown", key: event.key } }));
+            }
+        }, false);
+
+        document.addEventListener('keyup', (event) => {
+            const keyName = event.key;
+            console.log(event.key);
+            if(sock.readyState === sock.OPEN){
+                sock.send(JSON.stringify({ input: { type: "keyup", key: event.key } }));
+            }
+        }, false);
+
+        setInterval(() => {
+            if(sock.readyState === sock.CLOSED){
+                sock = new WebSocket('ws://localhost:9000');
+                sock.onmessage = function (message) {
+                    image.src = JSON.parse(message.data).image_data;
+                };
+            }
+        }, 1000);
+    </script>
+</body>
+</html>
