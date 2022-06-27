@@ -2,8 +2,6 @@ import { Access, Colors, Synergy, SynergyUserError, User } from "synergy3";
 import { StorageWrapper } from "./Storage/StorageWrapper";
 import Discord from "discord.js";
 import Economy from "./Economy";
-import ItemPlaceable from "./Game/Items/ItemPlaceable";
-import ItemStack from "./Game/ItemStack";
 import Shop from "./Shop/Shop";
 import { CEmojis } from "../../RainbowBOTUtils";
 

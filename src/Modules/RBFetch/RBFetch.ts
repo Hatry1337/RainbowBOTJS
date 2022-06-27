@@ -88,12 +88,12 @@ export default class RBFetch extends Module{
         let rq_handl_d  = stats ? stats.rq_d : "N/A";
         let rq_handl_h  = stats ? stats.rq_h : "N/A";
 
-        let mem = await si.mem();
-        let load = await si.currentLoad();
+        //let mem = await si.mem();
+        //let load = await si.currentLoad();
 
-        let meminfo = `${Math.floor(mem.available / 1024 / 1024)}MiB / ${Math.floor(mem.total / 1024 / 1024)}MiB`;
+        //let meminfo = `${Math.floor(mem.available / 1024 / 1024)}MiB / ${Math.floor(mem.total / 1024 / 1024)}MiB`;
         let botmem = `${Math.floor(process.memoryUsage().rss / 1024 /1024)}MiB`;
-        let cpuinfo = `${Math.floor(load.currentLoad)}%, AVG: ${load.avgLoad}`;
+        //let cpuinfo = `${Math.floor(load.currentLoad)}%, AVG: ${load.avgLoad}`;
 
         let compact = false;
         if(interaction.member instanceof Discord.GuildMember && interaction.member.presence?.clientStatus?.mobile){
@@ -118,15 +118,15 @@ export default class RBFetch extends Module{
             `      ,*/////,       ,*,  ,*////*,          Uptime: ${uptime}`                  + "\n" +
             `    .,///////,      .**,. ,*///////,.       WS_Ping: ${ping} ms.`               + "\n" +
             `    ,////////,    .,/,.  .*/////////*.      Modules: ${modules} (synergy3)`     + "\n" +
-            `   ,*/(//////*.         ,*////////////,     DB_Users: ${cache_users}`           + "\n" +
+            `   ,*/(//////*.         ,*////////////,     BOT_Users: ${cache_users}`          + "\n" +
             `   ,*/////////*.      .,*/////////////,.    Discord_Users: ${disc_users}`       + "\n" +
             `   **//////////*,   .**///////////*****,    Discord_Servers: ${disc_servs}`     + "\n" +
             `  .**//**////////****//////************,    Requests: ${rq_handl}`              + "\n" +
             `   ,******//////////**************,,,,,.    Requests_1d: ${rq_handl_d}`         + "\n" +
             `   ,*//////***************,,,,,,,,,,,,,.    Requests_1h: ${rq_handl_h}`         + "\n" +
-            `   .*//////**********,,,,,,,,,,,,,,,,,,.    Memory: ${meminfo}`                 + "\n" +
-            `    ,//////**,,,,,,,,,,,,,,,,,,,,,,,,,.     Memory_BOT: ${botmem}`              + "\n" +
-            `     .********,,,,,,,,,,,,,,,,,,,,,,.       CPU_Load: ${cpuinfo}`               + "\n" +
+            `   .*//////**********,,,,,,,,,,,,,,,,,,.    Memory: ${botmem}`                  + "\n" +
+            `    ,//////**,,,,,,,,,,,,,,,,,,,,,,,,,.   `                                     + "\n" +
+            `     .********,,,,,,,,,,,,,,,,,,,,,,.     `                                     + "\n" +
             `       .,***,,,,,,,,,,,,,,,,,,,,,,,       `                                     + "\n" +
             `          .,,,,,,,,,,,,,,,,,,,..          `                                     + "\n" +
             `              ............                `                                     + "\n" +
@@ -140,15 +140,14 @@ export default class RBFetch extends Module{
             `Node: ${nodev}`                     + "\n" +
             `Uptime: ${uptime}`                  + "\n" +
             `WS_Ping: ${ping} ms.`               + "\n" +
-            `Modules: ${modules} (cmd)`          + "\n" +
-            `Cache_Users: ${cache_users}`        + "\n" +
+            `Modules: ${modules} (synergy3)`     + "\n" +
+            `BOT_Users: ${cache_users}`          + "\n" +
             `Discord_Users: ${disc_users}`       + "\n" +
             `Discord_Servers: ${disc_servs}`     + "\n" +
             `Requests: ${rq_handl}`              + "\n" +
             `Requests_1d: ${rq_handl_d}`         + "\n" +
             `Requests_1h: ${rq_handl_h}`         + "\n" +
-            `Memory: ${meminfo}`                 + "\n" +
-            `CPU_Load: ${cpuinfo}`               + "\n" +
+            `Memory: ${botmem}`                  + "\n" +
             `\`\`\``                             ;
         }
         

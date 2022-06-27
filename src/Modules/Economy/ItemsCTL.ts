@@ -174,6 +174,7 @@ export class ItemsCTL {
         }
 
         await item.item.use(item, player);
+        await this.storage.savePlayer(player);
 
         let emb =  new Discord.MessageEmbed({
             title: 'You are sucessfully used "' + item.item.name + '".',
@@ -264,6 +265,8 @@ export class ItemsCTL {
         if(room.placeItem(item as ItemStack<ItemPlaceable>) === -1){
             throw new SynergyUserError("Can't place item in this room. Not enough slots or power grid.");
         }
+
+        await this.storage.savePlayer(player);
 
         let emb =  new Discord.MessageEmbed({
             title: `You are sucessfully placed "${item.item.name}" in room "${room.reference.name}".`,
