@@ -17,9 +17,19 @@ export default class RainbowBOTUtils{
             while(words.length > 0){
                 let currnet_line = "";
                 let word: string | undefined;
+
                 while((word = words.shift()) && ctx.measureText(currnet_line + word + " ").width < max_width){
                     currnet_line += word + " ";
                 }
+
+                if(word && ctx.measureText(word).width > max_width){
+                    if(currnet_line !== "" && currnet_line !== " "){
+                        lines.push(currnet_line);
+                    }
+                    lines.push(word);
+                    continue;
+                }
+
                 if(word){
                     words.unshift(word);
                 }
