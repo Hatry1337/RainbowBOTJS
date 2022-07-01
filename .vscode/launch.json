@@ -14,7 +14,7 @@
             "program": "${workspaceFolder}/src/bot.ts",
             "preLaunchTask": "tsc: build - tsconfig.json",
             "outFiles": [
-                "${workspaceFolder}/out/**/*.js"
+                "${workspaceFolder}/dist/**/*.js"
             ],
             "envFile": "${workspaceFolder}/dev.env"
         },
@@ -28,7 +28,7 @@
             "program": "${workspaceFolder}/src/bot.ts",
             "preLaunchTask": "tsc: build - tsconfig.json",
             "outFiles": [
-                "${workspaceFolder}/out/**/*.js"
+                "${workspaceFolder}/dist/**/*.js"
             ],
             "envFile": "${workspaceFolder}/.env"
         }
