@@ -24,6 +24,7 @@ import RandCat from './Modules/RandCat/RandCat';
 import UTS from './Modules/UnifiedTestSuite/UTS';
 import ASCII from './Modules/ASCII/ASCII';
 import CowSay from './Modules/CowSay/CowSay';
+import Hentai from './Modules/Hentai/Hentai';
 
 declare global {
     namespace NodeJS {
@@ -66,6 +67,7 @@ const modules: {
     { Module: UTS,          UUID: "1fffad32-ac42-5793-a932-89f2c39f7b70"},
     { Module: ASCII,        UUID: "81edeabd-ebb1-5380-8ccc-08c6664260c5"},
     { Module: CowSay,       UUID: "478356ad-c31b-5e8b-a6bb-cbf38608c879"},
+    { Module: Hentai,       UUID: "02f3064b-a6fd-514a-b179-022c3477f814"},
 ]
 
 const bot = new Synergy({
