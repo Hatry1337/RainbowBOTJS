@@ -97,7 +97,4 @@ const bot = new Synergy({
 
 (async () => {
     await bot.login(process.env.TOKEN);
-    bot.client.on("ready", async () => {
-        //await bot.interactions.overwriteInteractiveCommands();
-    })
 })();

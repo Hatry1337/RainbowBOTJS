@@ -8,7 +8,7 @@ export default class CowSay extends Module{
     public Category:    string = "Fun";
     public Author:      string = "Thomasss#9258";
 
-    public Access: AccessTarget[] = [ Access.PLAYER(), Access.BANNED() ]
+    public Access: AccessTarget[] = [ Access.PLAYER() ]
 
     constructor(bot: Synergy, UUID: string) {
         super(bot, UUID);
