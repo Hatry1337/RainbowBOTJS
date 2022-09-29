@@ -6,8 +6,34 @@
     <title>IgniRenderEngine</title>
 </head>
 <body>
-    <image id="main_view" height="1000" width="1000"></canvas>
-
+    <style>
+        .column {
+            float: left;
+        }
+        .row:after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+        .row {
+           display: flex;
+        }
+        .column {
+            flex: 50%;
+        }
+    </style>
+    <div class="row">
+        <div class="column">
+            <image id="main_view" height="1000" width="1000"></canvas>
+        </div>
+        <div class="column">
+            <div class="row">
+                <input type="number" id="fov_input" placeholder="FOV">
+                <button id="fov_btn" onclick="sock.send(JSON.stringify({ input: { type: 'set_fov', value: parseInt(document.getElementById('fov_input').value) } }))">Set</button>
+            </div>
+        </div>
+    </div>
+    
     <script>
         let image = document.getElementById("main_view");
         let sock = new WebSocket('ws://localhost:9000');

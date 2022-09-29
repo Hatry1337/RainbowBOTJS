@@ -14,12 +14,26 @@ export interface Vertex extends vec3{
     normal?: vec3;
 }
 
+export interface Primitive {
+    type: "none" | "face" | "path";
+}
+
+export interface PPath extends Primitive {
+    type: "path";
+    points: vec3[];
+    color?: string;
+}
+
 export interface Face{
     vertices: Vertex[];
     center?: vec3;
     normal?: vec3;
     bounds?: vec3;
     color: number;
+}
+
+export interface PFace extends Primitive, Face {
+    type: "face";
 }
 
 export function v2zero(): vec2 {
@@ -209,6 +223,8 @@ export function v4mag(v1: vec4){
 
 //vec normalize
 export function v2normalize(v: vec2): vec2{
+    if(v.x === 0 && v.y === 0) return v2zero();
+
     let lg = v2mag(v);
     return {
         x: v.x / lg,
@@ -217,6 +233,8 @@ export function v2normalize(v: vec2): vec2{
 }
 
 export function v3normalize(v: vec3): vec3{
+    if(v.x === 0 && v.y === 0 && v.z) return v3zero();
+
     let lg = v3mag(v);
     return {
         x: v.x / lg,
@@ -226,6 +244,8 @@ export function v3normalize(v: vec3): vec3{
 }
 
 export function v4normalize(v: vec4): vec4{
+    if(v.x === 0 && v.y === 0 && v.z && v.w) return v4zero();
+
     let lg = v4mag(v);
     return {
         x: v.x / lg,
@@ -334,4 +354,39 @@ export function getFaceNormal(face: Face){
         normal.z += (cur_v.x - nxt_v.x) * (cur_v.y + nxt_v.y);
     }
     return v3normalize(normal);
+}
+
+/**
+ * 
+ * @param x Value to convert
+ * @param n_max New value range max
+ * @param n_min New value range min
+ * @param o_max Old value range max
+ * @param o_min Old value range min
+ * @returns 
+ */
+export function convertRange(x: number, n_max: number, n_min: number, o_max: number, o_min: number){
+    let n_rng = n_max - n_min;
+    let o_rng = o_max - o_min;
+    return (((x - o_min) * n_rng) / o_rng) + n_min;
+}
+
+export function getNormalColor(normal: vec3){
+    let v1: vec3 = {
+        x: -0.5,
+        y: 0.75,
+        z: -1
+    }
+    let cf = v3dot(v1, v3normalize(normal));
+    return 255 * ((cf+3)/6);
+}
+
+export function matrixDot (A: number[][], B: number[][]) {
+    let result = new Array(A.length).fill(0).map(row => new Array(B[0].length).fill(0));
+
+    return result.map((row, i) => {
+        return row.map((val, j) => {
+            return A[i].reduce((sum, elm, k) => sum + (elm*B[k][j]) ,0)
+        })
+    })
 }

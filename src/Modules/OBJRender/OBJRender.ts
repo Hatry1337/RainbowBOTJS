@@ -6,6 +6,7 @@ import GIFEncoder from "gifencoder";
 import Camera from "./IgniRender/Scene/Camera";
 import { v3zero } from "./IgniRender/Utils3D";
 import { Access, AccessTarget, Colors, Module, ModuleManager, Synergy } from "synergy3";
+import { Scene } from "./IgniRender/Scene/Scene";
 
 export default class OBJRender extends Module{
     public Name:        string = "OBJRender";
@@ -120,29 +121,31 @@ export default class OBJRender extends Module{
 
                     let gif_anim = interaction.options.getBoolean("gif_rot") || false;
                     
-                    let igni = new IgniRender();
-                    let model = igni.LoadOBJModel(data.body);
+                    let scene = new Scene();
+                    let model = IgniRender.LoadOBJModel(scene, data.body);
+                    scene.addObject(model);
 
-                    let cam = new Camera({
+                    let cam = new Camera(scene, {
                         x: cam_x,
                         y: cam_y,
                         z: cam_z
-                    }, v3zero(), igni);
-                    cam.RenderResolution.Width = 960;
-                    cam.RenderResolution.Height = 540;
-                    cam.Width = 0.9;
-                    cam.Height = 1.6;
+                    }, v3zero());
+                    scene.addObject(cam);
 
-                    igni.Scene.push(cam);
-                    igni.Scene.push(model);
+                    cam.renderResolution.Width = 960;
+                    cam.renderResolution.Height = 540;
+                    
+                    model.Move({
+                        x: off_x,
+                        y: off_y,
+                        z: off_z
+                    });
 
-                    model.Position.x += off_x;
-                    model.Position.y += off_y;
-                    model.Position.z += off_z;
-
-                    model.Rotation.x = rot_x;
-                    model.Rotation.y = rot_y;
-                    model.Rotation.z = rot_z;
+                    model.SetRotation({
+                        x: rot_x,
+                        y: rot_y,
+                        z: rot_z
+                    });
 
                     if(!gif_anim){
                         let img = await cam.Render();
@@ -154,7 +157,11 @@ export default class OBJRender extends Module{
                         encoder.setRepeat(0);
                         encoder.start();
                         for(let i = 0; i < 30; i++){
-                            model.Rotation.y = i*12 * 0.0174533;
+                            model.SetRotation({
+                                x: model.rotation.x,
+                                y: i*12 * 0.0174533,
+                                z: model.rotation.z
+                            });
                             let f = await cam.Render();
                             encoder.addFrame(f.getContext("2d"));
                         }

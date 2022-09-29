@@ -1,22 +1,30 @@
-import IgniRender from "../IgniRender";
-import { Face, getFaceCenter, getFaceNormal, v3rotate, v3sum, v3zero, vec3, Vertex } from "../Utils3D";
+import { Face, getFaceCenter, getFaceNormal, PFace, v3mul, v3normalize, v3rotate, v3sum, v3zero, vec3, Vertex } from "../Utils3D";
+import { Scene } from "./Scene";
 import SceneObject from "./SceneObject";
 
 export default class PolyObject extends SceneObject{
-    public calculatedMesh: Face[];
-    constructor(pos: vec3, rot: vec3, renderrer: IgniRender, public originalMesh: Face[]){
-        super(pos, rot, renderrer);
-        this.calculatedMesh = this.CalculateMesh();
+    public calculatedMesh: PFace[] = [];
+    public size: vec3 = { x: 1, y: 1, z: 1};
+    constructor(scene: Scene, pos: vec3, rot: vec3, public originalMesh: PFace[]){
+        super(scene, pos, rot);
     }
 
-    public CalculateMesh(){
-        let transform: Face[] = [];
+    public SetSize(size: vec3){
+        this.size = size;
+        this.stateChanged = true;
+    }
+
+    public Draw(){
+        if(!this.stateChanged) return this.calculatedMesh;
+
+        let transform: PFace[] = [];
         for(let f of this.originalMesh){
             let verts: Vertex[] = [];
             for(let v of f.vertices){
-                verts.push(v3sum(v3rotate(v, this.Rotation), this.Position));
+                verts.push(v3sum(v3rotate(v3mul(v3normalize(v), this.size), this.rotation), this.position));
             }
-            let f_new: Face = {
+            let f_new: PFace = {
+                type: "face",
                 vertices: verts,
                 color: f.color,
             }
@@ -38,6 +46,7 @@ export default class PolyObject extends SceneObject{
             transform.push(f_new);
         }
         this.calculatedMesh = transform;
+        this.stateChanged = false;
         return transform;
     }
 
