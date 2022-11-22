@@ -1,14 +1,10 @@
 import { RenderProjection, RenderStyle } from "../IgniRender";
-import { convertRange, Face, getFaceCenter, getFaceNormal, getNormalColor, matrixDot, PFace, PPath, v2normalize, v3dot, v3normalize, v3rotate, v3sub, v3sum, vec2, vec3, Vertex } from "../Utils3D";
+import { convertRange, Face, getFaceCenter, getFaceNormal, getNormalColor, matrix4MultPoint, Path, Primitive, v2normalize, v3copy, v3distance, v3dot, v3mul, v3normalize, v3rotate, v3sub, v3sum, vec2, vec3 } from "../Utils3D";
 import SceneObject from "./SceneObject";
 import { Canvas, createCanvas } from 'canvas';
 import { Scene } from "./Scene";
-import { all, create } from "mathjs";
-
-const math = create(all);
 
 export default class Camera extends SceneObject{
-    public focalLength: number;
     public renderResolution: {
         Width: number;
         Height: number;
@@ -16,13 +12,12 @@ export default class Camera extends SceneObject{
     public aspectRatio;
     public renderStyle: RenderStyle = "flat";
     public projection: RenderProjection = "perspective";
-    public FOV: number = 30;
-    public nearClipPlane: number = 1;
-    public farClipPlane: number = 2;
+    public FOV: number = 40;
+    public nearClipPlane: number = 0.1;
+    public farClipPlane: number = 100;
 
-    constructor(scene: Scene, pos: vec3, rot: vec3){
-        super(scene, pos, rot);
-        this.focalLength = 1;
+    constructor(pos: vec3, rot: vec3){
+        super(pos, rot);
         this.renderResolution = {
             Width: 400,
             Height: 300
@@ -31,7 +26,7 @@ export default class Camera extends SceneObject{
         
     }
 
-    public Draw(): PPath[] {
+    public Draw(): Path[] {
         /*
         let cam: PPath[] = [
             {
@@ -114,30 +109,33 @@ export default class Camera extends SceneObject{
         return [];
     }
 
+    public worldToCameraSpace(point: vec3) {
+        let out = v3copy(point);
+        out = v3sum(out, this.position);
+        out = v3rotate(point, this.rotation);
+
+        return out;
+    }
+
     public Project(point: vec3): vec2 {
         if(this.projection === "perspective"){
             point = v3normalize(point);
 
-            let proj_mx = math.matrix([
-                [math.cot(this.FOV / this.aspectRatio), 0, 0, 0], 
-                [0, math.cot(this.FOV / 2), 0, 0],
-                [0, 0, this.farClipPlane / this.farClipPlane - this.nearClipPlane, 1],
-                [0, 0, -((this.farClipPlane * this.nearClipPlane) / (this.farClipPlane - this.nearClipPlane)), 0]
-            ]);
+            let s = 1 / Math.tan(this.FOV / 2 * Math.PI / 180);
+            let d = this.farClipPlane - this.nearClipPlane;
+            let fn1 = this.farClipPlane / d;
+            let fn2 = this.farClipPlane * this.nearClipPlane / d;
 
-            let point_mx = math.matrix([point.x, point.y, point.z, 1]);
+            let mat = [
+                [s, 0, 0,     0], 
+                [0, s, 0,     0],
+                [0, 0, -fn1, -1],
+                [0, 0, -fn2,  0]
+            ];
+            
+            let res = matrix4MultPoint(mat, point);
 
-            let res = math.multiply(proj_mx, point_mx);
-
-            /*
-            let { x, y, z } = point;
-            let px = this.focalLength * x / (z + this.focalLength);
-            let py = this.focalLength * y / (z + this.focalLength);
-            */
-            return { 
-                x: res.get([0]),
-                y: res.get([1])
-            };
+            return res;
 
         //}else if(this.projection === "orthogonal"){
 
@@ -156,19 +154,38 @@ export default class Camera extends SceneObject{
         ctx.fillRect(0,0, canvas.width, canvas.height);
         ctx.fillStyle = "black";
 
-        let faces: Face[] = [];
-        for(let obj of this.scene.objects.filter(o => o.visible && o.id !== this.id)){
+        let rend_obj = this.scene.objects.filter(o => o.visible && o.id !== this.id);
+
+        for(let obj of rend_obj){
             let prims = obj.Draw();
             
+            /*
             for(let p of prims){
-                if(p.type === "path"){
-                    let path = p as PPath;
+                if(p.isFace()){
+                    p.vertices.sort((a, b) => v3distance(a, this.position) - v3distance(b, this.position));
+                }else if(p.isPath()){
+                    p.points.sort((a, b) => v3distance(a, this.position) - v3distance(b, this.position));
+                }
+            }
+            */
 
-                    if(path.color){
-                        ctx.strokeStyle = path.color;
+            prims.sort((a, b) => {
+                if(a.isFace() && b.isFace()){
+                    return v3distance(a.getCenter(true), this.position) - v3distance(b.getCenter(true), this.position);
+                }else{
+                    return -Infinity;
+                }
+            });
+
+            for(let p of prims){
+                if(p.isPath()){
+                    if(p.color){
+                        ctx.strokeStyle = p.color;
                     }
 
-                    let points = path.points.map(p => this.Project(v3sum(v3rotate(p, this.rotation), this.position)));
+                    //let points = p.points.map(p => this.Project(v3sum(v3rotate(p, this.rotation), this.position)));
+                    let points = p.points.map(p => this.Project(this.worldToCameraSpace(p)));
+                    
                     ctx.beginPath();
                     ctx.moveTo( convertRange(points[0].x, this.renderResolution.Width, 0, 1, -1), 
                                 convertRange(points[0].y, this.renderResolution.Height, 0, 1, -1));
@@ -179,18 +196,26 @@ export default class Camera extends SceneObject{
                     ctx.stroke();
                     ctx.closePath();
                     ctx.strokeStyle = "black";
-                }else if(p.type === "face") {
-                    let face = p as PFace;
-                    face.center = face.center ? face.center : getFaceCenter(face);
-                    face.normal = face.normal ? face.normal : getFaceNormal(face);
+                }else if(p.isFace()) {
+                    p.center = p.center ? p.center : getFaceCenter(p);
+                    p.normal = p.normal ? p.normal : getFaceNormal(p);
 
-                    if(v3dot(face.normal, v3sub(face.center, this.position)) > 0){
-                        let verts_prj = face.vertices.map(p => this.Project(v3sum(v3rotate(p, this.rotation), this.position)));
+                    let draw_flag = false;
+
+                    if(this.renderStyle === "wireframe"){
+                        draw_flag = true;
+                    }else if(v3dot(p.normal, v3sub(p.center, v3rotate(this.position, v3mul(this.rotation, { x: -1, y: -1, z: -1})))) > 0){
+                        draw_flag = true;
+                    }
+
+                    if(draw_flag){
+                       // let verts_prj = p.vertices.map(p => this.Project(v3sum(v3rotate(p, this.rotation), this.position)));
+                        let verts_prj = p.vertices.map(p => this.Project(this.worldToCameraSpace(p)));
                        
                         ctx.beginPath();
                         
                         if(this.renderStyle === "flat"){
-                            let color = Math.floor(getNormalColor(face.normal));
+                            let color = Math.floor(getNormalColor(p.normal));
                             ctx.fillStyle = `rgb(${color},${color},${color})`;
                         }
 

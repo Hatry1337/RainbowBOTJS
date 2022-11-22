@@ -10,23 +10,21 @@ import AxesMarker from "./IgniRender/Scene/AxesMarker";
     const wsServer = new WebSocket.Server({port: 9000});
     let scene = new Scene();
 
-    scene.addObject(new AxesMarker(scene, v3zero(), v3zero()));
+    scene.addObject(new AxesMarker(v3zero(), v3zero()));
 
-    //let model2 = igni.LoadOBJModel(await (await fs.readFile("/home/thomas/Документы/Blends/aaa.obj")).toString());
-    let model2 = IgniRender.LoadOBJModel(scene, await (await fs.readFile("/home/thomas/Документы/Blends/coctus.obj")).toString());
-    model2.SetSize({ x: 100, y: 100, z: 100});
+    let model2 = IgniRender.LoadOBJModel((await fs.readFile("/home/thomas/Документы/Blends/coctus.obj")).toString());
     scene.addObject(model2);
 
     //model.Position.x += 2;
     //model.Rotation.y = -0.0174533 * 90;
-    let cam = new Camera(scene, {
+    let cam = new Camera({
         x: 0,
         y: 0,
         z: -5
     }, v3zero());
     scene.addObject(cam);
 
-    let cam2 = new Camera(scene, {
+    let cam2 = new Camera({
         x: 0,
         y: 0,
         z: 5
@@ -62,6 +60,23 @@ import AxesMarker from "./IgniRender/Scene/AxesMarker";
                         cam.position.x += 0.1;
                         break;
                     }
+
+                    case "W": {
+                        cam.position.z += 1;
+                        break;
+                    }
+                    case "S": {
+                        cam.position.z -= 1;
+                        break;
+                    }
+                    case "A": {
+                        cam.position.x -= 1;
+                        break;
+                    }
+                    case "D": {
+                        cam.position.x += 1;
+                        break;
+                    }
         
                     case "ArrowDown": {
                         cam.position.y -= 0.1;
@@ -80,13 +95,47 @@ import AxesMarker from "./IgniRender/Scene/AxesMarker";
                         cam.rotation.y += 0.0174533;
                         break;
                     }
+                    
+                    case "+": {
+                        model2.SetSize({
+                            x: model2.size.x + 0.01,
+                            y: model2.size.y + 0.01,
+                            z: model2.size.z + 0.01,
+                        });
+                        
+                        break;
+                    }
+                    case "-": {
+                        model2.SetSize({
+                            x: model2.size.x - 0.01,
+                            y: model2.size.y - 0.01,
+                            z: model2.size.z - 0.01,
+                        });
+                        break;
+                    }
+
+                    case "O": {
+                        IgniRender.ExportOBJ(model2);
+                        break;
+                    }
+
+                    case "o": {
+                        IgniRender.ExportOBJ(model2, false);
+                        break;
+                    }
                 }
             }else if(data.input && data.input.type === "set_fov"){
                 cam.FOV = data.input.value;
-            }else if(data.input && data.input.type === "set_fov"){
-                cam.FOV = data.input.value;
-            }else if(data.input && data.input.type === "set_fov"){
-                cam.FOV = data.input.value;
+            }else if(data.input && data.input.type === "get_model"){
+                client.send(JSON.stringify({
+                    type: "obj_data",
+                    obj_data: IgniRender.ExportOBJ(model2, false)
+                }));
+            }else if(data.input && data.input.type === "get_model_original"){
+                client.send(JSON.stringify({
+                    type: "obj_data",
+                    obj_data: IgniRender.ExportOBJ(model2)
+                }));
             }
         });
     });
@@ -121,9 +170,18 @@ import AxesMarker from "./IgniRender/Scene/AxesMarker";
         ctx.fillText(`MODEL2_ROT_Y: ${model2.rotation.y}`, 0, 170);
         ctx.fillText(`MODEL2_ROT_Z: ${model2.rotation.z}`, 0, 180);
 
+        ctx.fillText(`MODEL2_SIZE_X: ${model2.size.x}`, 0, 200);
+        ctx.fillText(`MODEL2_SIZE_Y: ${model2.size.y}`, 0, 210);
+        ctx.fillText(`MODEL2_SIZE_Z: ${model2.size.z}`, 0, 220);
+
         let idata = canv.toDataURL("image/jpeg"); //.toBuffer();
         for(let c of wsServer.clients){
-            c.send(JSON.stringify({ image_data: idata, width: canv.width, height: canv.height }));
+            c.send(JSON.stringify({ 
+                type: "frame",
+                image_data: idata, 
+                width: canv.width, 
+                height: canv.height 
+            }));
         }
         frames++;
         last_rendered = true;

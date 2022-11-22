@@ -9,6 +9,7 @@ export class Scene {
 
     public addObject(obj: SceneObject) {
         if(!this.objects.find(o => o.id === obj.id)){
+            obj.scene = this;
             this.objects.push(obj);
         }
     }
