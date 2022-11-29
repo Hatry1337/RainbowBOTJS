@@ -11,6 +11,7 @@ interface ITempGroupInfo{
 
 interface ITempGroupInfoJSON{
     user: number;
+    userDiscordId: string;
     group: string;
     time: number;
     addedAt: number;
@@ -145,6 +146,7 @@ export default class GrpMgr extends Module{
             for(let g of e[1]){
                 tgrps[e[0]].push({
                     user: g.user.id,
+                    userDiscordId: g.user.discordId,
                     group: g.group,
                     time: g.time,
                     addedAt: Math.floor(g.addedAt.getTime() / 1000),
@@ -163,7 +165,7 @@ export default class GrpMgr extends Module{
             let data: ITempGroupInfo[] = [];
             for(let g of tgrps[k]){
                 data.push({
-                    user: await this.bot.users.fetchOne(g.user) ?? undefined!,
+                    user: await this.bot.users.get(g.userDiscordId) ?? undefined!,
                     group: g.group,
                     time: g.time,
                     addedAt: new Date(g.addedAt * 1000),
@@ -209,10 +211,7 @@ export default class GrpMgr extends Module{
 
         if(group === "admin") throw new SynergyUserError("You can't add admin group to user.");
 
-        let u_id = this.bot.users.idFromDiscordId(duser.id);
-        if(!u_id) throw new SynergyUserError("This user is not registered.");
-
-        let user = await this.bot.users.fetchOne(u_id);
+        let user = await this.bot.users.get(duser.id);
         if(!user) throw new SynergyUserError("This user is not registered.");
 
         let indx = user.groups.indexOf(group);
@@ -234,10 +233,7 @@ export default class GrpMgr extends Module{
 
         if(group === "admin") throw new SynergyUserError("You can't add admin group to user.");
 
-        let u_id = this.bot.users.idFromDiscordId(duser.id);
-        if(!u_id) throw new SynergyUserError("This user is not registered.");
-
-        let user = await this.bot.users.fetchOne(u_id);
+        let user = await this.bot.users.get(duser.id);
         if(!user) throw new SynergyUserError("This user is not registered.");
 
         let indx = user.groups.indexOf(group);
@@ -262,7 +258,7 @@ export default class GrpMgr extends Module{
         let u_id = this.bot.users.idFromDiscordId(duser.id);
         if(!u_id) throw new SynergyUserError("This user is not registered.");
 
-        let user = await this.bot.users.fetchOne(u_id);
+        let user = await this.bot.users.get(duser.id);
         if(!user) throw new SynergyUserError("This user is not registered.");
 
         let indx = user.groups.indexOf(group);

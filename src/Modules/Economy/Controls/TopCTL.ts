@@ -18,7 +18,13 @@ export default class TopCTL extends Control {
 
     public async handleTop(interaction: Discord.CommandInteraction, user: User){
         let players = await this.storage.getPlayersData();
-        let users = await this.bot.users.fetchBulk(players.map(p => p.userId));
+        
+        let users: User[] = [];
+        for(let p of players){
+            let u = await this.bot.users.get(p.userDiscordId);
+            if(u) users.push(u);
+        }
+
         users = users.sort((a, b) => b.economy.points - a.economy.points).filter(u => u);
         let uindex = users.findIndex(u => u.id === user.id);
 

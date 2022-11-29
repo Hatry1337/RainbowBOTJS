@@ -80,7 +80,7 @@ export default class RBFetch extends Module{
         let uptime = Utils.formatTime(Math.floor((this.bot.client.uptime || 0) / 1000));
         let ping = this.bot.client.ws.ping;
         let modules = this.bot.modules.CountLoadedModules();
-        let cache_users = this.bot.users.cached.size;
+        let cache_users = this.bot.users.getCacheStats().keys;
         let disc_users = 0;
         this.bot.client.guilds.cache.each(guild => disc_users += guild.memberCount);
         let disc_servs = this.bot.client.guilds.cache.size;
@@ -118,7 +118,7 @@ export default class RBFetch extends Module{
             `      ,*/////,       ,*,  ,*////*,          Uptime: ${uptime}`                  + "\n" +
             `    .,///////,      .**,. ,*///////,.       WS_Ping: ${ping} ms.`               + "\n" +
             `    ,////////,    .,/,.  .*/////////*.      Modules: ${modules} (synergy3)`     + "\n" +
-            `   ,*/(//////*.         ,*////////////,     BOT_Users: ${cache_users}`          + "\n" +
+            `   ,*/(//////*.         ,*////////////,     Cached_Users: ${cache_users}`       + "\n" +
             `   ,*/////////*.      .,*/////////////,.    Discord_Users: ${disc_users}`       + "\n" +
             `   **//////////*,   .**///////////*****,    Discord_Servers: ${disc_servs}`     + "\n" +
             `  .**//**////////****//////************,    Requests: ${rq_handl}`              + "\n" +
@@ -141,7 +141,7 @@ export default class RBFetch extends Module{
             `Uptime: ${uptime}`                  + "\n" +
             `WS_Ping: ${ping} ms.`               + "\n" +
             `Modules: ${modules} (synergy3)`     + "\n" +
-            `BOT_Users: ${cache_users}`          + "\n" +
+            `Cached_Users: ${cache_users}`       + "\n" +
             `Discord_Users: ${disc_users}`       + "\n" +
             `Discord_Servers: ${disc_servs}`     + "\n" +
             `Requests: ${rq_handl}`              + "\n" +
