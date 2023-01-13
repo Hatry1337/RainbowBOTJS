@@ -78,16 +78,15 @@ export default class OBJRender extends Module{
         return new Promise<void>(async (resolve, reject) => {
             let embd = new Discord.MessageEmbed({
                 title: `OBJ Model Render`,
-                description: "Reply with attached model file on this message. `(size < 1.5MB, .obj extension)`",
+                description: "Reply with attached model file on this message. `(size < 3MB, .obj extension)`",
                 color: Colors.Noraml
             });
             await interaction.reply({ embeds: [embd] }).catch(reject);
             let messages = await interaction.channel?.awaitMessages({ max: 1, time: 60000, 
                 filter: (msg) => {
                     let flag: boolean = 
-                        msg.mentions.repliedUser?.id === interaction.client.user?.id &&
-                        msg.attachments.find(a => (a.name?.endsWith(".obj") && a.size < 1.5 * 1024 * 1024 * 1024) ? true : false ) ? true : false &&
-                        msg.author.id === interaction.user.id;
+                        !!(msg.mentions.repliedUser?.id === interaction.client.user?.id &&
+                            msg.attachments.find(a => !!(a.name?.endsWith(".obj") && a.size < 3 * 1024 * 1024 * 1024)));
                     
                     return flag;
                 } 
@@ -102,7 +101,7 @@ export default class OBJRender extends Module{
                 await interaction.editReply({ embeds: [embd] }).catch(reject);
                 return resolve(); 
             }else{
-                let attachment = message.attachments.find(a => (a.name?.endsWith(".obj") && a.size < 100 * 1024 * 1024) ? true : false )!;
+                let attachment = message.attachments.find(a => !!(a.name?.endsWith(".obj") && a.size < 3 * 1024 * 1024 * 1024) )!;
                 got(attachment.url).then(async data => {
                     let scale = interaction.options.getNumber("scale");
 
