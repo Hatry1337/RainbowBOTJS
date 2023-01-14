@@ -26,7 +26,12 @@ export default class VoteMgr extends Module{
     }
 
     public async Init(){
-        this.timer = setInterval(this.postTopGGStats.bind(this), 300000);
+        if(!process.env.TOPGG_TOKEN) {
+            this.Logger.Warn("Top.GG Token was not provided via env var 'TOPGG_TOKEN'. Stats will not be updated.")
+            return
+        }
+
+        this.timer = setInterval(this.postTopGGStats.bind(this), 150000);
     }
 
     public async UnLoad(){

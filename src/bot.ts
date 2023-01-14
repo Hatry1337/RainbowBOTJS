@@ -91,6 +91,7 @@ const modulePairs: ModuleUUIDPair[] = modules.map(m => ({ Module: m, UUID: uuids
 
 const bot = new Synergy({
     sequelizeURI: process.env.DBURI,
+    sequelizeForceSync: false,
     masterGuildId: process.env.MASTER_GUILD,
     moduleGlobalLoading: process.env.NODE_ENV === "production",
     dataSyncDelay: 60,
