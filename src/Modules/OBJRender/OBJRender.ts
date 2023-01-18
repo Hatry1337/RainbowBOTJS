@@ -1,11 +1,11 @@
 import Discord from "discord.js";
 import { SlashCommandBuilder } from "@discordjs/builders";
-import got from "got";
+import got, { HTTPError } from "got";
 import IgniRender from "./IgniRender/IgniRender";
 import GIFEncoder from "gifencoder";
 import Camera from "./IgniRender/Scene/Camera";
 import { v3zero } from "./IgniRender/Utils3D";
-import { Access, AccessTarget, Colors, Module, ModuleManager, Synergy } from "synergy3";
+import { Access, AccessTarget, Colors, Module, ModuleManager, Synergy, SynergyUserError } from "synergy3";
 
 export default class OBJRender extends Module{
     public Name:        string = "OBJRender";
@@ -21,6 +21,11 @@ export default class OBJRender extends Module{
             this.bot.interactions.createSlashCommand(this.Name.toLowerCase(), this.Access, this, this.bot.moduleGlobalLoading ? undefined : this.bot.masterGuildId)
             .build(builder => builder
                 .setDescription(this.Description)
+                .addAttachmentOption(opt => opt
+                    .setName("model")
+                    .setDescription(".obj model file")
+                    .setRequired(true)
+                )
                 .addNumberOption(opt => opt
                     .setName("scale")
                     .setDescription("Model scale multiplier")
@@ -28,17 +33,14 @@ export default class OBJRender extends Module{
                 .addNumberOption(opt => opt
                     .setName("offset_x")
                     .setDescription("Model position offset on X axis")
-                    .setMaxValue(1)
                 )
                 .addNumberOption(opt => opt
                     .setName("offset_y")
                     .setDescription("Model position offset on Y axis")
-                    .setMaxValue(1)
                 )
                 .addNumberOption(opt => opt
                     .setName("offset_z")
                     .setDescription("Model position offset on Z axis")
-                    .setMaxValue(1)
                 )
                 .addNumberOption(opt => opt
                     .setName("rot_x")
@@ -74,95 +76,89 @@ export default class OBJRender extends Module{
         );
     }
 
-    public Run(interaction: Discord.ChatInputCommandInteraction){
-        return new Promise<void>(async (resolve, reject) => {
-            let embd = new Discord.EmbedBuilder({
-                title: `OBJ Model Render`,
-                description: "Reply with attached model file on this message. `(size < 3MB, .obj extension)`",
-                color: Colors.Noraml
-            });
-            await interaction.reply({ embeds: [embd] }).catch(reject);
-            let messages = await interaction.channel?.awaitMessages({ max: 1, time: 60000, 
-                filter: (msg) => {
-                    let flag: boolean = 
-                        !!(msg.mentions.repliedUser?.id === interaction.client.user?.id &&
-                            msg.attachments.find(a => !!(a.name?.endsWith(".obj") && a.size < 3 * 1024 * 1024 * 1024)));
-                    
-                    return flag;
-                } 
-            });
-            let message = messages?.first();
-            if(!message){
-                embd = new Discord.EmbedBuilder({
-                    title: `OBJ Model Render`,
-                    description: "Reply timedout or incorrect file provided.",
-                    color: Colors.Noraml
-                });
-                await interaction.editReply({ embeds: [embd] }).catch(reject);
-                return resolve(); 
-            }else{
-                let attachment = message.attachments.find(a => !!(a.name?.endsWith(".obj") && a.size < 3 * 1024 * 1024 * 1024) )!;
-                got(attachment.url).then(async data => {
-                    let scale = interaction.options.getNumber("scale");
+    public async Run(interaction: Discord.ChatInputCommandInteraction) {
+        let attachment = interaction.options.getAttachment("model", true);
 
-                    let off_x = interaction.options.getNumber("offset_x") || 0;
-                    let off_y = interaction.options.getNumber("offset_y") || 0;
-                    let off_z = interaction.options.getNumber("offset_z") || 0;
+        if (!attachment.url.endsWith(".obj")) {
+            throw new SynergyUserError("File must have `.obj` extension.");
+        }
 
-                    let rot_x = interaction.options.getNumber("rot_x") || 0;
-                    let rot_y = interaction.options.getNumber("rot_y") || 0;
-                    let rot_z = interaction.options.getNumber("rot_z") || 0;
+        if (attachment.size > 3 * 1024 * 1024 * 1024) {
+            throw new SynergyUserError("File must be under 3 MB in size.");
+        }
 
-                    let cam_x = interaction.options.getNumber("cam_x") || 0;
-                    let cam_y = interaction.options.getNumber("cam_y") || 0;
-                    let cam_z = interaction.options.getNumber("cam_z") || -2;
+        await interaction.deferReply();
 
-                    let gif_anim = interaction.options.getBoolean("gif_rot") || false;
-                    
-                    let igni = new IgniRender();
-                    let model = igni.LoadOBJModel(data.body);
+        let data: string;
 
-                    let cam = new Camera({
-                        x: cam_x,
-                        y: cam_y,
-                        z: cam_z
-                    }, v3zero(), igni);
-                    cam.RenderResolution.Width = 960;
-                    cam.RenderResolution.Height = 540;
-                    cam.Width = 0.9;
-                    cam.Height = 1.6;
-
-                    igni.Scene.push(cam);
-                    igni.Scene.push(model);
-
-                    model.Position.x += off_x;
-                    model.Position.y += off_y;
-                    model.Position.z += off_z;
-
-                    model.Rotation.x = rot_x;
-                    model.Rotation.y = rot_y;
-                    model.Rotation.z = rot_z;
-
-                    if(!gif_anim){
-                        let img = await cam.Render();
-                        await message!.reply({ files: [ { attachment: img.toBuffer("image/png"), name: "render.png" } ]}).catch(reject);
-                        return resolve();
-                    }else{
-                        let encoder = new GIFEncoder(960, 540);
-                        encoder.setDelay(100);
-                        encoder.setRepeat(0);
-                        encoder.start();
-                        for(let i = 0; i < 30; i++){
-                            model.Rotation.y = i*12 * 0.0174533;
-                            let f = await cam.Render();
-                            encoder.addFrame(f.getContext("2d"));
-                        }
-                        encoder.finish();
-                        await message!.reply({ files: [ { attachment: encoder.out.getData(), name: "out.gif" } ]}).catch(reject);
-                        return resolve();
-                    }
-                }).catch(reject);
+        try {
+            let {body} = await got(attachment.url);
+            data = body;
+        } catch (e) {
+            if (e instanceof HTTPError) {
+                throw new SynergyUserError(`File fetching error. HTTP Code: ${e.code}.`);
             }
-        });
+            throw e;
+        }
+
+        let scale = interaction.options.getNumber("scale");
+
+        let off_x = interaction.options.getNumber("offset_x") || 0;
+        let off_y = interaction.options.getNumber("offset_y") || 0;
+        let off_z = interaction.options.getNumber("offset_z") || 0;
+
+        let rot_x = interaction.options.getNumber("rot_x") || 0;
+        let rot_y = interaction.options.getNumber("rot_y") || 0;
+        let rot_z = interaction.options.getNumber("rot_z") || 0;
+
+        let cam_x = interaction.options.getNumber("cam_x") || 0;
+        let cam_y = interaction.options.getNumber("cam_y") || 0;
+        let cam_z = interaction.options.getNumber("cam_z") || -2;
+
+        let gif_anim = interaction.options.getBoolean("gif_rot") || false;
+
+        let igni = new IgniRender();
+        let model = igni.LoadOBJModel(data);
+
+        let cam = new Camera({
+            x: cam_x,
+            y: cam_y,
+            z: cam_z
+        }, v3zero(), igni);
+        cam.RenderResolution.Width = 960;
+        cam.RenderResolution.Height = 540;
+        cam.Width = 0.9;
+        cam.Height = 1.6;
+
+        igni.Scene.push(cam);
+        igni.Scene.push(model);
+
+        model.Position.x += off_x;
+        model.Position.y += off_y;
+        model.Position.z += off_z;
+
+        model.Rotation.x = rot_x;
+        model.Rotation.y = rot_y;
+        model.Rotation.z = rot_z;
+
+        if (!gif_anim) {
+            let img = await cam.Render();
+            await interaction.editReply({files: [{attachment: img.toBuffer("image/png"), name: "render.png"}]});
+            return;
+        } else {
+            let encoder = new GIFEncoder(960, 540);
+            encoder.setDelay(100);
+            encoder.setRepeat(0);
+            encoder.start();
+            for (let i = 0; i < 30; i++) {
+                model.Rotation.y = i * 12 * 0.0174533;
+                let f = await cam.Render();
+                //FIXME canvas type issue
+                encoder.addFrame(f.getContext("2d") as any);
+            }
+            encoder.finish();
+            await interaction.editReply({files: [{attachment: encoder.out.getData(), name: "out.gif"}]});
+            return;
+        }
     }
 }
