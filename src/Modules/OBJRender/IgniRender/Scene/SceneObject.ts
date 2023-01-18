@@ -4,14 +4,16 @@ import crypto from "crypto";
 
 export default abstract class SceneObject{
     public id: string;
+    public name: string;
     public scene!: Scene;
     public position: vec3;
     public rotation: vec3;
     public visible: boolean = true;
     public stateChanged: boolean = true;
 
-    constructor(pos: vec3, rot: vec3){
+    protected constructor(name: string, pos: vec3, rot: vec3){
         this.id = crypto.randomUUID();
+        this.name = name;
         this.position = pos;
         this.rotation = rot;
     }

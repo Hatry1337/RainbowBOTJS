@@ -16,8 +16,8 @@ export default class Camera extends SceneObject{
     public nearClipPlane: number = 0.1;
     public farClipPlane: number = 100;
 
-    constructor(pos: vec3, rot: vec3){
-        super(pos, rot);
+    constructor(name: string, pos: vec3, rot: vec3){
+        super(name, pos, rot);
         this.renderResolution = {
             Width: 400,
             Height: 300

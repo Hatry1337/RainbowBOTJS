@@ -10,21 +10,21 @@ import AxesMarker from "./IgniRender/Scene/AxesMarker";
     const wsServer = new WebSocket.Server({port: 9000});
     let scene = new Scene();
 
-    scene.addObject(new AxesMarker(v3zero(), v3zero()));
+    scene.addObject(new AxesMarker("axmarker0", v3zero(), v3zero()));
 
-    let model2 = IgniRender.LoadOBJModel((await fs.readFile("/home/thomas/Документы/Blends/coctus.obj")).toString());
+    let model2 = IgniRender.LoadOBJModel("model2", (await fs.readFile("/home/thomas/Документы/Blends/coctus.obj")).toString());
     scene.addObject(model2);
 
     //model.Position.x += 2;
     //model.Rotation.y = -0.0174533 * 90;
-    let cam = new Camera({
+    let cam = new Camera("camera1", {
         x: 0,
         y: 0,
         z: -5
     }, v3zero());
     scene.addObject(cam);
 
-    let cam2 = new Camera({
+    let cam2 = new Camera("camera2",{
         x: 0,
         y: 0,
         z: 5

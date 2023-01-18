@@ -5,8 +5,8 @@ import SceneObject from "./SceneObject";
 export default class PolyObject extends SceneObject{
     public calculatedMesh: Face[] = [];
     public size: vec3 = { x: 1, y: 1, z: 1};
-    constructor(pos: vec3, rot: vec3, public originalMesh: Face[]){
-        super(pos, rot);
+    constructor(name: string, pos: vec3, rot: vec3, public originalMesh: Face[], public reference?: string){
+        super(name, pos, rot);
     }
 
     public SetSize(size: vec3){

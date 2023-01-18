@@ -41,7 +41,7 @@ export default class IgniRender{
     }
     */
 
-    public static LoadOBJModel(model: string){
+    public static LoadOBJModel(name: string, model: string, reference?: string){
         let vertices: Vertex[] = [];
         let vert_normals: vec3[] = [];
         let vert_textures: vec3[] = [];
@@ -90,7 +90,7 @@ export default class IgniRender{
             }
             faces.push(face);
         }
-        return new PolyObject(v3zero(), v3zero(), faces);
+        return new PolyObject(name, v3zero(), v3zero(), faces, reference);
     }
 
     public static ExportOBJ(model: PolyObject, original: boolean = true){

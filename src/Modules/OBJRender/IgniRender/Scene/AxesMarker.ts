@@ -3,8 +3,8 @@ import SceneObject from "./SceneObject";
 import { Scene } from "./Scene";
 
 export default class AxesMarker extends SceneObject{
-    constructor(pos: vec3, rot: vec3){
-        super(pos, rot);
+    constructor(name: string, pos: vec3, rot: vec3){
+        super(name, pos, rot);
     }
 
     public Draw(): Path[] {
