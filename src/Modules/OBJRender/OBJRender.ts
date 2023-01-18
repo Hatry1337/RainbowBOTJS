@@ -74,9 +74,9 @@ export default class OBJRender extends Module{
         );
     }
 
-    public Run(interaction: Discord.CommandInteraction){
+    public Run(interaction: Discord.ChatInputCommandInteraction){
         return new Promise<void>(async (resolve, reject) => {
-            let embd = new Discord.MessageEmbed({
+            let embd = new Discord.EmbedBuilder({
                 title: `OBJ Model Render`,
                 description: "Reply with attached model file on this message. `(size < 3MB, .obj extension)`",
                 color: Colors.Noraml
@@ -93,7 +93,7 @@ export default class OBJRender extends Module{
             });
             let message = messages?.first();
             if(!message){
-                embd = new Discord.MessageEmbed({
+                embd = new Discord.EmbedBuilder({
                     title: `OBJ Model Render`,
                     description: "Reply timedout or incorrect file provided.",
                     color: Colors.Noraml

@@ -22,8 +22,8 @@ export default class Quote extends Module{
         .commit()
     }
 
-    public async Run(interaction: Discord.ContextMenuInteraction){
-        if(!interaction.isMessageContextMenu()){
+    public async Run(interaction: Discord.ContextMenuCommandInteraction){
+        if(!interaction.isMessageContextMenuCommand()){
             throw new SynergyUserError("This command works only with User context menu action.");
         }
 
@@ -37,7 +37,10 @@ export default class Quote extends Module{
         try {
             let url;
             if(interaction.inCachedGuild()){
-                url = interaction.targetMessage.author.displayAvatarURL({ format: "png", size: 512 });
+                url = interaction.targetMessage.author.displayAvatarURL({
+                    extension: "png",
+                    size: 512
+                });
             }else{
                 url = `https://cdn.discordapp.com/avatars/${interaction.targetMessage.author.id}/${interaction.targetMessage.author.avatar}.png?size=512`;
             }

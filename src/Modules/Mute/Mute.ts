@@ -107,7 +107,7 @@ export default class Mute extends Module{
         clearInterval(this.CheckerTimer);
     }
     
-    private async mute(interaction: Discord.CommandInteraction, user: User, target_user: Discord.User, reason: string, mod_role_id: string, muted_role_id: string){
+    private async mute(interaction: Discord.ChatInputCommandInteraction, user: User, target_user: Discord.User, reason: string, mod_role_id: string, muted_role_id: string){
         if(!(interaction.inGuild() || interaction.inCachedGuild())  || !interaction.guild || !interaction.member){
             throw new GuildOnlyError();
         }
@@ -124,7 +124,7 @@ export default class Mute extends Module{
             time = 1;
         }
 
-        if(interaction.member.roles.highest.position >= member.roles.highest.position || interaction.member.permissions.has("ADMINISTRATOR")){
+        if(interaction.member.roles.highest.position >= member.roles.highest.position || interaction.member.permissions.has(Discord.PermissionsBitField.Flags.Administrator)){
             if(!time || time === 0){
                 throw new SynergyUserError("Mute time not specified.");
             }
@@ -163,18 +163,18 @@ export default class Mute extends Module{
             data.set("muted_users", muted_users);
 
             this.Logger.Info(`User ${interaction.user.tag}(${interaction.user.id}) muted ${target_user.tag}(${target_user.id}). Unmute at: ${Utils.ts(muted.unmute_at)}`);
-            let embd = new Discord.MessageEmbed({
+            let embd = new Discord.EmbedBuilder({
                 description: `**User ${target_user} muted by ${interaction.user} for ${Utils.formatTime(time)}.\nReason: ${reason}\nUnmute at: ${ is_perm ? "Never" : Utils.ts(muted.unmute_at)}**`,
                 color: Colors.Success
             });
-            return await interaction.reply({ embeds: [ embd ] });
+            await interaction.reply({ embeds: [ embd ] });
 
         }else{
             throw new SynergyUserError("You can't mute user, that upper than your highest role.", "Contact with server administrator/member with higher role.")
         }
     }
 
-    private async unmute(interaction: Discord.CommandInteraction, user: User, reason: string, target_user: Discord.User){
+    private async unmute(interaction: Discord.ChatInputCommandInteraction, user: User, reason: string, target_user: Discord.User){
         if(!(interaction.inGuild() || interaction.inCachedGuild())  || !interaction.guild || !interaction.member){
             throw new GuildOnlyError();
         }
@@ -192,7 +192,7 @@ export default class Mute extends Module{
             await target_member?.roles.remove(muted.muted_role_id);
 
             this.Logger.Info(`User ${interaction.user.tag}(${interaction.user.id}) unmuted ${target_user.tag}(${target_user.id})`);
-            let embd = new Discord.MessageEmbed({
+            let embd = new Discord.EmbedBuilder({
                 description: `**User ${target_user} unmuted by ${interaction.user}. Reason: ${reason}**`,
                 color: Colors.Success
             });
@@ -202,7 +202,7 @@ export default class Mute extends Module{
         }
     }
 
-    public async Run(interaction: Discord.CommandInteraction, user: User){
+    public async Run(interaction: Discord.ChatInputCommandInteraction, user: User){
         if(!(interaction.inGuild() || interaction.inCachedGuild())  || !interaction.guild){
             throw new GuildOnlyError();
         }
@@ -221,9 +221,9 @@ export default class Mute extends Module{
         let reason         = interaction.options.getString("reason", true);
         
         if(interaction.commandName === "mute"){
-            return await this.mute(interaction, user, target_user, reason, mod_role_id, muted_role_id);
+            await this.mute(interaction, user, target_user, reason, mod_role_id, muted_role_id);
         }else if(interaction.commandName === "unmute"){
-            return await this.unmute(interaction, user, reason, target_user);
+            await this.unmute(interaction, user, reason, target_user);
         }
     }
 }

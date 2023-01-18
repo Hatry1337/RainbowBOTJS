@@ -366,125 +366,152 @@ export default class MathTools extends Module{
     }
 
     private makeMessage(answ: string, tool: string){
-        return new Discord.MessageEmbed()
+        return new Discord.EmbedBuilder()
             .setTitle(`MathTools - ${tool}`)
             .setDescription("\`\`\`" + answ + "\`\`\`")
             .setColor(0x1483de);
     }
     
-    public async Run(interaction: Discord.CommandInteraction){
+    public async Run(interaction: Discord.ChatInputCommandInteraction){
         let subcmd = interaction.options.getSubcommand(true);
         
         switch(subcmd){
             case "add":{
                 let x = interaction.options.getNumber("x", true);
                 let y = interaction.options.getNumber("y", true);
-                return interaction.reply({ embeds: [ this.makeMessage(`${x} + ${y} = ${x + y}`, "Addition") ] });
+                await interaction.reply({ embeds: [ this.makeMessage(`${x} + ${y} = ${x + y}`, "Addition") ] });
+                break;
             }
             case "sub":{
                 let x = interaction.options.getNumber("x", true);
                 let y = interaction.options.getNumber("y", true);
-                return interaction.reply({ embeds: [ this.makeMessage(`${x} - ${y} = ${x - y}`, "Subtraction") ] });
+                await interaction.reply({ embeds: [ this.makeMessage(`${x} - ${y} = ${x - y}`, "Subtraction") ] });
+                break;
             }
             case "mul":{
                 let x = interaction.options.getNumber("x", true);
                 let y = interaction.options.getNumber("y", true);
-                return interaction.reply({ embeds: [ this.makeMessage(`${x} * ${y} = ${x * y}`, "Multiplication") ] });
+                await interaction.reply({ embeds: [ this.makeMessage(`${x} * ${y} = ${x * y}`, "Multiplication") ] });
+                break;
             }
             case "div":{
                 let x = interaction.options.getNumber("x", true);
                 let y = interaction.options.getNumber("y", true);
-                return interaction.reply({ embeds: [ this.makeMessage(`${x} / ${y} = ${x / y}`, "Division") ] });
+                await interaction.reply({ embeds: [ this.makeMessage(`${x} / ${y} = ${x / y}`, "Division") ] });
+                break;
             }
             case "e":{
-                return interaction.reply({ embeds: [ this.makeMessage(`Euler's number is ${Math.E}`, "Euler's number") ] });
+                await interaction.reply({ embeds: [ this.makeMessage(`Euler's number is ${Math.E}`, "Euler's number") ] });
+                break;
             }
             case "pi":{
-                return interaction.reply({ embeds: [ this.makeMessage(`Pi is ${Math.PI}`, "PI") ] });
+                await interaction.reply({ embeds: [ this.makeMessage(`Pi is ${Math.PI}`, "PI") ] });
+                break;
             }
             case "cos":{
                 let x = interaction.options.getNumber("x", true);
-                return interaction.reply({ embeds: [ this.makeMessage(`Cosine of ${x} is ${Math.cos(x)}`, "Cosine") ] });
+                await interaction.reply({ embeds: [ this.makeMessage(`Cosine of ${x} is ${Math.cos(x)}`, "Cosine") ] });
+                break;
             }
             case "sin":{
                 let x = interaction.options.getNumber("x", true);
-                return interaction.reply({ embeds: [ this.makeMessage(`Sine of ${x} is ${Math.sin(x)}`, "Sine") ] });
+                await interaction.reply({ embeds: [ this.makeMessage(`Sine of ${x} is ${Math.sin(x)}`, "Sine") ] });
+                break;
             }
             case "tan":{
                 let x = interaction.options.getNumber("x", true);
-                return interaction.reply({ embeds: [ this.makeMessage(`Tangent of ${x} is ${Math.tan(x)}`, "Tangent") ] });
+                await interaction.reply({ embeds: [ this.makeMessage(`Tangent of ${x} is ${Math.tan(x)}`, "Tangent") ] });
+                break;
             }
             case "arccos":{
                 let x = interaction.options.getNumber("x", true);
-                return interaction.reply({ embeds: [ this.makeMessage(`Angle of cos(${x}) is ${Math.acos(x)}`, "ArcCosine") ] });
+                await interaction.reply({ embeds: [ this.makeMessage(`Angle of cos(${x}) is ${Math.acos(x)}`, "ArcCosine") ] });
+                break;
             }
             case "arcsin":{
                 let x = interaction.options.getNumber("x", true);
-                return interaction.reply({ embeds: [ this.makeMessage(`Angle of sin(${x}) is ${Math.asin(x)}`, "ArcSine") ] });
+                await interaction.reply({ embeds: [ this.makeMessage(`Angle of sin(${x}) is ${Math.asin(x)}`, "ArcSine") ] });
+                break;
             }
             case "arctan":{
                 let x = interaction.options.getNumber("x", true);
-                return interaction.reply({ embeds: [ this.makeMessage(`Angle of tan(${x}) is ${Math.atan(x)}`, "ArcTangent") ] });
+                await interaction.reply({ embeds: [ this.makeMessage(`Angle of tan(${x}) is ${Math.atan(x)}`, "ArcTangent") ] });
+                break;
             }
             case "pow":{
                 let x = interaction.options.getNumber("x", true);
                 let y = interaction.options.getNumber("y", true);
-                return interaction.reply({ embeds: [ this.makeMessage(`${x} in power of ${y} is ${Math.pow(x, y)}`, "Power") ] });
+                await interaction.reply({ embeds: [ this.makeMessage(`${x} in power of ${y} is ${Math.pow(x, y)}`, "Power") ] });
+                break;
             }
             case "sqrt":{
                 let x = interaction.options.getNumber("x", true);
-                return interaction.reply({ embeds: [ this.makeMessage(`Square root of ${x} is ${Math.sqrt(x)}`, "SquareRoot") ] });
+                await interaction.reply({ embeds: [ this.makeMessage(`Square root of ${x} is ${Math.sqrt(x)}`, "SquareRoot") ] });
+                break;
             }
             case "cbrt":{
                 let x = interaction.options.getNumber("x", true);
-                return interaction.reply({ embeds: [ this.makeMessage(`Cube root of ${x} is ${Math.cbrt(x)}`, "CubeRoot") ] });
+                await interaction.reply({ embeds: [ this.makeMessage(`Cube root of ${x} is ${Math.cbrt(x)}`, "CubeRoot") ] });
+                break;
             }
             case "log":{
                 let x = interaction.options.getNumber("x", true);
-                return interaction.reply({ embeds: [ this.makeMessage(`Natural logarithm of ${x} is ${Math.log(x)}`, "LOG") ] });
+                await interaction.reply({ embeds: [ this.makeMessage(`Natural logarithm of ${x} is ${Math.log(x)}`, "LOG") ] });
+                break;
             }
             case "log2":{
                 let x = interaction.options.getNumber("x", true);
-                return interaction.reply({ embeds: [ this.makeMessage(`Logarithm with base 2 of ${x} is ${Math.log2(x)}`, "LOG2") ] });
+                await interaction.reply({ embeds: [ this.makeMessage(`Logarithm with base 2 of ${x} is ${Math.log2(x)}`, "LOG2") ] });
+                break;
             }
             case "log10":{
                 let x = interaction.options.getNumber("x", true);
-                return interaction.reply({ embeds: [ this.makeMessage(`Logarithm with base 10 of ${x} is ${Math.log10(x)}`, "LOG10") ] });
+                await interaction.reply({ embeds: [ this.makeMessage(`Logarithm with base 10 of ${x} is ${Math.log10(x)}`, "LOG10") ] });
+                break;
             }
             case "random":{
-                return interaction.reply({ embeds: [ this.makeMessage(`Random number is ${Math.random()}`, "Random") ] });
+                await interaction.reply({ embeds: [ this.makeMessage(`Random number is ${Math.random()}`, "Random") ] });
+                break;
             }
             case "deg2rad":{
                 let x = interaction.options.getNumber("x", true);
-                return interaction.reply({ embeds: [ this.makeMessage(`${x} degrees = ${x * 0.0174533} radians`, "DegreesToRadians") ] });
+                await interaction.reply({ embeds: [ this.makeMessage(`${x} degrees = ${x * 0.0174533} radians`, "DegreesToRadians") ] });
+                break;
             }
             case "rad2deg":{
                 let x = interaction.options.getNumber("x", true);
-                return interaction.reply({ embeds: [ this.makeMessage(`${x} radians = ${x * 57.2958} degrees`, "RadiansToDegrees") ] });
+                await interaction.reply({ embeds: [ this.makeMessage(`${x} radians = ${x * 57.2958} degrees`, "RadiansToDegrees") ] });
+                break;
             }
             case "bin2dec":{
                 let x = interaction.options.getString("x", true);
-                return interaction.reply({ embeds: [ this.makeMessage(`0b${x} = ${parseInt(x, 2)}`, "BinaryToDecimal") ] });
+                await interaction.reply({ embeds: [ this.makeMessage(`0b${x} = ${parseInt(x, 2)}`, "BinaryToDecimal") ] });
+                break;
             }
             case "dec2bin":{
                 let x = interaction.options.getInteger("x", true);
-                return interaction.reply({ embeds: [ this.makeMessage(`${x} = 0b${x.toString(2)}`, "DecimalToBinary") ] });
+                await interaction.reply({ embeds: [ this.makeMessage(`${x} = 0b${x.toString(2)}`, "DecimalToBinary") ] });
+                break;
             }
             case "hex2dec":{
                 let x = interaction.options.getString("x", true);
-                return interaction.reply({ embeds: [ this.makeMessage(`0x${x} = ${parseInt(x, 16)}`, "HexadecimalToDecimal") ] });
+                await interaction.reply({ embeds: [ this.makeMessage(`0x${x} = ${parseInt(x, 16)}`, "HexadecimalToDecimal") ] });
+                break;
             }
             case "dec2hex":{
                 let x = interaction.options.getInteger("x", true);
-                return interaction.reply({ embeds: [ this.makeMessage(`${x} = 0x${x.toString(16)}`, "DecimalToHexadecimal") ] });
+                await interaction.reply({ embeds: [ this.makeMessage(`${x} = 0x${x.toString(16)}`, "DecimalToHexadecimal") ] });
+                break;
             }
             case "hex2bin":{
                 let x = interaction.options.getString("x", true);
-                return interaction.reply({ embeds: [ this.makeMessage(`0x${x} = 0b${parseInt(x, 16).toString(2)}`, "HexadecimalToBinary") ] });
+                await interaction.reply({ embeds: [ this.makeMessage(`0x${x} = 0b${parseInt(x, 16).toString(2)}`, "HexadecimalToBinary") ] });
+                break;
             }
             case "bin2hex":{
                 let x = interaction.options.getString("x", true);
-                return interaction.reply({ embeds: [ this.makeMessage(`0b${x} = 0x${parseInt(x, 2).toString(16)}`, "BinaryToHexadecimal") ] });
+                await interaction.reply({ embeds: [ this.makeMessage(`0b${x} = 0x${parseInt(x, 2).toString(16)}`, "BinaryToHexadecimal") ] });
+                break;
             }
             case "eval":{
                 const math = create(all);
@@ -505,7 +532,8 @@ export default class MathTools extends Module{
                 } catch (err: any) {
                     throw new SynergyUserError("Error parsing expression:", err?.message || undefined)
                 }
-                return interaction.reply({ embeds: [ this.makeMessage(`${expr} = ${result}`, "Math Expression") ] });
+                await interaction.reply({ embeds: [ this.makeMessage(`${expr} = ${result}`, "Math Expression") ] });
+                break;
             }
             case "graph":{
                 await interaction.deferReply();
@@ -542,7 +570,8 @@ export default class MathTools extends Module{
                     await MathTools.drawMathCurve(canvas, c, colors.pop()!, zoom, resolution);
                 }
 
-                let img = new Discord.MessageAttachment(canvas.toBuffer("image/png"), "graph.png");
+                let img = new Discord.AttachmentBuilder(canvas.toBuffer("image/png"))
+                    .setName("graph.png");
                 await interaction.editReply({ embeds: [ this.makeMessage(`${expr}\`\`\`\nIf  you have visual artifacts just increase resolution (max 200000). You can also put up to 3 expressions separated by ";;"\`\`\``, "Graph").setImage('attachment://graph.png') ], files: [ img ] });
                 return;
             }
@@ -586,7 +615,7 @@ export default class MathTools extends Module{
                         "random"
                     ]
                 }
-                return interaction.reply({ embeds: [ 
+                await interaction.reply({ embeds: [
                     this.makeMessage(   `/math commands\n` +
                                         `/math eval\n` +
                                         `/math graph\n\n` +
@@ -597,6 +626,7 @@ export default class MathTools extends Module{
                                         `/math utils <...>:\n\t${tools.utils.join("\n\t")}\n\n`, 
                     "List of tools")
                 ]});
+                break;
             }
         }
     }

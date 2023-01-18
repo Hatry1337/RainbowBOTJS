@@ -19,7 +19,7 @@ export class MiningCTL extends Control{
         .commit()
     }
 
-    public async handleMinersRedeem(interaction: Discord.CommandInteraction, user: User){
+    public async handleMinersRedeem(interaction: Discord.ChatInputCommandInteraction, user: User){
         let player = await this.storage.getPlayer(user);
         if(!player){
             player = await this.storage.createPlayer(user);
@@ -72,7 +72,7 @@ export class MiningCTL extends Control{
 
         let miningTime = Utils.formatTime(Math.floor((new Date().getTime() - minstart.getTime()) / 1000));
 
-        let emb = new Discord.MessageEmbed({
+        let emb = new Discord.EmbedBuilder({
             title: `Mining redeem [${miningTime}]`,
             description:`Total Mining Rate: ${fnum(totalRate)} CPT/Hour\n` +
                         `Total Power Load: ${fnum(totalPower)}W\n` +

@@ -184,7 +184,7 @@ export default class VoiceStats extends Module{
         this.Logger.Info(`[SaveData] Created ${crtd}, updated ${updd} entries.`);
     }
 
-    public async Run(interaction: Discord.CommandInteraction, user: User){
+    public async Run(interaction: Discord.ChatInputCommandInteraction, user: User){
         if(!(interaction.inGuild() || interaction.inCachedGuild()) || !interaction.guild){
             throw new GuildOnlyError();
         }
@@ -240,7 +240,7 @@ export default class VoiceStats extends Module{
             i++;
         }
 
-        let embd = new Discord.MessageEmbed({
+        let embd = new Discord.EmbedBuilder({
             title: `Voice Channels Stats on ${targetGuild.name}`,
             description: stat || "There is no Voice Channels Stats.",
             color: Colors.Noraml
@@ -254,6 +254,6 @@ export default class VoiceStats extends Module{
             });
         }
 
-        return await interaction.reply({ embeds: [ embd ] })
+        await interaction.reply({ embeds: [ embd ] })
     }
 }

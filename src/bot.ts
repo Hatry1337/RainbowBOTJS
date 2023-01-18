@@ -103,17 +103,17 @@ const bot = new Synergy({
     saveSQLToFile: false,
     clientOptions: {
         intents: [
-            Discord.Intents.FLAGS.DIRECT_MESSAGES,
-            Discord.Intents.FLAGS.GUILDS,
-            Discord.Intents.FLAGS.GUILD_MESSAGES,
-            Discord.Intents.FLAGS.GUILD_MEMBERS,
-            Discord.Intents.FLAGS.GUILD_VOICE_STATES  
+            Discord.GatewayIntentBits.DirectMessages,
+            Discord.GatewayIntentBits.Guilds,
+            Discord.GatewayIntentBits.GuildMessages,
+            Discord.GatewayIntentBits.GuildMembers,
+            Discord.GatewayIntentBits.GuildVoiceStates
         ],
         presence: {
             status: "online",
             activities: [
                 {
-                    type: "LISTENING",
+                    type: Discord.ActivityType.Listening,
                     name: "Slash Commands🐊",
                 }
             ]

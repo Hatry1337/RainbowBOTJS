@@ -7,7 +7,7 @@ export default class Clear extends Module{
     public Category:    string = "Utility";
     public Author:      string = "Thomasss#9258";
 
-    public Access: AccessTarget[] = [ Access.PERM("MANAGE_MESSAGES") ];
+    public Access: AccessTarget[] = [ Access.PERM("ManageMessages") ];
 
     constructor(bot: Synergy, UUID: string) {
         super(bot, UUID);
@@ -28,7 +28,7 @@ export default class Clear extends Module{
         );
     }
 
-    public async Run(interaction: Discord.CommandInteraction){
+    public async Run(interaction: Discord.ChatInputCommandInteraction){
         if(!(interaction.inGuild() || interaction.inCachedGuild())){
             throw new GuildOnlyError();
         }
@@ -37,6 +37,6 @@ export default class Clear extends Module{
         let messages = await interaction.channel?.messages.fetch({ limit: amount });
         messages ? await interaction.channel?.bulkDelete(messages) : 0;
         
-        return await interaction.reply({ content: `Successfully cleared ${messages?.size} messages!`, ephemeral: true });
+        await interaction.reply({ content: `Successfully cleared ${messages?.size} messages!`, ephemeral: true });
     }
 }

@@ -29,11 +29,11 @@ export default class Roll extends Module{
         .commit()
     }
 
-    public async Run(interaction: Discord.CommandInteraction){
+    public async Run(interaction: Discord.ChatInputCommandInteraction){
         let min = interaction.options.getInteger("min") || 1;
         let max = interaction.options.getInteger("max") || 100;
 
-        let emb = new Discord.MessageEmbed()
+        let emb = new Discord.EmbedBuilder()
             .setTitle(`Number ${Utils.getRandomInt(min, max)} is rolled.`)
             .setColor(Colors.Noraml);
             

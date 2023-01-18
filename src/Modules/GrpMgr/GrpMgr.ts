@@ -32,7 +32,7 @@ export default class GrpMgr extends Module{
     public Access: AccessTarget[] = [ Access.ADMIN() ]
 
     private checkTimer?: NodeJS.Timeout;
-    public tempGroups: Map<string, ITempGroupInfo[]> = new Map();;
+    public tempGroups: Map<string, ITempGroupInfo[]> = new Map();
 
     constructor(bot: Synergy, UUID: string) {
         super(bot, UUID);
@@ -205,7 +205,7 @@ export default class GrpMgr extends Module{
         await this.saveTempGroupsInfo();
     }
 
-    public async handleAdd(interaction: Discord.CommandInteraction){
+    public async handleAdd(interaction: Discord.ChatInputCommandInteraction){
         let duser = interaction.options.getUser("user", true);
         let group = interaction.options.getString("group", true);
 
@@ -219,14 +219,14 @@ export default class GrpMgr extends Module{
 
         user.groups.push(group);
         
-        let emb = new Discord.MessageEmbed({
+        let emb = new Discord.EmbedBuilder({
             title: `Successfully added group "${group}" to user ${duser.tag}`,
             color: Colors.Noraml
         });
-        return await interaction.reply({ embeds: [emb] });
+        await interaction.reply({ embeds: [emb] });
     }
 
-    public async handleAddTemp(interaction: Discord.CommandInteraction){
+    public async handleAddTemp(interaction: Discord.ChatInputCommandInteraction){
         let duser = interaction.options.getUser("user", true);
         let group = interaction.options.getString("group", true);
         let time = interaction.options.getInteger("time", true);
@@ -241,15 +241,15 @@ export default class GrpMgr extends Module{
 
         await this.addTempGroup(group, user, time);
         
-        let emb = new Discord.MessageEmbed({
+        let emb = new Discord.EmbedBuilder({
             title: `Successfully added group "${group}" to user ${duser.tag}`,
             description: `Expiration at: <t:${Math.floor((new Date().getTime() / 1000) + time)}>`,
             color: Colors.Noraml
         });
-        return await interaction.reply({ embeds: [emb] });
+        await interaction.reply({ embeds: [emb] });
     }
 
-    public async handleDel(interaction: Discord.CommandInteraction){
+    public async handleDel(interaction: Discord.ChatInputCommandInteraction){
         let duser = interaction.options.getUser("user", true);
         let group = interaction.options.getString("group", true);
 
@@ -266,15 +266,15 @@ export default class GrpMgr extends Module{
         
         user.groups.splice(indx, 1);
 
-        let emb = new Discord.MessageEmbed({
+        let emb = new Discord.EmbedBuilder({
             title: `Successfully removed group "${group}" from user ${duser.tag}`,
             color: Colors.Noraml
         });
-        return await interaction.reply({ embeds: [emb] });
+        await interaction.reply({ embeds: [emb] });
     }
 
     public async handleListGroups(interaction: Discord.CommandInteraction, user: User){
-        let emb = new Discord.MessageEmbed({
+        let emb = new Discord.EmbedBuilder({
             title: "List of your Groups",
             color: Colors.Noraml
         });

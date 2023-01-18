@@ -38,7 +38,7 @@ export default class TopCTL extends Control {
             i++;
         }
 
-        let emb = new Discord.MessageEmbed({
+        let emb = new Discord.EmbedBuilder({
             title: `Top RainbowBOT Players by Points`,
             description: stat || "There is no users right now.",
             color: Colors.Noraml

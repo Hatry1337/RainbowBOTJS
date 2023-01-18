@@ -41,9 +41,9 @@ export default class Demotivator extends Module{
         .commit()
     }
 
-    public async Run(interaction: Discord.ContextMenuInteraction, user: User, shakal: boolean = false){
-        if(!interaction.isMessageContextMenu()){
-            throw new SynergyUserError("This command works only with User context menu action.");
+    public async Run(interaction: Discord.ContextMenuCommandInteraction, user: User, shakal: boolean = false){
+        if(!interaction.isMessageContextMenuCommand()){
+            throw new SynergyUserError("This command works only with Message context menu action.");
         }
 
         let attachment;
@@ -84,7 +84,7 @@ export default class Demotivator extends Module{
         await interaction.editReply({files: [ demot ]});
     }
 
-    public async RunShakal(interaction: Discord.ContextMenuInteraction, user: User){
+    public async RunShakal(interaction: Discord.ContextMenuCommandInteraction, user: User){
         await this.Run(interaction, user, true);
     }
 

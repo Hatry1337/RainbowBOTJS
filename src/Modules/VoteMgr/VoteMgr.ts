@@ -47,9 +47,9 @@ export default class VoteMgr extends Module{
         });
     }
 
-    public async Run(interaction: Discord.CommandInteraction, user: User){
+    public async Run(interaction: Discord.ChatInputCommandInteraction, user: User){
         await interaction.deferReply();
-        let emb = new Discord.MessageEmbed({
+        let emb = new Discord.EmbedBuilder({
             title: "Vote for our BOT on top.gg!",
             color: Colors.Noraml
         });

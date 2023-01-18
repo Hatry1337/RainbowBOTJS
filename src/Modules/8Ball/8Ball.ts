@@ -44,19 +44,17 @@ export default class EiBall extends Module{
         );
     }
     
-    public Run(interaction: Discord.CommandInteraction){
-        return new Promise<void>(async (resolve, reject) => {
-            let question = interaction.options.getString("question", true);
-            let flag = Math.random() < 0.5;
-            let phrase = flag ? Utils.arrayRandElement(this.PhrasesYes) : Utils.arrayRandElement(this.PhrasesNo);
+    public async Run(interaction: Discord.ChatInputCommandInteraction){
+        let question = interaction.options.getString("question", true);
+        let flag = Math.random() < 0.5;
+        let phrase = flag ? Utils.arrayRandElement(this.PhrasesYes) : Utils.arrayRandElement(this.PhrasesNo);
 
-            var embd = new Discord.MessageEmbed({
-                title: question,
-                description: phrase,
-                thumbnail: { url: "https://static.rainbowbot.xyz/pictures/rbot/8ball/8-ball.png" },
-                color: Colors.Noraml
-            });
-            return resolve(await interaction.reply({ embeds: [ embd ] }).catch(reject));
+        let embd = new Discord.EmbedBuilder({
+            title: question,
+            description: phrase,
+            thumbnail: { url: "https://static.rainbowbot.xyz/pictures/rbot/8ball/8-ball.png" },
+            color: Colors.Noraml
         });
+        await interaction.reply({ embeds: [ embd ] });
     }
 }

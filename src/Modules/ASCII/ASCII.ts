@@ -44,18 +44,18 @@ export default class ASCII extends Module{
 
         this.createMenuCommand("ASCII Art")
         .build(builder => builder
-            .setType(3)
+            .setType(Discord.ApplicationCommandType.Message)
         )
         .onExecute(this.handleDrawPicture.bind(this));
 
         this.createMenuCommand("ASCII Art to File")
         .build(builder => builder
-            .setType(3)
+            .setType(Discord.ApplicationCommandType.Message)
         )
         .onExecute(this.handleDrawPicture.bind(this));
     }
 
-    public async handleDrawText(int: Discord.CommandInteraction, user: User){
+    public async handleDrawText(int: Discord.ChatInputCommandInteraction, user: User){
         let fonts = await this.getFontsList();
         let subc = int.options.getSubcommand();
         if(subc === "fonts"){
@@ -72,13 +72,14 @@ export default class ASCII extends Module{
                 messages.push(msg.slice(0, msg.length - 2));
             }
 
-            let emb = new Discord.MessageEmbed({
+            let emb = new Discord.EmbedBuilder({
                 title: "Available ASCII fonts",
                 color: Colors.Noraml,
                 fields: messages.map((m, i) => ({ name: `Page ${i+1}`, value: m }))
             });
 
-            return await int.reply({ embeds: [emb] });
+            await int.reply({ embeds: [emb] });
+            return;
 
         }else if(subc === "draw"){
             let text = int.options.getString("text", true);
@@ -87,15 +88,16 @@ export default class ASCII extends Module{
             if(fonts.indexOf(font as figlet.Fonts) === -1) throw new SynergyUserError("This font does not exist!");
             let result = await this.drawText(text, font as figlet.Fonts);
 
-            return await int.reply("```" + result + "```");
+            await int.reply("```" + result + "```");
+            return;
         }else{
             throw new SynergyUserError("This subcommand is not implemented!");
         }
     }
 
-    public async handleDrawPicture(interaction: Discord.ContextMenuInteraction, user: User){
-        if(!interaction.isMessageContextMenu()){
-            throw new SynergyUserError("This command works only with User context menu action.");
+    public async handleDrawPicture(interaction: Discord.ContextMenuCommandInteraction, user: User){
+        if(!interaction.isMessageContextMenuCommand()){
+            throw new SynergyUserError("This command works only with Message context menu action.");
         }
 
         let attachment;

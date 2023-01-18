@@ -42,7 +42,7 @@ export default class TicTacToeGame extends EventEmitter{
     public currentMove: TicTacToeSymbol = "cross";
     public field: (TicTacToeSymbol | null)[] = new Array(9).fill(null);
     public isGameEnded: boolean = false;
-    public controls: InteractiveComponent<Discord.MessageButton>[] = [];
+    public controls: InteractiveComponent<Discord.ButtonBuilder>[] = [];
     public winner?: TicTacToePlayer;
 
     constructor(public interaction: CommandInteraction, public fieldSize: number, player1: TicTacToePlayer, player2?: TicTacToePlayer){
