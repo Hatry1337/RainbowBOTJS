@@ -4,8 +4,6 @@ import Discord from "discord.js";
 import Economy from "../Economy";
 import Shop from "../Shop/Shop";
 import RainbowBOTUtils, { CEmojis } from "../../../RainbowBOTUtils";
-import ItemMiner from "../Game/Items/ItemMiner";
-import ItemPowerConsumer from "../Game/Items/ItemPowerConsumer";
 import Control from "./Control";
 import { ItemsCTL } from "./ItemsCTL";
 
@@ -28,7 +26,7 @@ export class ShopCTL extends Control {
     }
 
     public embedMessage(){
-        let emb = new Discord.MessageEmbed({
+        let emb = new Discord.EmbedBuilder({
             title: "Shop",
             color: 0xFFFF00
         });
@@ -40,13 +38,16 @@ export class ShopCTL extends Control {
                 let cross = item.stock === 0 ? "~~" : "";
                 txt += `${cross}**🔸 ${item.item.item.name}** - ${item.item.item.description} x${item.item.size} \nStock: ${item.stock}/${item.maxStock} 📦, Cost: ${RainbowBOTUtils.numReadable(item.price)} ${CEmojis.PointCoin}${cross}\n\n`;
             }
-            emb.addField(cat.name, txt);
+            emb.addFields({
+                name: cat.name,
+                value: txt
+            });
         }
     
         return emb;
     }
 
-    public async handleInteraction(interaction: Discord.CommandInteraction, user: User){
+    public async handleInteraction(interaction: Discord.ChatInputCommandInteraction, user: User){
         let player = await this.storage.getPlayer(user);
         if(!player){
             player = await this.storage.createPlayer(user);
@@ -54,7 +55,7 @@ export class ShopCTL extends Control {
 
         let emb = this.embedMessage();
         let menu = this.economy.createMessageSelectMenu([ Access.USER(user.id) ], -1, 300000);
-        let items: Discord.MessageSelectOptionData[] = []
+        let items: Discord.SelectMenuOptionBuilder[] = []
 
         let ci = 0;
         let ii = 0;
@@ -62,10 +63,11 @@ export class ShopCTL extends Control {
             ii = 0;
             for(let i of c.entries){
                 if(i.stock !== 0){
-                    items.push({
-                        label: `${c.name} -> ${i.item.item.name} (${i.price} points)`,
-                        value: `buyitem.${ci}.${ii}`
-                    });
+                    items.push(
+                        new Discord.SelectMenuOptionBuilder()
+                            .setLabel(`${c.name} -> ${i.item.item.name} (${i.price} points)`)
+                            .setValue(`buyitem.${ci}.${ii}`)
+                    );
                 }
                 ii++;
             }
@@ -74,7 +76,12 @@ export class ShopCTL extends Control {
         menu.builder.setOptions(items);
         menu.onExecute(this.handlePreBuyInteraction.bind(this));
 
-        return await interaction.reply({embeds: [emb], components: [ new Discord.MessageActionRow().setComponents([menu.builder]) ]});
+        await interaction.reply({
+            embeds: [emb],
+            components: [
+                new Discord.ActionRowBuilder<Discord.SelectMenuBuilder>().setComponents([menu.builder])
+            ]
+        });
     }
 
     public async handlePreBuyInteraction(interaction: Discord.SelectMenuInteraction, user: User){
@@ -97,7 +104,7 @@ export class ShopCTL extends Control {
         let shop_item = shop_category.entries[item_index];
         if(!shop_item) throw new Error("Unknown shop item provided via select menu.");
 
-        let emb =  new Discord.MessageEmbed({
+        let emb =  new Discord.EmbedBuilder({
             title: "Buy __" + shop_item.item.item.name + "__",
             color: Colors.Noraml,
             fields: [
@@ -109,25 +116,25 @@ export class ShopCTL extends Control {
         
         emb = ItemsCTL.generateItemInfo(shop_item.item.item, emb);
 
-        let actionrow = new Discord.MessageActionRow();
+        let actionrow = new Discord.ActionRowBuilder<Discord.ButtonBuilder>();
 
         let btn1 = this.economy.createMessageButton([ Access.USER(user.id) ], -1, 300000);
         btn1.builder.setLabel("Buy x1");
-        btn1.builder.setStyle("PRIMARY");
+        btn1.builder.setStyle(Discord.ButtonStyle.Primary);
         btn1.onExecute(async (int, user) => {
             await this.handleFinalBuyInteraction(int, user, category_index, item_index, 1);
         });
 
         let btn5 = this.economy.createMessageButton([ Access.USER(user.id) ], -1, 300000);
         btn5.builder.setLabel("Buy x5");
-        btn5.builder.setStyle("PRIMARY");
+        btn5.builder.setStyle(Discord.ButtonStyle.Primary);
         btn5.onExecute(async (int, user) => {
             await this.handleFinalBuyInteraction(int, user, category_index, item_index, 5);
         });
 
         let btn10 = this.economy.createMessageButton([ Access.USER(user.id) ], -1, 300000);
         btn10.builder.setLabel("Buy x10");
-        btn10.builder.setStyle("PRIMARY");
+        btn10.builder.setStyle(Discord.ButtonStyle.Primary);
         btn10.onExecute(async (int, user) => {
             await this.handleFinalBuyInteraction(int, user, category_index, item_index, 10);
         });
@@ -135,9 +142,9 @@ export class ShopCTL extends Control {
         actionrow.addComponents([btn1.builder, btn5.builder, btn10.builder]);
 
         if(actionrow.components.length > 0){
-            return await interaction.reply({ embeds: [emb], components: [actionrow] });
+            await interaction.reply({ embeds: [emb], components: [actionrow] });
         }else{
-            return await interaction.reply({ embeds: [emb] });
+            await interaction.reply({ embeds: [emb] });
         }
     }
 
@@ -166,7 +173,7 @@ export class ShopCTL extends Control {
 
         await this.storage.savePlayer(player);
 
-        let emb =  new Discord.MessageEmbed({
+        let emb =  new Discord.EmbedBuilder({
             title: `You successfully purchased ${shop_item.item.item.name} x${amount} for ${amount * shop_item.price} ${CEmojis.PointCoin}`,
             color: Colors.Noraml
         });

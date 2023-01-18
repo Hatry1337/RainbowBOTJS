@@ -45,17 +45,18 @@ export default class Servers extends Module{
         );
     }
 
-    public async Run(interaction: Discord.CommandInteraction, user: User){
+    public async Run(interaction: Discord.ChatInputCommandInteraction, user: User){
         switch(interaction.options.getSubcommand()){
             case "leave": {
                 let gid = interaction.options.getString("guild_id", true);
                 let guild = await interaction.client.guilds.fetch(gid);
                 await guild.leave();
-                let embd = new Discord.MessageEmbed({
+                let embd = new Discord.EmbedBuilder({
                     title: `Successfully leaved from server.`,
                     color: Colors.Noraml
                 });
-                return await interaction.reply({ embeds: [ embd ] });
+                await interaction.reply({ embeds: [ embd ] });
+                break;
             }
             case "list": {
                 let page = interaction.options.getNumber("page", false) || 1;
@@ -65,12 +66,12 @@ export default class Servers extends Module{
                     throw new SynergyUserError("This page doesen't exist.");
                 }
                 
-                var svlist = "";
-                var svs = Array.from(interaction.client.guilds.cache.values()).slice(page * plen - plen, page * plen);
-                for(var s of svs){
+                let svlist = "";
+                let svs = Array.from(interaction.client.guilds.cache.values()).slice(page * plen - plen, page * plen);
+                for(let s of svs){
                     svlist += `**${s.name}**\nID: ${s.id}\nMembers: ${s.memberCount}\n\n`;
                 }
-                let embd = new Discord.MessageEmbed({
+                let embd = new Discord.EmbedBuilder({
                     title: `Servers List`,
                     description: svlist || "`Empty`",
                     color: Colors.Noraml,
@@ -78,7 +79,8 @@ export default class Servers extends Module{
                         text: `Page ${page}/${Math.floor((interaction.client.guilds.cache.size+plen) / plen)}`
                     }
                 });
-                return await interaction.reply({ embeds: [ embd ] });
+                await interaction.reply({ embeds: [ embd ] });
+                break;
             }
             default: {
                 throw new SynergyUserError("This command require subcommand to be sent.");

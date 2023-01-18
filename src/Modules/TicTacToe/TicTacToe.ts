@@ -65,7 +65,7 @@ export default class TicTacToe extends Module{
         );
     }
 
-    private async buttonEvent(interaction: Discord.ButtonInteraction, button: InteractiveComponent<Discord.MessageButton>, buttonNumber: number){
+    private async buttonEvent(interaction: Discord.ButtonInteraction, button: InteractiveComponent<Discord.ButtonBuilder>, buttonNumber: number){
         let gm = this.TicTacToeGames.get(interaction.channelId);
         if(!gm || gm.isGameEnded){
             button.destroy();
@@ -79,8 +79,8 @@ export default class TicTacToe extends Module{
         }else{
             return;
         }
-        if(button.builder.label && !isNaN(parseInt(button.builder.label || ""))){
-            gm.makeMove(player, parseInt(button.builder.label || "")); //FIXME: use buttonNumber instead of this hack, but something is wrong with callback.
+        if(button.builder.data.label && !isNaN(parseInt(button.builder.data.label || ""))){
+            gm.makeMove(player, parseInt(button.builder.data.label || "")); //FIXME: use buttonNumber instead of this hack, but something is wrong with callback.
         }
         if(gm.isGameEnded){
             await interaction.update(this.makeResultMessage(gm));
@@ -90,7 +90,7 @@ export default class TicTacToe extends Module{
     }
 
     private makeMessage(game: TicTacToeGame): Discord.InteractionUpdateOptions & Discord.InteractionReplyOptions{
-        let embd = new Discord.MessageEmbed({
+        let embd = new Discord.EmbedBuilder({
             title: `Tic Tac Toe Game`,
             description: 
                 `${game.player1.symbol === "cross" ? "❌" : "⭕"} Player1: ${game.player1.user || `**AI (${game.player1.aiLvl})**`}\n` + 
@@ -101,7 +101,7 @@ export default class TicTacToe extends Module{
                 "```",
             color: Colors.Noraml
         });
-        let compons: Discord.MessageActionRow[] = [];
+        let compons: Discord.ActionRowBuilder<Discord.ButtonBuilder>[] = [];
         
         for(let c of game.controls){
             c.destroy();
@@ -113,14 +113,14 @@ export default class TicTacToe extends Module{
         game.player2.user ? btn_access.push(Access.USER(game.player2.user.id)) : 0;
 
         for(let i = 0; i < game.fieldSize; i++){
-            let row = new Discord.MessageActionRow();
+            let row = new Discord.ActionRowBuilder<Discord.ButtonBuilder>();
             let j = i * game.fieldSize;
             for(let s of game.field.slice(i * game.fieldSize, game.fieldSize + (i*game.fieldSize))){
                 let button = this.bot.interactions.createButton(`${game.interaction.channelId}-btn${j}-tictactoe`, btn_access, this)
                 .build(bld => bld
                     .setLabel(s ? (s === "cross" ? "❌" : "⭕") : j.toString())
-                    .setStyle("PRIMARY")
-                    .setDisabled(s ? true : false)
+                    .setStyle(Discord.ButtonStyle.Primary)
+                    .setDisabled(!!s)
                 )
                 .onExecute((async int => await this.buttonEvent(int, button, j)));
 
@@ -149,7 +149,7 @@ export default class TicTacToe extends Module{
             `${game.player2.symbol === "cross" ? "❌" : "⭕"} Player2: ${game.player2.user || `**AI (${game.player2.aiLvl})**`}\n` +
             `Timestamp: ${Utils.ts()}`;
 
-        let embd_win = new Discord.MessageEmbed({
+        let embd_win = new Discord.EmbedBuilder({
             title: `Tic Tac Toe Game`,
             description: msg,
             color: Colors.Noraml
@@ -157,171 +157,179 @@ export default class TicTacToe extends Module{
         return { embeds: [embd_win], components: [] };
     }
 
-    private CreateNew(interaction: Discord.CommandInteraction){
-        return new Promise<void>(async (resolve, reject) => {
-            if(this.TicTacToeGames.has(interaction.channelId)){
-                let embd = new Discord.MessageEmbed({
-                    title: `Tic Tac Toe Game`,
-                    description: `This channel already have active game.`,
-                    color: Colors.Warning
-                });
-                return resolve(await interaction.reply({ embeds: [embd], ephemeral: true }).catch(reject));
-            }
-
-            let user2 = interaction.options.getUser("player2");
-            let ailvl = interaction.options.getString("ai_level") as "easy" | "medium" | "hard" | "expert" | null;
-
-            if(user2 && user2.bot){
-                let embd = new Discord.MessageEmbed({
-                    title: `Tic Tac Toe Game`,
-                    description: `You can't play with BOT user.`,
-                    color: Colors.Warning
-                });
-                return resolve(await interaction.reply({ embeds: [embd], ephemeral: true }).catch(reject));
-            }
-            
-            let symbol1: TicTacToeSymbol = Math.random() < 0.5 ? "circle" : "cross";
-            let symbol2: TicTacToeSymbol = symbol1 === "cross" ? "circle" : "cross";
-
-            let game = new TicTacToeGame(
-                interaction,
-                3,
-                new TicTacToePlayer(symbol1, false, interaction.user),
-                user2 ? new TicTacToePlayer(symbol2, false, user2) : new TicTacToePlayer(symbol2, true, undefined, ailvl ? ailvl : undefined)
-            )
-
-            game.on("move", async (player: TicTacToePlayer, pos: number) => {
-                if(player.isAI()){
-                    if(game.isGameEnded){
-                        await game.interaction.editReply(this.makeResultMessage(game)).catch(this.Logger.Error);
-                    }else{
-                        await game.interaction.editReply(this.makeMessage(game)).catch(this.Logger.Error);
-                    }
-                }
+    private async CreateNew(interaction: Discord.ChatInputCommandInteraction){
+        if(this.TicTacToeGames.has(interaction.channelId)){
+            let embd = new Discord.EmbedBuilder({
+                title: `Tic Tac Toe Game`,
+                description: `This channel already have active game.`,
+                color: Colors.Warning
             });
+            await interaction.reply({ embeds: [embd], ephemeral: true });
+            return;
+        }
 
-            game.on("game_over", async (player?: TicTacToePlayer) => {
-                for(let c of game.controls){
-                    c.destroy();
-                }
-                game.controls = [];
-                this.TicTacToeGames.delete(interaction.channelId);
+        let user2 = interaction.options.getUser("player2");
+        let ailvl = interaction.options.getString("ai_level") as "easy" | "medium" | "hard" | "expert" | null;
+
+        if(user2 && user2.bot){
+            let embd = new Discord.EmbedBuilder({
+                title: `Tic Tac Toe Game`,
+                description: `You can't play with BOT user.`,
+                color: Colors.Warning
             });
+            await interaction.reply({ embeds: [embd], ephemeral: true });
+            return;
+        }
 
-            this.TicTacToeGames.set(interaction.channelId, game);
-            
-            return resolve(await interaction.reply(this.makeMessage(game)).catch(reject));
-        });
-    }
+        let symbol1: TicTacToeSymbol = Math.random() < 0.5 ? "circle" : "cross";
+        let symbol2: TicTacToeSymbol = symbol1 === "cross" ? "circle" : "cross";
 
-    private CreateAI_AI(interaction: Discord.CommandInteraction){
-        return new Promise<void>(async (resolve, reject) => {
-            if(this.TicTacToeGames.has(interaction.channelId)){
-                let embd = new Discord.MessageEmbed({
-                    title: `Tic Tac Toe Game`,
-                    description: `This channel already have active game.`,
-                    color: Colors.Warning
-                });
-                return resolve(await interaction.reply({ embeds: [embd], ephemeral: true }).catch(reject));
-            }
+        let game = new TicTacToeGame(
+            interaction,
+            3,
+            new TicTacToePlayer(symbol1, false, interaction.user),
+            user2 ? new TicTacToePlayer(symbol2, false, user2) : new TicTacToePlayer(symbol2, true, undefined, ailvl ? ailvl : undefined)
+        )
 
-            let ailvl1 = interaction.options.getString("ai1_level", true) as "easy" | "medium" | "hard" | "expert";
-            let ailvl2 = interaction.options.getString("ai2_level", true) as "easy" | "medium" | "hard" | "expert";
-            
-            let symbol1: TicTacToeSymbol = Math.random() < 0.5 ? "circle" : "cross";
-            let symbol2: TicTacToeSymbol = symbol1 === "cross" ? "circle" : "cross";
-
-            let game = new TicTacToeGame(
-                interaction,
-                3,
-                new TicTacToePlayer(symbol1, true, undefined, ailvl1),
-                new TicTacToePlayer(symbol2, true, undefined, ailvl2),
-            )
-
-            game.on("move", async (player: TicTacToePlayer, pos: number) => {
-                if(player.isAI()){
-                    if(game.isGameEnded){
-                        await game.interaction.editReply(this.makeResultMessage(game)).catch(this.Logger.Error);
-                    }else{
-                        await game.interaction.editReply(this.makeMessage(game)).catch(this.Logger.Error);
-                    }
-                }
-            });
-
-            game.on("game_over", async (player?: TicTacToePlayer) => {
-                for(let c of game.controls){
-                    c.destroy();
-                }
-                game.controls = [];
-                this.TicTacToeGames.delete(interaction.channelId);
-            });
-
-            this.TicTacToeGames.set(interaction.channelId, game);
-            
-            return resolve(await interaction.reply(this.makeMessage(game)).catch(reject));
-        });
-    }
-
-    private CancelCurrent(interaction: Discord.CommandInteraction){
-        return new Promise<void>(async (resolve, reject) => {
-            let game = this.TicTacToeGames.get(interaction.channelId);
-            if(game){
-                if(game.player1.user?.id === interaction.user.id || game.player2.user?.id === interaction.user.id){
-                    let embd_canc = new Discord.MessageEmbed({
-                        title: `Tic Tac Toe Game`,
-                        description: `Game canceled by ${interaction.user}.`,
-                        color: Colors.Error
-                    });
-                    await game.interaction.editReply({ embeds: [embd_canc], components: [] }).catch(this.Logger.Error);
-                    this.TicTacToeGames.delete(interaction.channelId);
-
-                    let embd = new Discord.MessageEmbed({
-                        title: `Tic Tac Toe Game`,
-                        description: `You successfully canceled Tic Tac Toe Game in this channel.`,
-                        color: Colors.Noraml
-                    });
-                    return resolve(await interaction.reply({ embeds: [embd], ephemeral: true }).catch(reject));
+        game.on("move", async (player: TicTacToePlayer, pos: number) => {
+            if(player.isAI()){
+                if(game.isGameEnded){
+                    await game.interaction.editReply(this.makeResultMessage(game)).catch(this.Logger.Error);
                 }else{
-                    let embd = new Discord.MessageEmbed({
-                        title: `Tic Tac Toe Game`,
-                        description: `Only game members can cancel the game.`,
-                        color: Colors.Warning
-                    });
-                    return resolve(await interaction.reply({ embeds: [embd], ephemeral: true }).catch(reject))
+                    await game.interaction.editReply(this.makeMessage(game)).catch(this.Logger.Error);
                 }
-            }else{
-                let embd = new Discord.MessageEmbed({
-                    title: `Tic Tac Toe Game`,
-                    description: `There's no active Tic Tac Toe Games in this channel.`,
-                    color: Colors.Warning
-                });
-                return resolve(await interaction.reply({ embeds: [embd], ephemeral: true }).catch(reject))
             }
         });
+
+        game.on("game_over", async (player?: TicTacToePlayer) => {
+            for(let c of game.controls){
+                c.destroy();
+            }
+            game.controls = [];
+            this.TicTacToeGames.delete(interaction.channelId);
+        });
+
+        this.TicTacToeGames.set(interaction.channelId, game);
+
+        await interaction.reply(this.makeMessage(game));
+        return;
     }
 
-    public Run(interaction: Discord.CommandInteraction){
-        return new Promise<void>(async (resolve, reject) => {
-            let sub = interaction.options.getSubcommand();
+    private async CreateAI_AI(interaction: Discord.ChatInputCommandInteraction){
+        if(this.TicTacToeGames.has(interaction.channelId)){
+            let embd = new Discord.EmbedBuilder({
+                title: `Tic Tac Toe Game`,
+                description: `This channel already have active game.`,
+                color: Colors.Warning
+            });
+            await interaction.reply({ embeds: [embd], ephemeral: true });
+            return;
+        }
 
-            if(!sub){
-                return resolve(await interaction.reply({ embeds: [new Discord.MessageEmbed({
-                    title: `To start new Tic Tac Toe game in this channel use slash command "/${this.Name.toLowerCase()} new".`,
-                    color: Colors.Warning
-                })]}).catch(reject));
-            }
+        let ailvl1 = interaction.options.getString("ai1_level", true) as "easy" | "medium" | "hard" | "expert";
+        let ailvl2 = interaction.options.getString("ai2_level", true) as "easy" | "medium" | "hard" | "expert";
 
-            if(sub.toLowerCase() === "new"){
-                return resolve(await this.CreateNew(interaction).catch(reject));
-            }
+        let symbol1: TicTacToeSymbol = Math.random() < 0.5 ? "circle" : "cross";
+        let symbol2: TicTacToeSymbol = symbol1 === "cross" ? "circle" : "cross";
 
-            if(sub.toLowerCase() === "ai_ai"){
-                return resolve(await this.CreateAI_AI(interaction).catch(reject));
-            }
+        let game = new TicTacToeGame(
+            interaction,
+            3,
+            new TicTacToePlayer(symbol1, true, undefined, ailvl1),
+            new TicTacToePlayer(symbol2, true, undefined, ailvl2),
+        )
 
-            if(sub.toLowerCase() === "cancel"){
-                return resolve(await this.CancelCurrent(interaction).catch(reject));
+        game.on("move", async (player: TicTacToePlayer, pos: number) => {
+            if(player.isAI()){
+                if(game.isGameEnded){
+                    await game.interaction.editReply(this.makeResultMessage(game)).catch(this.Logger.Error);
+                }else{
+                    await game.interaction.editReply(this.makeMessage(game)).catch(this.Logger.Error);
+                }
             }
         });
+
+        game.on("game_over", async (player?: TicTacToePlayer) => {
+            for(let c of game.controls){
+                c.destroy();
+            }
+            game.controls = [];
+            this.TicTacToeGames.delete(interaction.channelId);
+        });
+
+        this.TicTacToeGames.set(interaction.channelId, game);
+
+        await interaction.reply(this.makeMessage(game));
+        return;
+    }
+
+    private async CancelCurrent(interaction: Discord.ChatInputCommandInteraction){
+        let game = this.TicTacToeGames.get(interaction.channelId);
+        if(game){
+            if(game.player1.user?.id === interaction.user.id || game.player2.user?.id === interaction.user.id){
+                let embd_canc = new Discord.EmbedBuilder({
+                    title: `Tic Tac Toe Game`,
+                    description: `Game canceled by ${interaction.user}.`,
+                    color: Colors.Error
+                });
+                await game.interaction.editReply({ embeds: [embd_canc], components: [] }).catch(this.Logger.Error);
+                this.TicTacToeGames.delete(interaction.channelId);
+
+                let embd = new Discord.EmbedBuilder({
+                    title: `Tic Tac Toe Game`,
+                    description: `You successfully canceled Tic Tac Toe Game in this channel.`,
+                    color: Colors.Noraml
+                });
+                await interaction.reply({ embeds: [embd], ephemeral: true });
+                return;
+            }else{
+                let embd = new Discord.EmbedBuilder({
+                    title: `Tic Tac Toe Game`,
+                    description: `Only game members can cancel the game.`,
+                    color: Colors.Warning
+                });
+                await interaction.reply({ embeds: [embd], ephemeral: true });
+                return;
+            }
+        }else{
+            let embd = new Discord.EmbedBuilder({
+                title: `Tic Tac Toe Game`,
+                description: `There's no active Tic Tac Toe Games in this channel.`,
+                color: Colors.Warning
+            });
+            await interaction.reply({ embeds: [embd], ephemeral: true });
+            return;
+        }
+    }
+
+    public async Run(interaction: Discord.ChatInputCommandInteraction){
+        let sub = interaction.options.getSubcommand();
+
+        if(!sub){
+            await interaction.reply({
+                embeds: [
+                    new Discord.EmbedBuilder({
+                        title: `To start new Tic Tac Toe game in this channel use slash command "/${this.Name.toLowerCase()} new".`,
+                        color: Colors.Warning
+                    })
+                ]
+            });
+            return;
+        }
+
+        switch (sub.toLowerCase()) {
+            case "new": {
+                await this.CreateNew(interaction);
+                break;
+            }
+            case "ai_ai": {
+                await this.CreateAI_AI(interaction)
+                break;
+            }
+            case "cancel": {
+                await this.CancelCurrent(interaction)
+                break;
+            }
+        }
     }
 }

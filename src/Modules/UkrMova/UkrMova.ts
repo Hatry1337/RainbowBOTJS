@@ -48,7 +48,7 @@ export default class UkrMova extends Module{
 
     public async Run(interaction: Discord.CommandInteraction){
         let word = Utils.arrayRandElement(this.words);
-        let emb = new Discord.MessageEmbed()
+        let emb = new Discord.EmbedBuilder()
             .setTitle(word)
             .setColor(Colors.Noraml);
             

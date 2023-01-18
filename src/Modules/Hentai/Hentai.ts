@@ -121,7 +121,7 @@ export default class Hentai extends Module{
         await this.bot.config.setIfNotExist("user", "allow_nsfw", {}, "bool");
     }
 
-    public async handleSearch(interaction: Discord.CommandInteraction){
+    public async handleSearch(interaction: Discord.ChatInputCommandInteraction){
         let picid = interaction.options.getInteger("id", false);
         let ephemeral = interaction.options.getBoolean("ephemeral", false) ?? false;
 
@@ -142,7 +142,7 @@ export default class Hentai extends Module{
         let files = [{ attachment: pic.data, name: rand + `.${pic.format}` }];
         let components = [this.makeControls(pic, ephemeral ? "[E]" : "")];
 
-        return await interaction.reply({ files, embeds, components, ephemeral });
+        await interaction.reply({ files, embeds, components, ephemeral });
     }
 
     private async countView(picId: number, userId: string){
@@ -160,29 +160,59 @@ export default class Hentai extends Module{
         this.storage.set("user_views", views);
     }
 
-    public async handleStats(interaction: Discord.CommandInteraction){
+    public async handleStats(interaction: Discord.ChatInputCommandInteraction){
         let ephemeral = interaction.options.getBoolean("ephemeral", false) ?? false;
 
         let stats = this.getStats(interaction.user.id);
 
-        let emb = new Discord.MessageEmbed({
+        let emb = new Discord.EmbedBuilder({
             title: "Hentai Library Stats",
             color: Colors.Noraml,
         });
-        emb.addField("Most Liked", `\`#${stats.mostLiked.id}\` 📝, ${stats.mostLiked.likes} ❤️, ${stats.mostLiked.views} 👁`, true);
-        emb.addField("Your Likes", `${stats.userLikes} ❤️`, true);
-        emb.addField("Total Library Likes", `${stats.totalLikes} ❤️`, true);
-        emb.addField("Most Viewed", `\`#${stats.mostViewed.id}\` 📝, ${stats.mostViewed.likes} ❤️, ${stats.mostViewed.views} 👁`, true);
-        emb.addField("Your Views", `${stats.userViews} 👁`, true);
-        emb.addField("Total Library Views", `${stats.totalViews} 👁`, true);
-        emb.addField("Library Pictures Count", `${stats.picturesCount} 🖼️`, true);
+        emb.addFields([
+            {
+                name: "Most Liked",
+                value: `\`#${stats.mostLiked.id}\` 📝, ${stats.mostLiked.likes} ❤️, ${stats.mostLiked.views} 👁`,
+                inline: true
+            },
+            {
+                name: "Your Likes",
+                value: `${stats.userLikes} ❤️`,
+                inline: true
+            },
+            {
+                name: "Total Library Likes",
+                value: `${stats.totalLikes} ❤️`,
+                inline: true
+            },
+            {
+                name: "Most Viewed",
+                value: `\`#${stats.mostViewed.id}\` 📝, ${stats.mostViewed.likes} ❤️, ${stats.mostViewed.views} 👁`,
+                inline: true
+            },
+            {
+                name: "Your Views",
+                value: `${stats.userViews} 👁`,
+                inline: true
+            },
+            {
+                name: "Total Library Views",
+                value: `${stats.totalViews} 👁`,
+                inline: true
+            },
+            {
+                name: "Library Pictures Count",
+                value: `${stats.picturesCount} 🖼️`,
+                inline: true
+            },
+        ]);
 
         await interaction.reply({ embeds: [emb], ephemeral });
     }
 
     public getStats(userId: string): ILibraryStats {
         let pics = this.library.getPictures();
-        let stats: ILibraryStats = {
+        return {
             mostLiked:      pics.sort((a, b) => b.likes - a.likes)[0],
             mostViewed:     pics.sort((a, b) => b.views - a.views)[0],
             totalLikes:     pics.reduce((likes, item) => likes += item.likes, 0),
@@ -191,19 +221,18 @@ export default class Hentai extends Module{
             userViews:      (this.storage.get("user_views") ?? {})[userId] || 0,
             picturesCount:  pics.length
         }
-        return stats;
     }
 
-    public async handleSuggest(interaction: Discord.CommandInteraction){
+    public async handleSuggest(interaction: Discord.ChatInputCommandInteraction){
         let url = interaction.options.getString("url", true);
         let msg = interaction.options.getString("message", false);
 
         let channel_id = await this.bot.config.get("bot", "hentai_suggest_channel") as string | undefined;
         if(!channel_id) throw new SynergyUserError("This feature is disabled at this moment.");
         let channel = await this.bot.client.channels.fetch(channel_id);
-        if(!channel || !channel.isText()) throw new SynergyUserError("This feature is disabled at this moment.");
+        if(!channel || !channel.isTextBased()) throw new SynergyUserError("This feature is disabled at this moment.");
 
-        let sug_emb = new Discord.MessageEmbed({
+        let sug_emb = new Discord.EmbedBuilder({
             title: `New suggestion from ${interaction.user.tag}`,
             description: msg ? `Message: ${msg}` : undefined,
             color: Colors.Noraml
@@ -227,7 +256,7 @@ export default class Hentai extends Module{
         */
         await channel.send({ embeds: [sug_emb] });
 
-        let emb = new Discord.MessageEmbed({
+        let emb = new Discord.EmbedBuilder({
             title: "Your suggestion sended to moderation. Thanks!",
             color: Colors.Noraml
         });
@@ -244,12 +273,12 @@ export default class Hentai extends Module{
     }
     */
 
-    public async handleFav(interaction: Discord.CommandInteraction){
+    public async handleFav(interaction: Discord.ChatInputCommandInteraction){
         let ephemeral = interaction.options.getBoolean("ephemeral", false) ?? false;
         
         let favs = this.library.getPictures().filter(p => p.likesIds.includes(interaction.user.id));
 
-        let emb = new Discord.MessageEmbed({
+        let emb = new Discord.EmbedBuilder({
             title: "Your Favorite Pictures",
             color: Colors.Noraml,
             description: favs.length === 0  ? "You are not liked any pictures yet." 
@@ -259,7 +288,7 @@ export default class Hentai extends Module{
         await interaction.reply({ embeds: [emb], ephemeral });
     }
 
-    public async handleRandom(interaction: Discord.CommandInteraction | Discord.ButtonInteraction){
+    public async handleRandom(interaction: Discord.ChatInputCommandInteraction | Discord.ButtonInteraction){
         let ephemeral: boolean;
         let fav: boolean;
         if(interaction.isCommand()){
@@ -292,11 +321,11 @@ export default class Hentai extends Module{
         let files = [{ attachment: pic.data, name: rand + `.${pic.format}` }];
         let components = [this.makeControls(pic, flags)];
 
-        return await interaction.reply({ files, embeds, components, ephemeral });
+        await interaction.reply({ files, embeds, components, ephemeral });
     }
 
     public async handleLike(interaction: Discord.ButtonInteraction, picture: LibraryItem){
-        let emb = new Discord.MessageEmbed({
+        let emb = new Discord.EmbedBuilder({
             color: Colors.Noraml
         });
         if(picture.likesIds.includes(interaction.user.id)){
@@ -314,7 +343,7 @@ export default class Hentai extends Module{
         btn_like.build(bld => bld
             .setLabel("Like")
             .setEmoji("❤️")
-            .setStyle("PRIMARY")
+            .setStyle(Discord.ButtonStyle.Primary)
         ).onExecute(async (interaction) => {
             await this.handleLike(interaction, picture);
         });
@@ -323,14 +352,14 @@ export default class Hentai extends Module{
         btn_more.build(bld => bld
             .setLabel("More!" + " " + flags)
             .setEmoji("🔥")
-            .setStyle("PRIMARY")
+            .setStyle(Discord.ButtonStyle.Primary)
         ).onExecute(this.handleRandom.bind(this));
 
-        return new Discord.MessageActionRow().addComponents([btn_like.builder, btn_more.builder]);
+        return new Discord.ActionRowBuilder<Discord.ButtonBuilder>().addComponents([btn_like.builder, btn_more.builder]);
     }
 
     private makeEmbed(picture: LibraryItemWithData, attachment: string){
-        let emb = new Discord.MessageEmbed({
+        let emb = new Discord.EmbedBuilder({
             title: `Hentai picture #${picture.id}`,
             color: Colors.Noraml
         });
@@ -341,7 +370,7 @@ export default class Hentai extends Module{
         return emb;
     }
 
-    public async Run(interaction: Discord.CommandInteraction){
+    public async Run(interaction: Discord.ChatInputCommandInteraction){
         let channel = interaction.channel;
         if(!channel){
             channel = await interaction.user.createDM();
@@ -351,19 +380,19 @@ export default class Hentai extends Module{
         let access = true;
 
         switch(channel.type){
-            case "GUILD_TEXT": {
+            case Discord.ChannelType.GuildText: {
                 access = channel.nsfw;
                 break;
             }
-            case "GUILD_PRIVATE_THREAD": {
+            case Discord.ChannelType.PrivateThread: {
                 access = channel.parent?.nsfw ?? false;
                 break;
             }
-            case "GUILD_PUBLIC_THREAD": {
+            case Discord.ChannelType.PublicThread: {
                 access = channel.parent?.nsfw ?? false;
                 break;
             }
-            case "DM": {
+            case Discord.ChannelType.DM: {
                 access = (await this.bot.config.get("user", "allow_nsfw"))[interaction.user.id] ?? false;
                 if(!access){
                     if(!access) throw new SynergyUserError("To use this command in DM you need to confirm your age.", 

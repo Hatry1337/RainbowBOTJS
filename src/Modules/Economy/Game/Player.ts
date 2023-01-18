@@ -66,6 +66,7 @@ export default class Player {
     public toObject(): IPlayerObject{
         return {
             userId: this.user.id,
+            userDiscordId: this.user.discordId,
             inventory: this.inventory.map(i => i.toObject()),
             rooms: this.rooms.map(r => r.toObject())
         }

@@ -33,15 +33,14 @@ export default class Anek extends Module{
     }
     
     private makeEmbed(anek: AAnek){
-        let embd = new Discord.MessageEmbed({
+        return new Discord.EmbedBuilder({
             title: `Anek of B category number ${anek.id}`,
             description: `${anek.anek}\n\nSource: ${anek.source}${anek.tags.length > 0 ? `, Tags: \`${anek.tags.join("`, `")}\`` : ""}`,
             color: Colors.Noraml
         });
-        return embd;
     }
 
-    public async Run(interaction: Discord.CommandInteraction){
+    public async Run(interaction: Discord.ChatInputCommandInteraction){
         let tag = interaction.options.getString("tag");
         let id = interaction.options.getInteger("id");
 
@@ -58,13 +57,14 @@ export default class Anek extends Module{
                     throw new SynergyUserError("Cannot get aneks tags. Please try again later, or contact with support.");
                 }
 
-                let embd = new Discord.MessageEmbed({
+                let embd = new Discord.EmbedBuilder({
                     title: `Aneks of B category tags`,
                     description: `Existing tags: \`${tags.join("`, `")}\``,
                     color: Colors.Noraml
                 });
                 
-                return await interaction.reply({ embeds: [embd] });
+                await interaction.reply({ embeds: [embd] });
+                return;
             }else{
                 try {
                     anek = await AnekAPI.GetTaggedRandomAnek(tag);
@@ -89,6 +89,6 @@ export default class Anek extends Module{
             }
         }
 
-        return await interaction.reply({ embeds: [this.makeEmbed(anek)] });
+        await interaction.reply({ embeds: [this.makeEmbed(anek)] });
     }
 }

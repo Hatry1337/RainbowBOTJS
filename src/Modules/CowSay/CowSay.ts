@@ -61,7 +61,7 @@ export default class CowSay extends Module{
         });
     }
 
-    public async Run(int: Discord.CommandInteraction, user: User){
+    public async Run(int: Discord.ChatInputCommandInteraction, user: User){
         let cows = await this.getCowsList();
         let subc = int.options.getSubcommand();
         if(subc === "cows"){
@@ -78,13 +78,14 @@ export default class CowSay extends Module{
                 messages.push(msg.slice(0, msg.length - 2));
             }
 
-            let emb = new Discord.MessageEmbed({
+            let emb = new Discord.EmbedBuilder({
                 title: "Available Cows",
                 color: Colors.Noraml,
                 fields: messages.map((m, i) => ({ name: `Page ${i+1}`, value: m }))
             });
 
-            return await int.reply({ embeds: [emb] });
+            await int.reply({ embeds: [emb] });
+            return;
 
         }else if(subc === "say"){
             let text = int.options.getString("text", true);
@@ -109,7 +110,8 @@ export default class CowSay extends Module{
                 });
             }
 
-            return await int.reply("```" + result + "```");
+            await int.reply("```" + result + "```");
+            return;
         }else{
             throw new SynergyUserError("This subcommand is not implemented!");
         }

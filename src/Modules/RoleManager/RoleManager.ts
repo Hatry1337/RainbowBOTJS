@@ -42,7 +42,7 @@ export default class RoleManager extends Module{
         });
     }
 
-    public async Run(interaction: Discord.CommandInteraction){
+    public async Run(interaction: Discord.ChatInputCommandInteraction){
         if(!interaction.inGuild()){
             throw new GuildOnlyError();
         }
@@ -72,10 +72,12 @@ export default class RoleManager extends Module{
                 await int.reply({content: `Role <@&${int.values.join(">, <@&")}> is removed from your roles!`, ephemeral: true});
             }
         });
+        let row = new Discord.ActionRowBuilder<Discord.SelectMenuBuilder>()
+            .addComponents(menu.builder);
         if(action === "get"){
-            await interaction.reply({ content: "Select wanted roles:", components: [ new Discord.MessageActionRow().addComponents(menu.builder) ], ephemeral: true });
+            await interaction.reply({ content: "Select wanted roles:", components: [ row ], ephemeral: true });
         } else {
-            await interaction.reply({ content: "Select roles to delete:", components: [ new Discord.MessageActionRow().addComponents(menu.builder) ], ephemeral: true });
+            await interaction.reply({ content: "Select roles to delete:", components: [ row ], ephemeral: true });
         }
     }
 }

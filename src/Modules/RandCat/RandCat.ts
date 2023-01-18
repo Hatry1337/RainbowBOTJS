@@ -80,7 +80,7 @@ export default class RandCat extends Module{
         let cat = JSON.parse((await got("https://api.thecatapi.com/v1/images/search?size=full")).body)[0] as ICatAPICat;
         let breed = cat.breeds[0];
         
-        let embed = new Discord.MessageEmbed({
+        let embed = new Discord.EmbedBuilder({
             title: "Random Cat",
             image: { url: cat.url },
             footer: { text: `Provided by thecatapi.com` },
@@ -88,10 +88,24 @@ export default class RandCat extends Module{
         });
 
         if(breed){
-            embed.addField("Breed", breed.name);
-            embed.addField("Country", `${breed.origin} :flag_${breed.country_code.toLowerCase()}:`);
-            embed.addField("Description", breed.description);
-            embed.addField("Temperament", breed.temperament);
+            embed.addFields([
+                {
+                    name: "Breed",
+                    value: breed.name
+                },
+                {
+                    name: "Country",
+                    value: `${breed.origin} :flag_${breed.country_code.toLowerCase()}:`
+                },
+                {
+                    name: "Description",
+                    value: breed.description
+                },
+                {
+                    name: "Temperament",
+                    value: breed.temperament
+                }
+            ]);
             let links = "";
             links += breed.cfa_url          ? `[CFA](${breed.cfa_url})\n` : "";
             links += breed.vetstreet_url    ? `[VetStreet](${breed.vetstreet_url})\n` : "";
@@ -99,7 +113,7 @@ export default class RandCat extends Module{
             links += breed.wikipedia_url    ? `[Wikipedia](${breed.wikipedia_url})` : "";
 
             if(links !== ""){
-                embed.addField("Links", links);
+                embed.addFields({ name: "Links", value: links });
             }
         }
 

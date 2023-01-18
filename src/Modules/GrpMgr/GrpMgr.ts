@@ -11,6 +11,7 @@ interface ITempGroupInfo{
 
 interface ITempGroupInfoJSON{
     user: number;
+    userDiscordId: string;
     group: string;
     time: number;
     addedAt: number;
@@ -31,7 +32,7 @@ export default class GrpMgr extends Module{
     public Access: AccessTarget[] = [ Access.ADMIN() ]
 
     private checkTimer?: NodeJS.Timeout;
-    public tempGroups: Map<string, ITempGroupInfo[]> = new Map();;
+    public tempGroups: Map<string, ITempGroupInfo[]> = new Map();
 
     constructor(bot: Synergy, UUID: string) {
         super(bot, UUID);
@@ -145,6 +146,7 @@ export default class GrpMgr extends Module{
             for(let g of e[1]){
                 tgrps[e[0]].push({
                     user: g.user.id,
+                    userDiscordId: g.user.discordId,
                     group: g.group,
                     time: g.time,
                     addedAt: Math.floor(g.addedAt.getTime() / 1000),
@@ -163,7 +165,7 @@ export default class GrpMgr extends Module{
             let data: ITempGroupInfo[] = [];
             for(let g of tgrps[k]){
                 data.push({
-                    user: await this.bot.users.fetchOne(g.user) ?? undefined!,
+                    user: await this.bot.users.get(g.userDiscordId) ?? undefined!,
                     group: g.group,
                     time: g.time,
                     addedAt: new Date(g.addedAt * 1000),
@@ -203,16 +205,13 @@ export default class GrpMgr extends Module{
         await this.saveTempGroupsInfo();
     }
 
-    public async handleAdd(interaction: Discord.CommandInteraction){
+    public async handleAdd(interaction: Discord.ChatInputCommandInteraction){
         let duser = interaction.options.getUser("user", true);
         let group = interaction.options.getString("group", true);
 
         if(group === "admin") throw new SynergyUserError("You can't add admin group to user.");
 
-        let u_id = this.bot.users.idFromDiscordId(duser.id);
-        if(!u_id) throw new SynergyUserError("This user is not registered.");
-
-        let user = await this.bot.users.fetchOne(u_id);
+        let user = await this.bot.users.get(duser.id);
         if(!user) throw new SynergyUserError("This user is not registered.");
 
         let indx = user.groups.indexOf(group);
@@ -220,24 +219,21 @@ export default class GrpMgr extends Module{
 
         user.groups.push(group);
         
-        let emb = new Discord.MessageEmbed({
+        let emb = new Discord.EmbedBuilder({
             title: `Successfully added group "${group}" to user ${duser.tag}`,
             color: Colors.Noraml
         });
-        return await interaction.reply({ embeds: [emb] });
+        await interaction.reply({ embeds: [emb] });
     }
 
-    public async handleAddTemp(interaction: Discord.CommandInteraction){
+    public async handleAddTemp(interaction: Discord.ChatInputCommandInteraction){
         let duser = interaction.options.getUser("user", true);
         let group = interaction.options.getString("group", true);
         let time = interaction.options.getInteger("time", true);
 
         if(group === "admin") throw new SynergyUserError("You can't add admin group to user.");
 
-        let u_id = this.bot.users.idFromDiscordId(duser.id);
-        if(!u_id) throw new SynergyUserError("This user is not registered.");
-
-        let user = await this.bot.users.fetchOne(u_id);
+        let user = await this.bot.users.get(duser.id);
         if(!user) throw new SynergyUserError("This user is not registered.");
 
         let indx = user.groups.indexOf(group);
@@ -245,15 +241,15 @@ export default class GrpMgr extends Module{
 
         await this.addTempGroup(group, user, time);
         
-        let emb = new Discord.MessageEmbed({
+        let emb = new Discord.EmbedBuilder({
             title: `Successfully added group "${group}" to user ${duser.tag}`,
             description: `Expiration at: <t:${Math.floor((new Date().getTime() / 1000) + time)}>`,
             color: Colors.Noraml
         });
-        return await interaction.reply({ embeds: [emb] });
+        await interaction.reply({ embeds: [emb] });
     }
 
-    public async handleDel(interaction: Discord.CommandInteraction){
+    public async handleDel(interaction: Discord.ChatInputCommandInteraction){
         let duser = interaction.options.getUser("user", true);
         let group = interaction.options.getString("group", true);
 
@@ -262,7 +258,7 @@ export default class GrpMgr extends Module{
         let u_id = this.bot.users.idFromDiscordId(duser.id);
         if(!u_id) throw new SynergyUserError("This user is not registered.");
 
-        let user = await this.bot.users.fetchOne(u_id);
+        let user = await this.bot.users.get(duser.id);
         if(!user) throw new SynergyUserError("This user is not registered.");
 
         let indx = user.groups.indexOf(group);
@@ -270,15 +266,15 @@ export default class GrpMgr extends Module{
         
         user.groups.splice(indx, 1);
 
-        let emb = new Discord.MessageEmbed({
+        let emb = new Discord.EmbedBuilder({
             title: `Successfully removed group "${group}" from user ${duser.tag}`,
             color: Colors.Noraml
         });
-        return await interaction.reply({ embeds: [emb] });
+        await interaction.reply({ embeds: [emb] });
     }
 
     public async handleListGroups(interaction: Discord.CommandInteraction, user: User){
-        let emb = new Discord.MessageEmbed({
+        let emb = new Discord.EmbedBuilder({
             title: "List of your Groups",
             color: Colors.Noraml
         });

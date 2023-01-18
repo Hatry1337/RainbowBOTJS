@@ -58,7 +58,7 @@ export default class UTS extends Module{
         .commit()
     }
 
-    private async onTest(int: Discord.CommandInteraction){
+    private async onTest(int: Discord.ChatInputCommandInteraction){
         let test_point = int.options.getString("test_point", false);
         if(!test_point){
             let txt = "";
@@ -66,13 +66,14 @@ export default class UTS extends Module{
                 txt += `\`${p.name}\` - ${p.description}\n`;
             }
 
-            let emb =  new Discord.MessageEmbed({
+            let emb =  new Discord.EmbedBuilder({
                 title: "UTS Test Points List",
                 color: Colors.Noraml,
                 description: txt || "*No test points set.*"
             });
     
-            return await int.reply({embeds: [emb]});
+            await int.reply({embeds: [emb]});
+            return;
         }else{
             let point = Array.from(testPoints.values()).find(p => p.name === test_point);
             if(!point){

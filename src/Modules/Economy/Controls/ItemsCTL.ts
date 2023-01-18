@@ -24,36 +24,66 @@ export class ItemsCTL extends Control{
         .commit()
     }
 
-    public static generateItemInfo(item: Item, emb: Discord.MessageEmbed){
-        emb.addField("ID", item.id.toString());
-        emb.addField("Description", item.description.toString());
+    public static generateItemInfo(item: Item, emb: Discord.EmbedBuilder){
+        let fields: Discord.APIEmbedField[] = [
+            {
+                name: "ID",
+                value: item.id
+            },
+            {
+                name: "Description",
+                value: item.description
+            }
+        ]
 
         if(item.isUsable()){
-            emb.addField("Usable", "Can be used by pressing button below.");
+            fields.push({
+                name: "Usable",
+                value: "Can be used by pressing button below."
+            });
         }
         if(item.isTradeable()){
-            emb.addField("Tradeable", "Can be traded by command `/trade`.");
+            fields.push({
+                name: "Tradeable",
+                value: "Can be traded by command `/trade`."
+            });
         }
         if(item.isSellable()){
-            emb.addField("Sellable", "Can be sold on marketplace.");
+            fields.push({
+                name: "Sellable",
+                value: "Can be sold on marketplace."
+            });
         }
         if(item instanceof ItemMiner){
-            emb.addField("Miner", `Mine CryptoPoints \nMining Rate: ${item.miningRate} CPT/Hour.`);
+            fields.push({
+                name: "Miner",
+                value: `Mine CryptoPoints \nMining Rate: ${item.miningRate} CPT/Hour.`
+            });
         }
         if(item instanceof ItemPowerConsumer){
-            emb.addField("Power Consumer", `Consumes electrical power: ${item.powerConsumption}W`);
+            fields.push({
+                name: "Power Consumer",
+                value: `Consumes electrical power: ${item.powerConsumption}W`
+            });
         }
         if(item instanceof ItemGroup){
-            emb.addField("Item Group", `After usage gives you group \`${item.group}\`.`);
+            fields.push({
+                name: "Item Group",
+                value: `After usage gives you group \`${item.group}\`.`
+            });
         }
         if(item instanceof ItemPoints){
-            emb.addField("Item Points", `After usage gives you \`${item.pointsAmount}\` points.`);
+            fields.push({
+                name: "Item Points",
+                value: `After usage gives you \`${item.pointsAmount}\` points.`
+            });
         }
 
+        emb.addFields(fields);
         return emb;
     }
 
-    public async handleInteraction(interaction: Discord.CommandInteraction, user: User){
+    public async handleInteraction(interaction: Discord.ChatInputCommandInteraction, user: User){
         let player = await this.storage.getPlayer(user);
         if(!player){
             player = await this.storage.createPlayer(user);
@@ -72,13 +102,15 @@ export class ItemsCTL extends Control{
             inv = table.toString();
         }
 
-        let emb =  new Discord.MessageEmbed({
+        let emb =  new Discord.EmbedBuilder({
             title: `${user.nickname} Inventory`,
             description: "```elm\n" + inv + "```",
             color: Colors.Noraml
         });
 
-        let options: Discord.InteractionReplyOptions = {embeds: [emb]}
+        let options: Discord.InteractionReplyOptions = {
+            embeds: [emb]
+        }
 
         if(player.inventory.length !== 0) {
             let select = this.economy.createMessageSelectMenu([ Access.USER(interaction.user.id) ], -1, 300000)
@@ -88,15 +120,16 @@ export class ItemsCTL extends Control{
             )
             .onExecute(this.handleInfoInteraction.bind(this));
 
-            options.components = [ 
-                new Discord.MessageActionRow().addComponents(select.builder)
-            ]
+            let row = new Discord.ActionRowBuilder<Discord.StringSelectMenuBuilder>()
+                .addComponents(select.builder);
+
+            options.components = [row];
         }
 
-        return await interaction.reply(options);
+        await interaction.reply(options);
     }
 
-    public async handleInfoInteraction(interaction: Discord.SelectMenuInteraction, user: User){
+    public async handleInfoInteraction(interaction: Discord.StringSelectMenuInteraction, user: User){
         let player = await this.storage.getPlayer(user);
         if(!player){
             player = await this.storage.createPlayer(user);
@@ -110,7 +143,7 @@ export class ItemsCTL extends Control{
             throw new SynergyUserError("You don't have item in this slot.");
         }
 
-        let emb =  new Discord.MessageEmbed({
+        let emb =  new Discord.EmbedBuilder({
             title: "Item __" + item.item.name + "__",
             color: Colors.Noraml,
             thumbnail: item.item.iconUrl ? { url: item.item.iconUrl } : undefined
@@ -118,13 +151,13 @@ export class ItemsCTL extends Control{
         
         emb = ItemsCTL.generateItemInfo(item.item, emb);
 
-        let actionrow = new Discord.MessageActionRow();
+        let actionrow = new Discord.ActionRowBuilder<Discord.ButtonBuilder>();
 
         if(item.item.isUsable()){
             let btn_use = this.economy.createMessageButton([ Access.USER(interaction.user.id) ], -1, 300000)
             .build(builder => builder
                 .setLabel("Use this Item")
-                .setStyle("PRIMARY")
+                .setStyle(Discord.ButtonStyle.Primary)
             )
             .onExecute(async (int, user) => {
                 await this.handleUseItemInteraction(int, user, slot)
@@ -147,9 +180,9 @@ export class ItemsCTL extends Control{
         }
         */
         if(actionrow.components.length > 0){
-            return await interaction.reply({ embeds: [emb], components: [actionrow] });
+            await interaction.reply({ embeds: [emb], components: [actionrow] });
         }else{
-            return await interaction.reply({ embeds: [emb] });
+            await interaction.reply({ embeds: [emb] });
         }
     }
 
@@ -175,7 +208,7 @@ export class ItemsCTL extends Control{
         await item.item.use(item, player);
         await this.storage.savePlayer(player);
 
-        let emb =  new Discord.MessageEmbed({
+        let emb =  new Discord.EmbedBuilder({
             title: 'You are sucessfully used "' + item.item.name + '".',
             color: Colors.Noraml
         });
@@ -199,7 +232,7 @@ export class ItemsCTL extends Control{
             throw new SynergyUserError("This item is not placeable.");
         }
 
-        let actionrow = new Discord.MessageActionRow();
+        let actionrow = new Discord.ActionRowBuilder<Discord.SelectMenuBuilder>();
 
         if(player.rooms.length !== 0) {
             let select = this.economy.createMessageSelectMenu([ Access.USER(interaction.user.id) ], -1, 300000)
@@ -214,7 +247,7 @@ export class ItemsCTL extends Control{
             actionrow.addComponents(select.builder);
         }
 
-        let emb =  new Discord.MessageEmbed({
+        let emb =  new Discord.EmbedBuilder({
             title: `Select room where to place item "${item.item.name}":`,
             color: Colors.Noraml
         });
@@ -255,7 +288,7 @@ export class ItemsCTL extends Control{
 
         await this.storage.savePlayer(player);
 
-        let emb =  new Discord.MessageEmbed({
+        let emb =  new Discord.EmbedBuilder({
             title: `You are sucessfully placed "${item.item.name}" in room "${room.reference.name}".`,
             color: Colors.Noraml
         });

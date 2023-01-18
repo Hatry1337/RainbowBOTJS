@@ -83,11 +83,8 @@ export default class EconomyCTL extends Control{
         .onSubcommand("itemdel", this.handleItemDelCommand.bind(this))
     }
 
-    public async handleSetCommand(interaction: Discord.CommandInteraction, user: User){
-        let target_id = this.economy.bot.users.idFromDiscordId(interaction.options.getUser("user", true).id);
-        if(!target_id) throw new SynergyUserError("Target user doesn't exist.");
-
-        let target_user = await this.economy.bot.users.fetchOne(target_id);
+    public async handleSetCommand(interaction: Discord.ChatInputCommandInteraction, user: User){
+        let target_user = await this.economy.bot.users.fetchOne(interaction.user.id);
         if(!target_user) throw new SynergyUserError("Target user doesn't exist.");
 
         let field = interaction.options.getString("field", true);
@@ -116,7 +113,7 @@ export default class EconomyCTL extends Control{
             }
         }
 
-        let emb = new Discord.MessageEmbed({
+        let emb = new Discord.EmbedBuilder({
             title: `Successfully setted field "${field}" from "${old_val}" to ${value}.`,
             color: Colors.Noraml
         });
@@ -125,11 +122,8 @@ export default class EconomyCTL extends Control{
         await interaction.reply({ embeds: [emb] });
     }
 
-    public async handleGiveCommand(interaction: Discord.CommandInteraction, user: User){
-        let target_id = this.economy.bot.users.idFromDiscordId(interaction.options.getUser("user", true).id);
-        if(!target_id) throw new SynergyUserError("Target user doesn't exist.");
-
-        let target_user = await this.economy.bot.users.fetchOne(target_id);
+    public async handleGiveCommand(interaction: Discord.ChatInputCommandInteraction, user: User){
+        let target_user = await this.economy.bot.users.fetchOne(interaction.user.id);
         if(!target_user) throw new SynergyUserError("Target user doesn't exist.");
 
         let target_player = await this.storage.getPlayer(target_user);
@@ -144,7 +138,7 @@ export default class EconomyCTL extends Control{
         target_player.tryStackItem(new ItemStack(item, amount));
         await this.storage.savePlayer(target_player);
 
-        let emb = new Discord.MessageEmbed({
+        let emb = new Discord.EmbedBuilder({
             title: `Successfully gived "${item.name}" x${amount} to ${target_user.nickname}.`,
             color: Colors.Noraml
         });
@@ -153,11 +147,8 @@ export default class EconomyCTL extends Control{
         await interaction.reply({ embeds: [emb] });
     }
 
-    public async handleItemDelCommand(interaction: Discord.CommandInteraction, user: User){
-        let target_id = this.economy.bot.users.idFromDiscordId(interaction.options.getUser("user", true).id);
-        if(!target_id) throw new SynergyUserError("Target user doesn't exist.");
-
-        let target_user = await this.economy.bot.users.fetchOne(target_id);
+    public async handleItemDelCommand(interaction: Discord.ChatInputCommandInteraction, user: User){
+        let target_user = await this.economy.bot.users.fetchOne(interaction.user.id);
         if(!target_user) throw new SynergyUserError("Target user doesn't exist.");
 
         let target_player = await this.storage.getPlayer(target_user);
@@ -179,7 +170,7 @@ export default class EconomyCTL extends Control{
         target_player.updateInventory();
         await this.storage.savePlayer(target_player);
 
-        let emb = new Discord.MessageEmbed({
+        let emb = new Discord.EmbedBuilder({
             title: `Successfully deleted "${deleted_item.item.name}" x${amount} from ${target_user.nickname}.`,
             color: Colors.Noraml
         });
