@@ -1,12 +1,12 @@
 import Discord from "discord.js";
 import got from "got";
-import IgniRender from "./IgniRender/IgniRender";
+import IgniRender, { RenderProjection, RenderStyle } from "./IgniRender/IgniRender";
 import Camera from "./IgniRender/Scene/Camera";
 import { v3zero, vec3 } from "./IgniRender/Utils3D";
 import {
     Access,
     AccessTarget,
-    CallbackTypeOf,
+    CallbackTypeOf, InteractiveComponent,
     Module,
     Synergy,
     SynergyUserError,
@@ -187,6 +187,59 @@ export default class OBJRender extends Module{
                     .setDescription("Cameras related commands")
 
                     .addSubcommand(opt => opt
+                        .setName("set_style")
+                        .setDescription("Set camera rendering style")
+                        .addStringOption(opt => opt
+                            .setName("name")
+                            .setDescription("Name of object to scale")
+                            .setRequired(true)
+                        )
+                        .addStringOption(opt => opt
+                            .setName("style")
+                            .setDescription("Rendering style")
+                            .setRequired(true)
+                            .addChoices(
+                                {name: "wireframe", value: "wireframe"},
+                                {name: "flat", value: "flat"},
+                            )
+                        )
+                    )
+
+                    .addSubcommand(opt => opt
+                        .setName("set_projection")
+                        .setDescription("Set camera rendering style")
+                        .addStringOption(opt => opt
+                            .setName("name")
+                            .setDescription("Name of object to scale")
+                            .setRequired(true)
+                        )
+                        .addStringOption(opt => opt
+                            .setName("projection")
+                            .setDescription("Rendering projection type")
+                            .setRequired(true)
+                            .addChoices(
+                                {name: "none", value: "none"},
+                                {name: "perspective", value: "perspective"},
+                            )
+                        )
+                    )
+
+                    .addSubcommand(opt => opt
+                        .setName("set_fov")
+                        .setDescription("Set camera FOV angle")
+                        .addStringOption(opt => opt
+                            .setName("name")
+                            .setDescription("Name of object to scale")
+                            .setRequired(true)
+                        )
+                        .addNumberOption(opt => opt
+                            .setName("fov")
+                            .setDescription("FOV angle")
+                            .setRequired(true)
+                        )
+                    )
+
+                    .addSubcommand(opt => opt
                         .setName("get_viewport")
                         .setDescription("Get viewport of specified camera")
                         .addStringOption(opt => opt
@@ -240,6 +293,9 @@ export default class OBJRender extends Module{
             visible: boolean,
             size: vec3 | undefined,
             reference: string | undefined,
+            fov: number | undefined,
+            projection: RenderProjection | undefined,
+            renderStyle: RenderStyle | undefined,
         }[];
         try {
             data = JSON.parse(json);
@@ -260,7 +316,17 @@ export default class OBJRender extends Module{
                     break;
                 }
                 case "Camera": {
-                    newObj = new Camera(o.name, o.position, o.rotation);
+                    let camera = new Camera(o.name, o.position, o.rotation);
+                    if(o.fov) {
+                        camera.FOV = o.fov;
+                    }
+                    if(o.projection) {
+                        camera.projection = o.projection;
+                    }
+                    if(o.renderStyle) {
+                        camera.renderStyle = o.renderStyle;
+                    }
+                    newObj = camera;
                     break;
                 }
                 case "PolyObject": {
@@ -270,7 +336,7 @@ export default class OBJRender extends Module{
                         throw new SynergyUserError("Model reference file is not .obj extension.");
                     }
                     let data = await got(o.reference);
-                    if(data.rawBody.length > 3 * 1024 * 1024) {
+                    if(data.rawBody.length > 5 * 1024 * 1024) {
                         throw new SynergyUserError("Model reference file is too large.");
                     }
 
@@ -310,6 +376,9 @@ export default class OBJRender extends Module{
             visible: o.visible,
             size: o instanceof PolyObject ? o.size : undefined,
             reference: o instanceof PolyObject ? o.reference : undefined,
+            fov: o instanceof Camera ? o.FOV : undefined,
+            projection: o instanceof Camera ? o.projection : undefined,
+            renderStyle: o instanceof Camera ? o.renderStyle : undefined,
         }));
 
         await interaction.reply("```json\n" + JSON.stringify(json_data) + "```");
@@ -326,7 +395,7 @@ export default class OBJRender extends Module{
         let text = "```yml\nObjects in scene:\n\n"
 
         for(let o of scene.objects) {
-            text += `${o.name}: ${o.constructor.name}\n`;
+            text += `${o.name}: ${o.constructor.name} [x: ${o.position.x}, y: ${o.position.y}, z: ${o.position.z}]\n`;
         }
 
         await interaction.reply(text + "```");
@@ -373,7 +442,7 @@ export default class OBJRender extends Module{
 
         let model = interaction.options.getAttachment("model", true);
 
-        if(!model.url.endsWith(".obj") || model.size > 3 * 1024 * 1024){
+        if(!model.url.endsWith(".obj") || model.size > 5 * 1024 * 1024){
             throw new SynergyUserError("Your file is not .obj extension file or bigger than 3 MB.");
         }
 
@@ -503,12 +572,81 @@ export default class OBJRender extends Module{
             [key: string]:  CallbackTypeOf<Discord.SlashCommandBuilder>
         } = {
             "get_viewport": this.handleCameraGetViewport,
+            "set_style": this.handleCameraSetStyle,
+            "set_projection": this.handleCameraSetProjection,
+            "set_fov": this.handleCameraSetFOV
         }
 
         let subcommand = interaction.options.getSubcommand(true);
 
         await subcommandHandlers[subcommand].bind(this)(interaction, user);
         return;
+    }
+
+    public async handleCameraSetStyle(interaction: Discord.ChatInputCommandInteraction, user: User) {
+        let scene = this.scenes.get(user)!;
+        let name = interaction.options.getString("name", true);
+        let style = interaction.options.getString("style", true);
+
+        let camera = scene.objects.find(o => o.name === name);
+        if(!camera) {
+            throw new SynergyUserError(
+                `Can't find object with name \`${name}\` in your scene.`,
+                "Use `/objrender scene objects` to list all objects in scene."
+            );
+        }
+
+        if(!(camera instanceof Camera)) {
+            throw new SynergyUserError("Specified object is not a camera.");
+        }
+
+        camera.renderStyle = style as RenderStyle;
+
+        await interaction.reply(`You successfully set camera style to \`${style}\``);
+    }
+
+    public async handleCameraSetProjection(interaction: Discord.ChatInputCommandInteraction, user: User) {
+        let scene = this.scenes.get(user)!;
+        let name = interaction.options.getString("name", true);
+        let projection = interaction.options.getString("projection", true);
+
+        let camera = scene.objects.find(o => o.name === name);
+        if(!camera) {
+            throw new SynergyUserError(
+                `Can't find object with name \`${name}\` in your scene.`,
+                "Use `/objrender scene objects` to list all objects in scene."
+            );
+        }
+
+        if(!(camera instanceof Camera)) {
+            throw new SynergyUserError("Specified object is not a camera.");
+        }
+
+        camera.projection = projection as RenderProjection;
+
+        await interaction.reply(`You successfully set camera projection to \`${projection}\``);
+    }
+
+    public async handleCameraSetFOV(interaction: Discord.ChatInputCommandInteraction, user: User) {
+        let scene = this.scenes.get(user)!;
+        let name = interaction.options.getString("name", true);
+        let fov = interaction.options.getNumber("fov", true);
+
+        let camera = scene.objects.find(o => o.name === name);
+        if(!camera) {
+            throw new SynergyUserError(
+                `Can't find object with name \`${name}\` in your scene.`,
+                "Use `/objrender scene objects` to list all objects in scene."
+            );
+        }
+
+        if(!(camera instanceof Camera)) {
+            throw new SynergyUserError("Specified object is not a camera.");
+        }
+
+        camera.FOV = fov;
+
+        await interaction.reply(`You successfully set camera FOV to \`${fov}\``);
     }
 
     public async handleCameraGetViewport(interaction: Discord.ChatInputCommandInteraction, user: User) {
@@ -531,26 +669,56 @@ export default class OBJRender extends Module{
 
         let img = await camera.Render();
 
-        let button = this.createMessageButton(`update-viewport-${user.discordId}-${camera.name}`)
-            .onExecute(this.handleViewportUpdate.bind(this))
-            .build(btn => btn
-                .setStyle(Discord.ButtonStyle.Primary)
-                .setLabel("Update")
-                .setEmoji("🔄")
-            )
+        const getOrCreateViewportButton = (name: string, emoji: string) => {
+            let button = this.bot.interactions.getComponent(
+                `${name}-viewport-${user.discordId}-${camera!.name}`
+            ) as InteractiveComponent<Discord.ButtonBuilder>;
 
-        let row = new Discord.ActionRowBuilder<Discord.ButtonBuilder>()
-            .addComponents(button.builder)
+            if(!button) {
+                button = this.createMessageButton(`${name}-viewport-${user.discordId}-${camera!.name}`)
+                    .onExecute(async (int, user) => {
+                        await this.handleViewportButton(int, user, name);
+                    })
+                    .build(btn => btn
+                        .setStyle(Discord.ButtonStyle.Primary)
+                        .setEmoji(emoji)
+                    )
+            }
+            return button;
+        }
+
+        let buttonUpdate = getOrCreateViewportButton("update", "🔄");
+
+        let buttonLeft = getOrCreateViewportButton("left", "⬅️");
+        let buttonRight = getOrCreateViewportButton("right", "➡️");
+
+        let buttonForward = getOrCreateViewportButton("forward", "⬆");
+        let buttonBackward = getOrCreateViewportButton("backward", "⬇️");
+
+        let buttonTurnLeft = getOrCreateViewportButton("turnleft", "↖️");
+        let buttonTurnRight = getOrCreateViewportButton("turnright", "↗️");
+
+        let buttonUp = getOrCreateViewportButton("up", "⬆");
+        let buttonDown = getOrCreateViewportButton("down", "⬇️");
+
+        let row1 = new Discord.ActionRowBuilder<Discord.ButtonBuilder>()
+            .addComponents(buttonTurnLeft.builder, buttonForward.builder, buttonTurnRight.builder);
+
+        let row2 = new Discord.ActionRowBuilder<Discord.ButtonBuilder>()
+            .addComponents(buttonLeft.builder, buttonUpdate.builder, buttonRight.builder);
+
+        let row3 = new Discord.ActionRowBuilder<Discord.ButtonBuilder>()
+            .addComponents(buttonUp.builder, buttonBackward.builder, buttonDown.builder);
 
         await interaction.editReply({
             files: [
                 { name: "render.png", attachment: img.toBuffer("image/png") }
             ],
-            components: [row]
+            components: [row1, row2, row3]
         });
     }
 
-    public async handleViewportUpdate(interaction: Discord.ButtonInteraction, user: User) {
+    public async handleViewportButton(interaction: Discord.ButtonInteraction, user: User, button: string) {
         let id = interaction.customId.split("-")[2];
         let cameraName = interaction.customId.split("-")[3];
 
@@ -573,6 +741,73 @@ export default class OBJRender extends Module{
 
         if(!(camera instanceof Camera)) {
             throw new SynergyUserError("Target viewport object is not a camera.");
+        }
+
+        switch (button) {
+            case "left": {
+                camera.Move({
+                    x: -0.1,
+                    y: 0,
+                    z: 0
+                });
+                break;
+            }
+            case "right": {
+                camera.Move({
+                    x: 0.1,
+                    y: 0,
+                    z: 0
+                });
+                break;
+            }
+            case "forward": {
+                camera.Move({
+                    x: 0,
+                    y: 0,
+                    z: 0.1
+                });
+                break;
+            }
+            case "backward": {
+                camera.Move({
+                    x: 0,
+                    y: 0,
+                    z: -0.1
+                });
+                break;
+            }
+            case "up": {
+                camera.Move({
+                    x: 0,
+                    y: 0.1,
+                    z: 0
+                });
+                break;
+            }
+            case "down": {
+                camera.Move({
+                    x: 0,
+                    y: -0.1,
+                    z: 0
+                });
+                break;
+            }
+            case "turnleft": {
+                camera.Rotate({
+                    x: 0,
+                    y: 0.1,
+                    z: 0
+                });
+                break;
+            }
+            case "turnright": {
+                camera.Rotate({
+                    x: 0,
+                    y: -0.1,
+                    z: 0
+                });
+                break;
+            }
         }
 
         let img = await camera.Render();

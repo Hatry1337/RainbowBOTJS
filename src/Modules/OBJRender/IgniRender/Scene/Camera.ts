@@ -12,7 +12,7 @@ export default class Camera extends SceneObject{
     public aspectRatio;
     public renderStyle: RenderStyle = "flat";
     public projection: RenderProjection = "perspective";
-    public FOV: number = 40;
+    public FOV: number = 90;
     public nearClipPlane: number = 0.1;
     public farClipPlane: number = 100;
 
@@ -23,7 +23,6 @@ export default class Camera extends SceneObject{
             Height: 300
         }
         this.aspectRatio = this.renderResolution.Height / this.renderResolution.Width;
-        
     }
 
     public Draw(): Path[] {
@@ -111,27 +110,43 @@ export default class Camera extends SceneObject{
 
     public worldToCameraSpace(point: vec3) {
         let out = v3copy(point);
+        out = v3rotate(out, this.rotation);
         out = v3sum(out, this.position);
-        out = v3rotate(point, this.rotation);
 
         return out;
     }
 
     public Project(point: vec3): vec2 {
         if(this.projection === "perspective"){
-            point = v3normalize(point);
+            //point = v3normalize(point);
 
             let s = 1 / Math.tan(this.FOV / 2 * Math.PI / 180);
             let d = this.farClipPlane - this.nearClipPlane;
             let fn1 = this.farClipPlane / d;
             let fn2 = this.farClipPlane * this.nearClipPlane / d;
 
+            /*
             let mat = [
                 [s, 0, 0,     0], 
                 [0, s, 0,     0],
                 [0, 0, -fn1, -1],
                 [0, 0, -fn2,  0]
             ];
+            */
+
+            let top, bottom, left, right;
+
+            top = this.nearClipPlane * Math.tan((this.FOV * 0.0174533)/2);
+            bottom = -top;
+            right = top * this.aspectRatio;
+            left = -right;
+
+            let mat = [
+                [2*this.nearClipPlane/(right-left), 0, 0, -this.nearClipPlane*(right+left)/(right-left)],
+                [0, 2*this.nearClipPlane/(top-bottom), 0, -this.nearClipPlane*(top+bottom)/(top-bottom)],
+                [0, 0, -(this.farClipPlane+this.nearClipPlane)/(this.farClipPlane-this.nearClipPlane), 2*this.farClipPlane*this.nearClipPlane/(this.nearClipPlane-this.farClipPlane)],
+                [0, 0, -1, 0]
+            ]
             
             let res = matrix4MultPoint(mat, point);
 
@@ -215,7 +230,11 @@ export default class Camera extends SceneObject{
                         ctx.beginPath();
                         
                         if(this.renderStyle === "flat"){
-                            let color = Math.floor(getNormalColor(p.normal));
+                            let color = Math.floor(getNormalColor(p.normal, {
+                                x: -0.5,
+                                y: 0.75,
+                                z: -1
+                            }));
                             ctx.fillStyle = `rgb(${color},${color},${color})`;
                         }
 

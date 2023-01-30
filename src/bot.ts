@@ -12,7 +12,7 @@ import OBJRender from './Modules/OBJRender/OBJRender';
 import OsuInfo from './Modules/OsuInfo/OsuInfo';
 import TicTacToe from './Modules/TicTacToe/TicTacToe';
 import Clear from './Modules/Clear/Clear';
-import RBFetch from './Modules/RBFetch/RBFetch';
+import BotFetch from './Modules/BotFetch/BotFetch';
 import Servers from './Modules/Servers/Servers';
 import VoiceStats from './Modules/VoiceStats/VoiceStats';
 import MathTools from './Modules/MathTools/MathTools';
@@ -26,7 +26,6 @@ import Economy from './Modules/Economy/Economy';
 import UTS from './Modules/UnifiedTestSuite/UTS';
 import ASCII from './Modules/ASCII/ASCII';
 import CowSay from './Modules/CowSay/CowSay';
-import Hentai from './Modules/Hentai/Hentai';
 import GrpMgr from './Modules/GrpMgr/GrpMgr';
 import VoteMgr from './Modules/VoteMgr/VoteMgr';
 
@@ -54,7 +53,7 @@ const modules: typeof Module[] = [
     Mute,
     OBJRender,
     OsuInfo,
-    RBFetch,
+    BotFetch,
     Servers,
     TicTacToe,
     VoiceStats,
@@ -69,7 +68,6 @@ const modules: typeof Module[] = [
     UTS,
     ASCII,
     CowSay,
-    Hentai,
     GrpMgr,
     VoteMgr,
 ]

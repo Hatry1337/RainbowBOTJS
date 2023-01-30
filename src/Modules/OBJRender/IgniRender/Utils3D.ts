@@ -331,11 +331,7 @@ export function v3rotateZ(vec: vec3, angle: number){
 }
 
 export function v3rotate(vec: vec3, rot: vec3){
-    let out: vec3 = {
-        x: vec.x,
-        y: vec.y,
-        z: vec.z
-    }
+    let out = v3copy(vec);
     if(rot.x !== 0){
         out = v3rotateX(out, rot.x);
     }
@@ -441,13 +437,8 @@ export function convertRange(x: number, n_max: number, n_min: number, o_max: num
     return (((x - o_min) * n_rng) / o_rng) + n_min;
 }
 
-export function getNormalColor(normal: vec3){
-    let v1: vec3 = {
-        x: -0.5,
-        y: 0.75,
-        z: -1
-    }
-    let cf = v3dot(v1, v3normalize(normal));
+export function getNormalColor(normal: vec3, fakeLight: vec3){
+    let cf = v3dot(fakeLight, v3normalize(normal));
     return 255 * ((cf+3)/6);
 }
 
