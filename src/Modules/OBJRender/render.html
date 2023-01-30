@@ -6,16 +6,54 @@
     <title>IgniRenderEngine</title>
 </head>
 <body>
-    <image id="main_view" height="1000" width="1000"></canvas>
-
+    <style>
+        .column {
+            float: left;
+        }
+        .row:after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+        .row {
+           display: flex;
+        }
+        .column {
+            flex: 50%;
+        }
+    </style>
+    <div class="row">
+        <div class="column">
+            <image id="main_view" height="1000" width="1000"></canvas>
+        </div>
+        <div class="column">
+            <div class="row">
+                <input type="number" id="fov_input" placeholder="FOV">
+                <button id="fov_btn" onclick="sock.send(JSON.stringify({ input: { type: 'set_fov', value: parseInt(document.getElementById('fov_input').value) } }))">Set</button>
+            </div>
+            <div class="row">
+                <button id="dlobj_btn" onclick="sock.send(JSON.stringify({ input: { type: 'get_model' } }))">Download Model</button>
+            </div>
+            <div class="row">
+                <button id="dlobjo_btn" onclick="sock.send(JSON.stringify({ input: { type: 'get_model_original' } }))">Download Original Model</button>
+            </div>
+        </div>
+    </div>
+    
     <script>
         let image = document.getElementById("main_view");
         let sock = new WebSocket('ws://localhost:9000');
         sock.onmessage = function (message) {
             let data = JSON.parse(message.data);
-            image.width !== data.width ? image.width = data.width : 0;
-            image.height !== data.height ? image.height = data.height : 0;
-            image.src = data.image_data;
+            if(data.type === "frame"){
+                image.src = data.image_data;
+                image.width !== data.width ? image.width = data.width : 0;
+                image.height !== data.height ? image.height = data.height : 0;
+                return;
+            }else if(data.type === "obj_data"){
+                download_file(data.obj_data, "IgniRender-exported-" + new Date().toISOString() + ".obj");
+                return;
+            }
         };
 
         document.addEventListener('keydown', (event) => {
@@ -34,11 +72,33 @@
             }
         }, false);
 
+
+        function download_file(file, name) {
+            let blob = new Blob([file], {type: 'text/plain'});
+            let url = URL.createObjectURL(blob);
+
+            let hiddenElement = document.createElement('a');
+
+            hiddenElement.href = url;
+            hiddenElement.target = '_blank';
+            hiddenElement.download = name;
+            hiddenElement.click();
+        }
+
         setInterval(() => {
             if(sock.readyState === sock.CLOSED){
                 sock = new WebSocket('ws://localhost:9000');
                 sock.onmessage = function (message) {
-                    image.src = JSON.parse(message.data).image_data;
+                    let data = JSON.parse(message.data);
+                    if(data.type === "frame"){
+                        image.src = data.image_data;
+                        image.width !== data.width ? image.width = data.width : 0;
+                        image.height !== data.height ? image.height = data.height : 0;
+                        return;
+                    }else if(data.type === "obj_data"){
+                        download_file(data.obj_data, "IgniRender-exported-" + new Date().toISOString() + ".obj");
+                        return;
+                    }
                 };
             }
         }, 1000);

@@ -1,40 +1,259 @@
-import IgniRender, { RenderProjection, RenderStyle } from "../IgniRender";
-import { vec3 } from "../Utils3D";
+import { RenderProjection, RenderStyle } from "../IgniRender";
+import { convertRange, Face, getFaceCenter, getFaceNormal, getNormalColor, matrix4MultPoint, Path, Primitive, v2normalize, v3copy, v3distance, v3dot, v3mul, v3normalize, v3rotate, v3sub, v3sum, vec2, vec3 } from "../Utils3D";
 import SceneObject from "./SceneObject";
-import { Canvas } from 'canvas';
+import { Canvas, createCanvas } from 'canvas';
+import { Scene } from "./Scene";
 
 export default class Camera extends SceneObject{
-    public FocalLength: number;
-    public Width: number;
-    public Height: number;
-    public RenderResolution: {
+    public renderResolution: {
         Width: number;
         Height: number;
     }
-    public RenderStyle: RenderStyle = "flat";
-    public Projection: RenderProjection = "perspective";
+    public aspectRatio;
+    public renderStyle: RenderStyle = "flat";
+    public projection: RenderProjection = "perspective";
+    public FOV: number = 90;
+    public nearClipPlane: number = 0.1;
+    public farClipPlane: number = 100;
 
-    constructor(pos: vec3, rot: vec3, renderrer: IgniRender){
-        super(pos, rot, renderrer);
-        this.FocalLength = 1;
-        this.Width = 2;
-        this.Height = 1.5;
-        this.RenderResolution = {
+    constructor(name: string, pos: vec3, rot: vec3){
+        super(name, pos, rot);
+        this.renderResolution = {
             Width: 400,
             Height: 300
+        }
+        this.aspectRatio = this.renderResolution.Height / this.renderResolution.Width;
+    }
+
+    public Draw(): Path[] {
+        /*
+        let cam: PPath[] = [
+            {
+                type: "path",
+                points: [
+                    {
+                        x: this.position.x - this.width / 2,
+                        y: this.position.y + this.height / 2,
+                        z: this.position.z
+                    },
+                    {
+                        x: this.position.x + this.width / 2,
+                        y: this.position.y + this.height / 2,
+                        z: this.position.z
+                    },
+                    {
+                        x: this.position.x + this.width / 2,
+                        y: this.position.y - this.height / 2,
+                        z: this.position.z
+                    },
+                    {
+                        x: this.position.x - this.width / 2,
+                        y: this.position.y - this.height / 2,
+                        z: this.position.z
+                    },
+                    {
+                        x: this.position.x - this.width / 2,
+                        y: this.position.y + this.height / 2,
+                        z: this.position.z
+                    },
+                ]
+            },
+            {
+                type: "path",
+                points: [
+                    {
+                        x: this.position.x - this.width / 2,
+                        y: this.position.y - this.height / 2,
+                        z: this.position.z
+                    },
+                    {
+                        x: this.position.x,
+                        y: this.position.y,
+                        z: this.position.z
+                    },
+                    {
+                        x: this.position.x - this.width / 2,
+                        y: this.position.y + this.height / 2,
+                        z: this.position.z
+                    },
+                ]
+            },
+            {
+                type: "path",
+                points: [
+                    {
+                        x: this.position.x + this.width / 2,
+                        y: this.position.y + this.height / 2,
+                        z: this.position.z
+                    },
+                    {
+                        x: this.position.x,
+                        y: this.position.y,
+                        z: this.position.z
+                    },
+                    {
+                        x: this.position.x + this.width / 2,
+                        y: this.position.y - this.height / 2,
+                        z: this.position.z
+                    },
+                ]
+            }
+        ];
+        /*
+        for(let p of cam){
+            p.points = p.points.map(p => v3normalize(p));
+        }
+        */
+        //return cam;
+        return [];
+    }
+
+    public worldToCameraSpace(point: vec3) {
+        let out = v3copy(point);
+        out = v3rotate(out, this.rotation);
+        out = v3sum(out, this.position);
+
+        return out;
+    }
+
+    public Project(point: vec3): vec2 {
+        if(this.projection === "perspective"){
+            //point = v3normalize(point);
+
+            let s = 1 / Math.tan(this.FOV / 2 * Math.PI / 180);
+            let d = this.farClipPlane - this.nearClipPlane;
+            let fn1 = this.farClipPlane / d;
+            let fn2 = this.farClipPlane * this.nearClipPlane / d;
+
+            /*
+            let mat = [
+                [s, 0, 0,     0], 
+                [0, s, 0,     0],
+                [0, 0, -fn1, -1],
+                [0, 0, -fn2,  0]
+            ];
+            */
+
+            let top, bottom, left, right;
+
+            top = this.nearClipPlane * Math.tan((this.FOV * 0.0174533)/2);
+            bottom = -top;
+            right = top * this.aspectRatio;
+            left = -right;
+
+            let mat = [
+                [2*this.nearClipPlane/(right-left), 0, 0, -this.nearClipPlane*(right+left)/(right-left)],
+                [0, 2*this.nearClipPlane/(top-bottom), 0, -this.nearClipPlane*(top+bottom)/(top-bottom)],
+                [0, 0, -(this.farClipPlane+this.nearClipPlane)/(this.farClipPlane-this.nearClipPlane), 2*this.farClipPlane*this.nearClipPlane/(this.nearClipPlane-this.farClipPlane)],
+                [0, 0, -1, 0]
+            ]
+            
+            let res = matrix4MultPoint(mat, point);
+
+            return res;
+
+        //}else if(this.projection === "orthogonal"){
+
+        }else{
+            return {
+                x: point.x,
+                y: point.y
+            }
         }
     }
 
     public Render(): Canvas {
-        return this.Renderrer.Render(
-            this.RenderResolution.Width, 
-            this.RenderResolution.Height, 
-            this.FocalLength, 
-            this.Position, 
-            this.Rotation, 
-            { x: this.Width, y: this.Height },
-            this.RenderStyle,
-            this.Projection
-        );
+        let canvas = createCanvas(this.renderResolution.Width, this.renderResolution.Height);
+        let ctx = canvas.getContext("2d")!;
+        ctx.fillStyle = "white";
+        ctx.fillRect(0,0, canvas.width, canvas.height);
+        ctx.fillStyle = "black";
+
+        let rend_obj = this.scene.objects.filter(o => o.visible && o.id !== this.id);
+
+        for(let obj of rend_obj){
+            let prims = obj.Draw();
+            
+            /*
+            for(let p of prims){
+                if(p.isFace()){
+                    p.vertices.sort((a, b) => v3distance(a, this.position) - v3distance(b, this.position));
+                }else if(p.isPath()){
+                    p.points.sort((a, b) => v3distance(a, this.position) - v3distance(b, this.position));
+                }
+            }
+            */
+
+            prims.sort((a, b) => {
+                if(a.isFace() && b.isFace()){
+                    return v3distance(a.getCenter(true), this.position) - v3distance(b.getCenter(true), this.position);
+                }else{
+                    return -Infinity;
+                }
+            });
+
+            for(let p of prims){
+                if(p.isPath()){
+                    if(p.color){
+                        ctx.strokeStyle = p.color;
+                    }
+
+                    //let points = p.points.map(p => this.Project(v3sum(v3rotate(p, this.rotation), this.position)));
+                    let points = p.points.map(p => this.Project(this.worldToCameraSpace(p)));
+                    
+                    ctx.beginPath();
+                    ctx.moveTo( convertRange(points[0].x, this.renderResolution.Width, 0, 1, -1), 
+                                convertRange(points[0].y, this.renderResolution.Height, 0, 1, -1));
+                    for(let i = 1; i < points.length; i++){
+                        ctx.lineTo( convertRange(points[i].x, this.renderResolution.Width, 0, 1, -1), 
+                                    convertRange(points[i].y, this.renderResolution.Height, 0, 1, -1));
+                    }
+                    ctx.stroke();
+                    ctx.closePath();
+                    ctx.strokeStyle = "black";
+                }else if(p.isFace()) {
+                    p.center = p.center ? p.center : getFaceCenter(p);
+                    p.normal = p.normal ? p.normal : getFaceNormal(p);
+
+                    let draw_flag = false;
+
+                    if(this.renderStyle === "wireframe"){
+                        draw_flag = true;
+                    }else if(v3dot(p.normal, v3sub(p.center, v3rotate(this.position, v3mul(this.rotation, { x: -1, y: -1, z: -1})))) > 0){
+                        draw_flag = true;
+                    }
+
+                    if(draw_flag){
+                       // let verts_prj = p.vertices.map(p => this.Project(v3sum(v3rotate(p, this.rotation), this.position)));
+                        let verts_prj = p.vertices.map(p => this.Project(this.worldToCameraSpace(p)));
+                       
+                        ctx.beginPath();
+                        
+                        if(this.renderStyle === "flat"){
+                            let color = Math.floor(getNormalColor(p.normal, {
+                                x: -0.5,
+                                y: 0.75,
+                                z: -1
+                            }));
+                            ctx.fillStyle = `rgb(${color},${color},${color})`;
+                        }
+
+                        ctx.moveTo( convertRange(verts_prj[0].x, this.renderResolution.Width, 0, 1, -1), 
+                                    convertRange(verts_prj[0].y, this.renderResolution.Height, 0, 1, -1));
+                        for(let i = 1; i < verts_prj.length; i++){
+                            ctx.lineTo( convertRange(verts_prj[i].x, this.renderResolution.Width, 0, 1, -1), 
+                                        convertRange(verts_prj[i].y, this.renderResolution.Height, 0, 1, -1));
+                        }
+                        if(this.renderStyle === "flat"){
+                            ctx.fill();
+                        }else{
+                            ctx.stroke();
+                        }
+                        ctx.closePath();
+                    }
+                }
+            }
+        }
+        return canvas;
     }
 }
