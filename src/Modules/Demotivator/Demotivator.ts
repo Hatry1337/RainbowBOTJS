@@ -37,32 +37,72 @@ export default class Demotivator extends Module{
         .build(builder => builder
             .setType(3)
         )
-        .onExecute(this.RunShakal.bind(this))
+        .onExecute(this.Run.bind(this))
         .commit()
+
+        this.createSlashCommand(this.Name.toLowerCase(), undefined, this.bot.moduleGlobalLoading ? undefined : this.bot.masterGuildId)
+            .build(builder => builder
+                .setDescription("Create demotivator from text and image.")
+                .addAttachmentOption(opt => opt
+                    .setName("image")
+                    .setDescription("Image to make demotivator from.")
+                    .setRequired(true)
+                )
+                .addStringOption(opt => opt
+                    .setName("primary-text")
+                    .setDescription("Primary text in demotivator.")
+                    .setRequired(true)
+                )
+                .addStringOption(opt => opt
+                    .setName("secondary-text")
+                    .setDescription("Secondary text in demotivator.")
+                    .setRequired(false)
+                )
+                .addBooleanOption(opt => opt
+                    .setName("shakaled")
+                    .setDescription("Use jpeg compression to shakal resulting demotivator.")
+                    .setRequired(false)
+                )
+            )
+            .onExecute(this.Run.bind(this))
+            .commit()
     }
 
-    public async Run(interaction: Discord.ContextMenuCommandInteraction, user: User, shakal: boolean = false){
-        if(!interaction.isMessageContextMenuCommand()){
-            throw new SynergyUserError("This command works only with Message context menu action.");
+    public async Run(interaction: Discord.ContextMenuCommandInteraction | Discord.ChatInputCommandInteraction, user: User){
+        let attachment;
+        if(interaction.isChatInputCommand()) {
+            attachment = interaction.options.getAttachment("image", true);
+        } else if(interaction.isMessageContextMenuCommand()) {
+            attachment = interaction.targetMessage.attachments.first();
+        } else {
+            throw new SynergyUserError("This command works only with Message context menu action or /ascii slash command.");
         }
 
-        let attachment;
-        if(interaction.inCachedGuild()){
-            attachment = interaction.targetMessage.attachments.first();
-        }else{
-            attachment = interaction.targetMessage.attachments.at(0);
-        }
         if(!attachment){
             throw new SynergyUserError("Message must contains the Image.");
         }
-        
-        if(interaction.targetMessage.content.length === 0){
-            throw new SynergyUserError("Message must contains text (1 or 2 lines).");
+
+        let textPrimary: string;
+        let textSecondary: string | undefined;
+        let shakaled: boolean = false;
+
+        if(interaction.isChatInputCommand()) {
+            textPrimary = interaction.options.getString("primary-text", true);
+            textSecondary = interaction.options.getString("secondary-text") ?? undefined;
+            shakaled = interaction.options.getBoolean("shakaled") ?? false;
+        } else if(interaction.isMessageContextMenuCommand()) {
+            if (interaction.targetMessage.content.length === 0) {
+                throw new SynergyUserError("Message must contains text (1 or 2 lines).");
+            }
+            let txt = interaction.targetMessage.content.split("\n");
+            textPrimary = txt[0];
+            textSecondary = txt[1];
+            shakaled = interaction.commandName === "Demotivator Shakaled";
+        } else {
+            throw new SynergyUserError("This command works only with Message context menu action or /ascii slash command.");
         }
 
         await interaction.deferReply();
-
-        let txt = interaction.targetMessage.content.split("\n");
 
         let img;
         try {
@@ -76,16 +116,12 @@ export default class Demotivator extends Module{
             throw error;
         }
 
-        let demot_canv = await Demotivator.drawDemotivator(img, txt[0], txt[1] || undefined);
+        let demot_canv = await Demotivator.drawDemotivator(img, textPrimary, textSecondary || undefined);
         let demot = demot_canv.toBuffer("image/png");
-        if(shakal){
+        if(shakaled){
             demot = await Sharp(demot).blur().jpeg({ quality: 6 }).toBuffer();
         }
         await interaction.editReply({files: [ demot ]});
-    }
-
-    public async RunShakal(interaction: Discord.ContextMenuCommandInteraction, user: User){
-        await this.Run(interaction, user, true);
     }
 
     public static async drawDemotivator(image: Image, bigText: string, smallText?: string){
