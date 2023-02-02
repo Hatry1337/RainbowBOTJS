@@ -38,6 +38,26 @@ export default class ASCII extends Module{
                     .setRequired(false)
                 )
             )
+            .addSubcommand(sub => sub
+                .setName("art")
+                .setDescription("Draw specified image with ASCII characters.")
+
+                .addAttachmentOption(opt => opt
+                    .setName("image")
+                    .setDescription("Image to draw with ASCII characters.")
+                    .setRequired(true)
+                )
+            )
+            .addSubcommand(sub => sub
+                .setName("art_file")
+                .setDescription("Draw specified image with ASCII characters to file.")
+
+                .addAttachmentOption(opt => opt
+                    .setName("image")
+                    .setDescription("Image to draw with ASCII characters.")
+                    .setRequired(true)
+                )
+            )
         )
         .onExecute(this.handleDrawText.bind(this))
         .commit()
@@ -58,6 +78,12 @@ export default class ASCII extends Module{
     public async handleDrawText(int: Discord.ChatInputCommandInteraction, user: User){
         let fonts = await this.getFontsList();
         let subc = int.options.getSubcommand();
+
+        if(subc === "art" || "art_file") {
+            await this.handleDrawPicture(int, user);
+            return;
+        }
+
         if(subc === "fonts"){
             let messages = [];
             let msg = "";
@@ -95,17 +121,16 @@ export default class ASCII extends Module{
         }
     }
 
-    public async handleDrawPicture(interaction: Discord.ContextMenuCommandInteraction, user: User){
-        if(!interaction.isMessageContextMenuCommand()){
-            throw new SynergyUserError("This command works only with Message context menu action.");
+    public async handleDrawPicture(interaction: Discord.ContextMenuCommandInteraction | Discord.ChatInputCommandInteraction, user: User){
+        let attachment;
+        if(interaction.isChatInputCommand()) {
+            attachment = interaction.options.getAttachment("image", true);
+        } else if(interaction.isMessageContextMenuCommand()) {
+            attachment = interaction.targetMessage.attachments.first();
+        } else {
+            throw new SynergyUserError("This command works only with Message context menu action or /ascii slash command.");
         }
 
-        let attachment;
-        if(interaction.inCachedGuild()){
-            attachment = interaction.targetMessage.attachments.first();
-        }else{
-            attachment = interaction.targetMessage.attachments.at(0);
-        }
         if(!attachment){
             throw new SynergyUserError("Message must contains the Image.");
         }
@@ -122,8 +147,15 @@ export default class ASCII extends Module{
         }
         await interaction.deferReply();
 
+        let file_flag = false;
 
-        if(interaction.commandName === "ASCII Art to File"){
+        if(interaction.isChatInputCommand()) {
+            file_flag = interaction.options.getSubcommand() === "art_file";
+        } else if(interaction.isMessageContextMenuCommand()) {
+            file_flag = interaction.commandName === "ASCII Art to File";
+        }
+
+        if(file_flag){
             let result = await this.drawImage(img, 60);
             await interaction.editReply({files: [ { attachment: Buffer.from(result, "utf-8"), name: "artwork.txt" } ]});
             return;
