@@ -17,6 +17,8 @@ export default class TopCTL extends Control {
     }
 
     public async handleTop(interaction: Discord.CommandInteraction, user: User){
+        await interaction.deferReply();
+
         let players = await this.storage.getPlayersData();
         
         let users: User[] = [];
@@ -51,6 +53,6 @@ export default class TopCTL extends Control {
             });
         }
 
-        await interaction.reply({ embeds: [emb] })
+        await interaction.editReply({ embeds: [emb] });
     }
 }
