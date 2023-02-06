@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+  rainbowbot:
+    build:
+      context: .
+    environment:
+      TOKEN: ${TOKEN}
+      DBURI: ${DBURI}
+      NODE_ENV: ${NODE_ENV}
+      MASTER_GUILD: ${MASTER_GUILD}
+      TOPGG_TOKEN: ${TOPGG_TOKEN}
+      OSU_API_KEY: ${OSU_API_KEY}
