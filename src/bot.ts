@@ -1,4 +1,4 @@
-//import 'dotenv/config';
+import 'dotenv/config';
 import { Module, ModuleUUIDPair, Synergy } from "synergy3";
 import Discord from "discord.js";
 import fs from "fs";
@@ -38,6 +38,8 @@ declare global {
             NODE_ENV: 'development' | 'production';
             TOPGG_TOKEN: string;
             OSU_API_KEY: string;
+            DATA_DIR?: string;
+            LOGS_DIR?: string;
         }
     }
 }
@@ -72,17 +74,27 @@ const modules: typeof Module[] = [
     VoteMgr,
 ]
 
+const dataDir = process.env.DATA_DIR ?? './data';
+const logsDir = process.env.LOGS_DIR ?? './logs';
+
+if (!fs.existsSync(dataDir)){
+    fs.mkdirSync(dataDir, { recursive: true });
+}
+if (!fs.existsSync(logsDir)){
+    fs.mkdirSync(logsDir, { recursive: true });
+}
+
 let uuids: { [key: string]: string };
 
 /* Load UUIDs from uuids.json, or generate new UUIDs if file doesn't exist. */
-if(fs.existsSync("./uuids.json")){
-    uuids = JSON.parse(fs.readFileSync("./uuids.json").toString("utf-8"));
+if(fs.existsSync(dataDir + "/uuids.json")){
+    uuids = JSON.parse(fs.readFileSync(dataDir + "/uuids.json").toString("utf-8"));
 }else{
     uuids = {};
     for(let m of modules){
         uuids[m.name] = crypto.randomUUID();
     }
-    fs.writeFileSync("./uuids.json", JSON.stringify(uuids, undefined, 4));
+    fs.writeFileSync(dataDir + "/uuids.json", JSON.stringify(uuids, undefined, 4));
 }
 
 const modulePairs: ModuleUUIDPair[] = modules.map(m => ({ Module: m, UUID: uuids[m.name] }));
@@ -93,6 +105,7 @@ const bot = new Synergy({
     masterGuildId: process.env.MASTER_GUILD,
     moduleGlobalLoading: process.env.NODE_ENV === "production",
     dataSyncDelay: 60,
+    logsDir,
     userDefaultEconomy: {
         points: 500,
         lvl: 1,
