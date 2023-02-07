@@ -27,4 +27,4 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           push: true
-          tags: Hatry1337/rainbowbot:latest
+          tags: hatry1337/rainbowbot:latest
