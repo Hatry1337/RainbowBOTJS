@@ -1,4 +1,4 @@
-import 'dotenv/config';
+//import 'dotenv/config';
 import { Module, ModuleUUIDPair, Synergy } from "synergy3";
 import Discord from "discord.js";
 import fs from "fs";
