@@ -1,5 +1,5 @@
 import Discord from "discord.js";
-import { Access, AccessTarget, GuildOnlyError, Module, Synergy } from "synergy3";
+import { Access, AccessTarget, GuildOnlyError, Module, Synergy, SynergyUserError } from "synergy3";
 
 export default class Clear extends Module{
     public Name:        string = "Clear";
@@ -34,6 +34,11 @@ export default class Clear extends Module{
         }
 
         let amount = interaction.options.getInteger("count", true);
+
+        if(interaction.channel?.type === Discord.ChannelType.GuildStageVoice) {
+            throw new SynergyUserError("This command is not available in Stage channels.");
+        }
+
         let messages = await interaction.channel?.messages.fetch({ limit: amount });
         messages ? await interaction.channel?.bulkDelete(messages) : 0;
         
