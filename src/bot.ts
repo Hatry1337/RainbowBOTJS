@@ -28,6 +28,8 @@ import ASCII from './Modules/ASCII/ASCII';
 import CowSay from './Modules/CowSay/CowSay';
 import GrpMgr from './Modules/GrpMgr/GrpMgr';
 import VoteMgr from './Modules/VoteMgr/VoteMgr';
+import ClassChecker from "./Modules/ClassesChecker/ClassChecker";
+import Admin from "./Modules/Admin/Admin";
 
 declare global {
     namespace NodeJS {
@@ -40,6 +42,7 @@ declare global {
             OSU_API_KEY: string;
             DATA_DIR?: string;
             LOGS_DIR?: string;
+            ADMIN_ID?: string;
         }
     }
 }
@@ -72,6 +75,8 @@ const modules: typeof Module[] = [
     CowSay,
     GrpMgr,
     VoteMgr,
+    ClassChecker,
+    Admin
 ]
 
 const dataDir = process.env.DATA_DIR ?? './data';

@@ -4,7 +4,13 @@ type NonFunctionPropertyNames<T> = { [K in keyof T]: T[K] extends Function ? nev
 export type ExcludeMethods<T> = Pick<T, NonFunctionPropertyNames<T>>;
 
 export enum CEmojis{
-    PointCoin="<:pointcoin:979098338462941254>"
+    PointCoin       ="<:pointcoin:979098338462941254>",
+
+    PinLegendary    ="<:rbotpinlegendary:1076815151770116116>",
+    PinSuperRare    ="<:rbotpinsuperrare:1076815157273055282>",
+    PinRare         ="<:rbotpinrare:1076815154454478900>",
+    PinUncommon     ="<:rbotpinuncommon:1076815159340826644>",
+    PinCommon       ="<:rbotpincommon:1076815149677166602>",
 }
 
 export default class RainbowBOTUtils{
