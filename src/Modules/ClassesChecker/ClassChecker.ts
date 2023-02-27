@@ -1,5 +1,6 @@
 import { Access, AccessTarget, Module } from "synergy3";
 import UTS from "../UnifiedTestSuite/UTS";
+import { ChannelType } from "discord-api-types/v10";
 
 export default class ClassChecker extends Module{
     public Name:        string = "ClassChecker";
@@ -68,9 +69,10 @@ export default class ClassChecker extends Module{
         try {
             let channel = await this.bot.client.channels.fetch(channelId);
 
-            if(!channel || !channel.isTextBased()) {
+            if(!channel || channel.type !== ChannelType.GuildText) {
                 return;
             }
+
             await channel.send({ content: await this.bot.config.get("bot", "class_checker_message") });
         } catch (err) {
             this.Logger.Warn("Error in checkTime interval:", err);
