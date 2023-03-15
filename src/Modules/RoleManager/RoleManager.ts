@@ -1,4 +1,14 @@
-import { Access, AccessTarget, GlobalLogger, GuildOnlyError, Module, NoConfigEntryError, Synergy, Utils } from "synergy3";
+import {
+    Access,
+    AccessTarget, ArrayConfigEntry, EphemeralArrayConfigEntry,
+    EphemeralConfigEntry,
+    GlobalLogger,
+    GuildOnlyError,
+    Module,
+    NoConfigEntryError,
+    Synergy,
+    Utils
+} from "synergy3";
 import Discord from "discord.js";
 import _ from "lodash";
 
@@ -9,6 +19,9 @@ export default class RoleManager extends Module{
     public Author:      string = "Thomasss#9258";
 
     public Access: AccessTarget[] = [ Access.PLAYER() ]
+
+    private rolesGetConf!: ArrayConfigEntry<"role">;
+    private autorolesConf!: ArrayConfigEntry<"role">;
 
     constructor(bot: Synergy, UUID: string) {
         super(bot, UUID);
@@ -26,18 +39,57 @@ export default class RoleManager extends Module{
         )
         .onExecute(this.Run.bind(this))
         .commit()
+
+        this.bot.config.addConfigEntry("guild", this.Name,
+            new EphemeralArrayConfigEntry(
+                "role_get_roles",
+                "Roles that users can obtain through /role command",
+                "role",
+                false
+            )
+        );
+        this.bot.config.addConfigEntry("guild", this.Name,
+            new EphemeralArrayConfigEntry(
+                "autoroles",
+                "Roles that automatically assigned to users when they join your server",
+                "role",
+                false
+            )
+        );
     }
 
     public async Init(){
-        await this.bot.config.setIfNotExist("guild", "role_get_roles", {}, "array<role>");
-        await this.bot.config.setIfNotExist("guild", "autoroles", {}, "array<role>");
+        let rolesGetConf = this.bot.config.getConfigEntry("guild", "role_get_roles");
+        if(!rolesGetConf){
+            throw new Error(`Can't find "role_get_roles" config entry on guild namespace.`);
+        }
+        if(!rolesGetConf.entry.isArray() || !rolesGetConf.entry.isRole()) {
+            throw new Error(
+                `Config entry "${rolesGetConf.entry.name}" is wrong type. ` +
+                `Needed: array:true, type:role. ` +
+                `Has array:${rolesGetConf.entry.isArray()}, type:${rolesGetConf.entry.type}.`
+            );
+        }
+        this.rolesGetConf = rolesGetConf.entry;
+
+        let autorolesConf = this.bot.config.getConfigEntry("guild", "autoroles");
+        if(!autorolesConf){
+            throw new Error(`Can't find "autoroles" config entry on guild namespace.`);
+        }
+        if(!autorolesConf.entry.isArray() || !autorolesConf.entry.isRole()) {
+            throw new Error(
+                `Config entry "${autorolesConf.entry.name}" is wrong type. ` +
+                `Needed: array:true, type:role. ` +
+                `Has array:${autorolesConf.entry.isArray()}, type:${autorolesConf.entry.type}.`
+            );
+        }
+        this.autorolesConf = autorolesConf.entry;
 
         this.bot.client.on("guildMemberAdd", async (member) => {
-            let autoroles = await this.bot.config.get("guild", "autoroles");
-            let roles = autoroles[member.guild.id];
+            let roles = this.autorolesConf.getValues(member.guild.id);
             if(!roles || roles.length === 0) return;
             
-            await member.roles.add(roles);
+            await member.roles.add(roles.map(r => r.id));
             GlobalLogger.userlog.info(`Added autoroles to ${member}(${member.user.tag}) on ${member.guild}`);
         });
     }
@@ -49,9 +101,9 @@ export default class RoleManager extends Module{
 
         let action = interaction.options.getSubcommand(true);
 
-        let role_ids = await this.bot.config.get("guild", "role_get_roles") as { [key: string]: string[] };
-        if(!role_ids || !role_ids[interaction.guildId]){
-            throw new NoConfigEntryError("getrole_rolelist", "/config guild set field:getrole_rolelist value_string:roleid1,roleid2,roleid3...");
+        let roleIds = this.rolesGetConf.getValues(interaction.guildId);
+        if(roleIds.length === 0){
+            throw new NoConfigEntryError("role_get_roles", "/config guild set field:getrole_rolelist value_string:roleid1,roleid2,roleid3...");
         }
 
         let raw_ids = role_ids[interaction.guildId];

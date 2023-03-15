@@ -1,5 +1,17 @@
 import Discord from "discord.js";
-import { Access, AccessTarget, Colors, GuildOnlyError, Module, NoConfigEntryError, Synergy, SynergyUserError, User, Utils } from "synergy3";
+import {
+    Access,
+    AccessTarget,
+    Colors,
+    EphemeralConfigEntry,
+    GuildOnlyError,
+    Module,
+    NoConfigEntryError,
+    Synergy,
+    SynergyUserError,
+    User,
+    Utils
+} from "synergy3";
 
 export interface IMutedUser{
     user_id: number;
@@ -94,11 +106,15 @@ export default class Mute extends Module{
             }
             this.Logger.Info(`[Checker]`, `Checked ${muted_users.length} Muted Users`);
         }, 120 * 1000);
-    }
-    
-    public async Init() {
-        await this.bot.config.setIfNotExist("guild", "moderator_role", {}, "role");
-        await this.bot.config.setIfNotExist("guild", "muted_role", {}, "role");
+
+        this.bot.config.addConfigEntry("guild", this.Name,
+            new EphemeralConfigEntry(
+                "muted_role",
+                "Role assigned to muted users",
+                "role",
+                false
+            )
+        );
     }
 
     public async UnLoad(){
@@ -207,21 +223,45 @@ export default class Mute extends Module{
             throw new GuildOnlyError();
         }
 
-        let mod_role_id = (await this.bot.config.get("guild", "moderator_role"))[interaction.guild.id] as string | undefined;
-        let muted_role_id = (await this.bot.config.get("guild", "muted_role"))[interaction.guild.id] as string | undefined;
-
-        if(!mod_role_id){
-            throw new NoConfigEntryError("Moderator Role", "/config guild set field:moderator_role value_role:@Role");
+        let modRoleConf = this.bot.config.getConfigEntry("guild", "moderator_role");
+        if(!modRoleConf){
+            throw new Error(`Can't find "moderator_role" config entry on guild namespace.`);
         }
-        if(!muted_role_id){
-            throw new NoConfigEntryError("Muted Role", "/config guild set field:muted_role value_role:@Role")
+        if(!modRoleConf.entry.isNotArray() || !modRoleConf.entry.isRole()) {
+            throw new Error(
+                `Config entry "${modRoleConf.entry.name}" is wrong type. ` +
+                `Needed: array:false, type:role. ` +
+                `Has array:${modRoleConf.entry.isArray()}, type:${modRoleConf.entry.type}.`
+            );
+        }
+
+        let mutedRoleConf = this.bot.config.getConfigEntry("guild", "muted_role");
+        if(!mutedRoleConf){
+            throw new Error(`Can't find "muted_role" config entry on guild namespace.`);
+        }
+        if(!mutedRoleConf.entry.isNotArray() || !mutedRoleConf.entry.isRole()) {
+            throw new Error(
+                `Config entry "${mutedRoleConf.entry.name}" is wrong type. ` +
+                `Needed: array:false, type:role. ` +
+                `Has array:${mutedRoleConf.entry.isArray()}, type:${mutedRoleConf.entry.type}.`
+            );
+        }
+
+        let modRole = modRoleConf.entry.getValue(interaction.guild.id);
+        if(!modRole) {
+            throw new NoConfigEntryError("Moderator Role", "/config set role namespace:guild field:moderator_role value:@Role");
+        }
+
+        let mutedRole = mutedRoleConf.entry.getValue(interaction.guild.id);
+        if(!mutedRole) {
+            throw new NoConfigEntryError("Muted Role", "/config set role namespace:guild field:muted_role value:@Role");
         }
 
         let target_user    = interaction.options.getUser("target", true);
         let reason         = interaction.options.getString("reason", true);
         
         if(interaction.commandName === "mute"){
-            await this.mute(interaction, user, target_user, reason, mod_role_id, muted_role_id);
+            await this.mute(interaction, user, target_user, reason, modRole.id, mutedRole.id);
         }else if(interaction.commandName === "unmute"){
             await this.unmute(interaction, user, reason, target_user);
         }

@@ -165,7 +165,7 @@ export default class VoiceStats extends Module{
         let updd = 0;
 
         let container = await this.bot.modules.data.getContainer(this.UUID);
-        let stats: DataToSave[] = container.get("voice_stats") || [];
+        let stats: DataToSave[] = container.get("voice_stats") as DataToSave[] || [];
 
         let d: DataToSave | undefined;
         while(d = this.DataToSave.pop()){
@@ -209,7 +209,7 @@ export default class VoiceStats extends Module{
         }
 
         let container = await this.bot.modules.data.getContainer(this.UUID);
-        let stats: DataToSave[] = container.get("voice_stats") || [];
+        let stats: DataToSave[] = container.get("voice_stats") as DataToSave[] || [];
 
         let membs: DataToSave[];
         if(!trg_channel){
