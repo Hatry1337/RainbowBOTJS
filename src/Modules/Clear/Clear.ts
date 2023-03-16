@@ -35,10 +35,6 @@ export default class Clear extends Module{
 
         let amount = interaction.options.getInteger("count", true);
 
-        if(interaction.channel?.type === Discord.ChannelType.GuildStageVoice) {
-            throw new SynergyUserError("This command is not available in Stage channels.");
-        }
-
         let messages = await interaction.channel?.messages.fetch({ limit: amount });
         messages ? await interaction.channel?.bulkDelete(messages) : 0;
         

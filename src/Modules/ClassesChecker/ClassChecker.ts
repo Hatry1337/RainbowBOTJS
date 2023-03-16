@@ -1,6 +1,7 @@
-import { Access, AccessTarget, Module } from "synergy3";
+import { Access, AccessTarget, Module, Synergy } from "synergy3";
 import UTS from "../UnifiedTestSuite/UTS";
 import { ChannelType } from "discord-api-types/v10";
+import { CommonConfigEntry } from "../../../../Synergy3";
 
 export default class ClassChecker extends Module{
     public Name:        string = "ClassChecker";
@@ -13,11 +14,33 @@ export default class ClassChecker extends Module{
     private _checkInterval!: NodeJS.Timer;
     private dayLastSent: number = 0;
 
-    public async Init() {
-        await this.bot.config.setIfNotExist("bot", "class_checker_enabled", false, "bool");
-        await this.bot.config.setIfNotExist("bot", "class_checker_channel", {}, "channel");
-        await this.bot.config.setIfNotExist("bot", "class_checker_message", {}, "string");
+    private configEnabled: CommonConfigEntry<"bool">;
+    private configChannel: CommonConfigEntry<"channel">;
+    private configMessage: CommonConfigEntry<"string">;
 
+    constructor(bot: Synergy, UUID: string) {
+        super(bot, UUID);
+        this.configEnabled = this.bot.config.defaultConfigEntry("bot", this.Name, new CommonConfigEntry(
+            "class_checker_enabled",
+            "State of classes checker",
+            "bool",
+            false
+        ));
+        this.configChannel = this.bot.config.defaultConfigEntry("bot", this.Name, new CommonConfigEntry(
+            "class_checker_channel",
+            "Channel to send checker messages to",
+            "channel",
+            false
+        ));
+        this.configMessage = this.bot.config.defaultConfigEntry("bot", this.Name, new CommonConfigEntry(
+            "class_checker_message",
+            "Message to send in checker channel",
+            "string",
+            false
+        ));
+    }
+
+    public async Init() {
         this._checkInterval = setInterval(this.checkTime.bind(this), 5 * 60 * 1000);
 
         UTS.addTestPoint(
@@ -30,13 +53,13 @@ export default class ClassChecker extends Module{
     }
 
     private async checkTime() {
-        if(!(await this.bot.config.get("bot", "class_checker_enabled"))) {
+        if(!this.configEnabled.getValue()) {
             return;
         }
 
-        let channelId = await this.bot.config.get("bot", "class_checker_channel");
+        let channel = this.configChannel.getValue();
 
-        if(!channelId) {
+        if(!channel) {
             return;
         }
 
@@ -55,15 +78,16 @@ export default class ClassChecker extends Module{
             return;
         }
 
-
+        await this.sendNotification(channel.id);
     }
 
     private async sendNotification(channelId?: string) {
         if(!channelId) {
-            channelId = await this.bot.config.get("bot", "class_checker_channel");
-            if(!channelId) {
+            let channel = this.configChannel.getValue();
+            if(!channel) {
                 return;
             }
+            channelId = channel.id;
         }
 
         try {
@@ -73,7 +97,13 @@ export default class ClassChecker extends Module{
                 return;
             }
 
-            await channel.send({ content: await this.bot.config.get("bot", "class_checker_message") });
+            let message = this.configMessage.getValue();
+
+            if(!message || message.length === 0) {
+                return;
+            }
+
+            await channel.send({ content: message });
         } catch (err) {
             this.Logger.Warn("Error in checkTime interval:", err);
         }

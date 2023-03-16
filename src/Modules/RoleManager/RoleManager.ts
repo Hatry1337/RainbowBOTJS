@@ -20,8 +20,8 @@ export default class RoleManager extends Module{
 
     public Access: AccessTarget[] = [ Access.PLAYER() ]
 
-    private rolesGetConf!: ArrayConfigEntry<"role">;
-    private autorolesConf!: ArrayConfigEntry<"role">;
+    private rolesGetConf!: EphemeralArrayConfigEntry<"role">;
+    private autorolesConf!: EphemeralArrayConfigEntry<"role">
 
     constructor(bot: Synergy, UUID: string) {
         super(bot, UUID);
@@ -40,7 +40,7 @@ export default class RoleManager extends Module{
         .onExecute(this.Run.bind(this))
         .commit()
 
-        this.bot.config.addConfigEntry("guild", this.Name,
+        this.rolesGetConf = this.bot.config.defaultConfigEntry("guild", this.Name,
             new EphemeralArrayConfigEntry(
                 "role_get_roles",
                 "Roles that users can obtain through /role command",
@@ -48,7 +48,7 @@ export default class RoleManager extends Module{
                 false
             )
         );
-        this.bot.config.addConfigEntry("guild", this.Name,
+        this.autorolesConf = this.bot.config.defaultConfigEntry("guild", this.Name,
             new EphemeralArrayConfigEntry(
                 "autoroles",
                 "Roles that automatically assigned to users when they join your server",
@@ -59,32 +59,6 @@ export default class RoleManager extends Module{
     }
 
     public async Init(){
-        let rolesGetConf = this.bot.config.getConfigEntry("guild", "role_get_roles");
-        if(!rolesGetConf){
-            throw new Error(`Can't find "role_get_roles" config entry on guild namespace.`);
-        }
-        if(!rolesGetConf.entry.isArray() || !rolesGetConf.entry.isRole()) {
-            throw new Error(
-                `Config entry "${rolesGetConf.entry.name}" is wrong type. ` +
-                `Needed: array:true, type:role. ` +
-                `Has array:${rolesGetConf.entry.isArray()}, type:${rolesGetConf.entry.type}.`
-            );
-        }
-        this.rolesGetConf = rolesGetConf.entry;
-
-        let autorolesConf = this.bot.config.getConfigEntry("guild", "autoroles");
-        if(!autorolesConf){
-            throw new Error(`Can't find "autoroles" config entry on guild namespace.`);
-        }
-        if(!autorolesConf.entry.isArray() || !autorolesConf.entry.isRole()) {
-            throw new Error(
-                `Config entry "${autorolesConf.entry.name}" is wrong type. ` +
-                `Needed: array:true, type:role. ` +
-                `Has array:${autorolesConf.entry.isArray()}, type:${autorolesConf.entry.type}.`
-            );
-        }
-        this.autorolesConf = autorolesConf.entry;
-
         this.bot.client.on("guildMemberAdd", async (member) => {
             let roles = this.autorolesConf.getValues(member.guild.id);
             if(!roles || roles.length === 0) return;
@@ -95,7 +69,7 @@ export default class RoleManager extends Module{
     }
 
     public async Run(interaction: Discord.ChatInputCommandInteraction){
-        if(!interaction.inGuild()){
+        if(!interaction.inGuild() || !interaction.guild){
             throw new GuildOnlyError();
         }
 
@@ -106,9 +80,14 @@ export default class RoleManager extends Module{
             throw new NoConfigEntryError("role_get_roles", "/config guild set field:getrole_rolelist value_string:roleid1,roleid2,roleid3...");
         }
 
-        let raw_ids = role_ids[interaction.guildId];
-        let mpd_r = await raw_ids.map(r => interaction.guild!.roles.resolve(r));
-        let roles = _.compact(mpd_r);
+        let configRoles = this.rolesGetConf.getValues(interaction.guild.id);
+        let roles: Discord.Role[] = [];
+        for(let cr of configRoles) {
+            let role = interaction.guild.roles.resolve(cr.id);
+            if(role){
+                roles.push(role);
+            }
+        }
 
         let menu = this.bot.interactions.createSelectMenu(`${interaction.id}-getrole-selector`, [ Access.USER(interaction.user.id) ], this);
         menu.builder.addOptions(roles.map(r => ({ label: r.name, value: r.id })));
