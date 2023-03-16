@@ -1,5 +1,17 @@
 import Discord from "discord.js";
-import { Access, AccessTarget, Colors, GuildOnlyError, Module, NoConfigEntryError, Synergy, SynergyUserError, User, Utils } from "synergy3";
+import {
+    Access,
+    AccessTarget,
+    Colors,
+    EphemeralConfigEntry,
+    GuildOnlyError,
+    Module,
+    NoConfigEntryError,
+    Synergy,
+    SynergyUserError,
+    User,
+    Utils
+} from "synergy3";
 
 export interface IMutedUser{
     user_id: number;
@@ -27,7 +39,10 @@ export default class Mute extends Module{
 
     public Access: AccessTarget[] = [ Access.SERVER_MOD(), Access.SERVER_ADMIN() ];
 
-    private CheckerTimer: NodeJS.Timeout;
+    private readonly CheckerTimer: NodeJS.Timeout;
+
+    private configMutedRole: EphemeralConfigEntry<"role">;
+    private configModRole: EphemeralConfigEntry<"role">;
 
     constructor(bot: Synergy, UUID: string) {
         super(bot, UUID);
@@ -94,11 +109,19 @@ export default class Mute extends Module{
             }
             this.Logger.Info(`[Checker]`, `Checked ${muted_users.length} Muted Users`);
         }, 120 * 1000);
-    }
-    
-    public async Init() {
-        await this.bot.config.setIfNotExist("guild", "moderator_role", {}, "role");
-        await this.bot.config.setIfNotExist("guild", "muted_role", {}, "role");
+
+        this.configMutedRole = this.bot.config.defaultConfigEntry("guild", this.Name, new EphemeralConfigEntry(
+            "muted_role",
+            "Role assigned to muted users",
+            "role",
+            false
+        ));
+        this.configModRole = this.bot.config.defaultConfigEntry("guild", this.Name, new EphemeralConfigEntry(
+            "moderator_role",
+            "Role for Guild moderators used by moderation commands.",
+            "role",
+            false
+        ));
     }
 
     public async UnLoad(){
@@ -107,8 +130,8 @@ export default class Mute extends Module{
         clearInterval(this.CheckerTimer);
     }
     
-    private async mute(interaction: Discord.ChatInputCommandInteraction, user: User, target_user: Discord.User, reason: string, mod_role_id: string, muted_role_id: string){
-        if(!(interaction.inGuild() || interaction.inCachedGuild())  || !interaction.guild || !interaction.member){
+    private async mute(interaction: Discord.ChatInputCommandInteraction<"cached" | "raw">, user: User, target_user: Discord.User, reason: string, mod_role_id: string, muted_role_id: string){
+        if(!interaction.guild){
             throw new GuildOnlyError();
         }
 
@@ -174,8 +197,8 @@ export default class Mute extends Module{
         }
     }
 
-    private async unmute(interaction: Discord.ChatInputCommandInteraction, user: User, reason: string, target_user: Discord.User){
-        if(!(interaction.inGuild() || interaction.inCachedGuild())  || !interaction.guild || !interaction.member){
+    private async unmute(interaction: Discord.ChatInputCommandInteraction<"cached" | "raw">, user: User, reason: string, target_user: Discord.User){
+        if(!interaction.guild){
             throw new GuildOnlyError();
         }
 
@@ -207,21 +230,21 @@ export default class Mute extends Module{
             throw new GuildOnlyError();
         }
 
-        let mod_role_id = (await this.bot.config.get("guild", "moderator_role"))[interaction.guild.id] as string | undefined;
-        let muted_role_id = (await this.bot.config.get("guild", "muted_role"))[interaction.guild.id] as string | undefined;
-
-        if(!mod_role_id){
-            throw new NoConfigEntryError("Moderator Role", "/config guild set field:moderator_role value_role:@Role");
+        let modRole = this.configModRole.getValue(interaction.guild.id);
+        if(!modRole) {
+            throw new NoConfigEntryError("Moderator Role", "/config set role namespace:guild field:moderator_role value:@Role");
         }
-        if(!muted_role_id){
-            throw new NoConfigEntryError("Muted Role", "/config guild set field:muted_role value_role:@Role")
+
+        let mutedRole = this.configMutedRole.getValue(interaction.guild.id);
+        if(!mutedRole) {
+            throw new NoConfigEntryError("Muted Role", "/config set role namespace:guild field:muted_role value:@Role");
         }
 
         let target_user    = interaction.options.getUser("target", true);
         let reason         = interaction.options.getString("reason", true);
         
         if(interaction.commandName === "mute"){
-            await this.mute(interaction, user, target_user, reason, mod_role_id, muted_role_id);
+            await this.mute(interaction, user, target_user, reason, modRole.id, mutedRole.id);
         }else if(interaction.commandName === "unmute"){
             await this.unmute(interaction, user, reason, target_user);
         }

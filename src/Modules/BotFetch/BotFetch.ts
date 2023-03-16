@@ -90,7 +90,7 @@ export default class BotFetch extends Module{
 
         let container = await this.bot.modules.data.getContainer(this.UUID);
         let date = new Date();
-        let stats: BotFetchStats = container.get("stats") || {
+        let stats: BotFetchStats = container.get("stats") as BotFetchStats || {
             rq:   0,
             rq_d: 0,
             rq_h: 0,
