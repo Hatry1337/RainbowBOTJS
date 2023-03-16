@@ -30,6 +30,7 @@ import GrpMgr from './Modules/GrpMgr/GrpMgr';
 import VoteMgr from './Modules/VoteMgr/VoteMgr';
 import ClassChecker from "./Modules/ClassesChecker/ClassChecker";
 import Admin from "./Modules/Admin/Admin";
+import Shakalize from "./Modules/Shakalize/Shakalize";
 
 declare global {
     namespace NodeJS {
@@ -76,7 +77,8 @@ const modules: typeof Module[] = [
     GrpMgr,
     VoteMgr,
     ClassChecker,
-    Admin
+    Admin,
+    Shakalize
 ]
 
 const dataDir = process.env.DATA_DIR ?? './data';
