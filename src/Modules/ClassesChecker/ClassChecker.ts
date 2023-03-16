@@ -1,7 +1,6 @@
-import { Access, AccessTarget, Module, Synergy } from "synergy3";
+import { Access, AccessTarget, Module, Synergy, CommonConfigEntry } from "synergy3";
 import UTS from "../UnifiedTestSuite/UTS";
 import { ChannelType } from "discord-api-types/v10";
-import { CommonConfigEntry } from "../../../../Synergy3";
 
 export default class ClassChecker extends Module{
     public Name:        string = "ClassChecker";
