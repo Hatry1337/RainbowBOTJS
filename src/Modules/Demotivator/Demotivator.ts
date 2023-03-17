@@ -58,11 +58,6 @@ export default class Demotivator extends Module{
                     .setDescription("Secondary text in demotivator.")
                     .setRequired(false)
                 )
-                .addBooleanOption(opt => opt
-                    .setName("shakaled")
-                    .setDescription("Use jpeg compression to shakal resulting demotivator.")
-                    .setRequired(false)
-                )
             )
             .onExecute(this.Run.bind(this))
             .commit()
@@ -84,12 +79,10 @@ export default class Demotivator extends Module{
 
         let textPrimary: string;
         let textSecondary: string | undefined;
-        let shakaled: boolean = false;
 
         if(interaction.isChatInputCommand()) {
             textPrimary = interaction.options.getString("primary-text", true);
             textSecondary = interaction.options.getString("secondary-text") ?? undefined;
-            shakaled = interaction.options.getBoolean("shakaled") ?? false;
         } else if(interaction.isMessageContextMenuCommand()) {
             if (interaction.targetMessage.content.length === 0) {
                 throw new SynergyUserError("Message must contains text (1 or 2 lines).");
@@ -97,7 +90,6 @@ export default class Demotivator extends Module{
             let txt = interaction.targetMessage.content.split("\n");
             textPrimary = txt[0];
             textSecondary = txt[1];
-            shakaled = interaction.commandName === "Demotivator Shakaled";
         } else {
             throw new SynergyUserError("This command works only with Message context menu action or /ascii slash command.");
         }
@@ -118,9 +110,6 @@ export default class Demotivator extends Module{
 
         let demot_canv = await Demotivator.drawDemotivator(img, textPrimary, textSecondary || undefined);
         let demot = demot_canv.toBuffer("image/png");
-        if(shakaled){
-            demot = await Sharp(demot).blur().jpeg({ quality: 6 }).toBuffer();
-        }
         await interaction.editReply({files: [ demot ]});
     }
 
