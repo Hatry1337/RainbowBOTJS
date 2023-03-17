@@ -33,13 +33,6 @@ export default class Demotivator extends Module{
         .onExecute(this.Run.bind(this))
         .commit()
 
-        this.bot.interactions.createMenuCommand(this.Name + " Shakaled", this.Access, this, this.bot.moduleGlobalLoading ? undefined : this.bot.masterGuildId)
-        .build(builder => builder
-            .setType(3)
-        )
-        .onExecute(this.Run.bind(this))
-        .commit()
-
         this.createSlashCommand(this.Name.toLowerCase(), undefined, this.bot.moduleGlobalLoading ? undefined : this.bot.masterGuildId)
             .build(builder => builder
                 .setDescription("Create demotivator from text and image.")
