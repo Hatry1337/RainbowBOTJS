@@ -1,4 +1,12 @@
-import { Access, Module, SynergyUserError, Synergy, AccessTarget, User } from "synergy3";
+import {
+    Access,
+    Module,
+    SynergyUserError,
+    Synergy,
+    AccessTarget,
+    User,
+    EphemeralConfigEntry
+} from "synergy3";
 import Discord from "discord.js";
 import got, { HTTPError } from "got";
 import Sharp from "sharp";
@@ -11,16 +19,11 @@ export default class Shakalize extends Module{
 
     public Access: AccessTarget[] = [ Access.PLAYER() ]
 
+    private defaultPresetConf: EphemeralConfigEntry<"string">;
+
     constructor(bot: Synergy, UUID: string) {
         super(bot, UUID);
         this.bot.interactions.createMenuCommand(this.Name, this.Access, this, this.bot.moduleGlobalLoading ? undefined : this.bot.masterGuildId)
-            .build(builder => builder
-                .setType(3)
-            )
-            .onExecute(this.Run.bind(this))
-            .commit()
-
-        this.bot.interactions.createMenuCommand(this.Name + " Ultra", this.Access, this, this.bot.moduleGlobalLoading ? undefined : this.bot.masterGuildId)
             .build(builder => builder
                 .setType(3)
             )
@@ -52,29 +55,47 @@ export default class Shakalize extends Module{
                         .setMinValue(0.3)
                         .setMaxValue(1000)
                 )
+                .addStringOption(preset =>
+                    preset
+                        .setName("preset")
+                        .setDescription("Shakalization preset to use")
+                        .setRequired(false)
+                        .addChoices(
+                            { name: "default", value: "default" },
+                            { name: "super", value: "super" },
+                            { name: "ultra", value: "ultra" },
+                            { name: "blurry", value: "blurry" },
+                            { name: "jpegify", value: "jpegify" }
+                        )
+                )
             )
             .onExecute(this.Run.bind(this))
             .commit()
+
+        this.defaultPresetConf = this.bot.config.defaultConfigEntry("user", this.Name,
+            new EphemeralConfigEntry(
+                "shakalize_default_preset",
+                "Default Shakalize context menu command preset. Values: 'super', 'ultra', 'blurry', 'jpegify'.",
+                "string",
+                false
+            )
+        );
     }
 
     public async Run(interaction: Discord.ContextMenuCommandInteraction | Discord.ChatInputCommandInteraction, user: User){
         let attachment;
         let quality = 10;
         let blur = 3;
+        let preset;
 
         if(interaction.isChatInputCommand()) {
             attachment = interaction.options.getAttachment("image", true);
+            preset = interaction.options.getString("preset", false);
             quality = interaction.options.getInteger("quality") ?? quality;
             blur = interaction.options.getNumber("blur") ?? blur;
         } else if(interaction.isMessageContextMenuCommand()) {
-            switch (interaction.commandName) {
-                case this.Name + " Ultra": {
-                    quality = 2;
-                    blur = 3;
-                    break;
-                }
-            }
             attachment = interaction.targetMessage.attachments.first();
+            preset = this.defaultPresetConf.getValue(interaction.user.id);
         } else {
             throw new SynergyUserError("This command works only with Message context menu action or /shakalize slash command.");
         }
@@ -84,6 +105,37 @@ export default class Shakalize extends Module{
         }
 
         await interaction.deferReply();
+
+        if(preset) {
+            switch (preset) {
+                case "super": {
+                    quality = 6;
+                    blur = 3;
+                    break;
+                }
+                case "ultra": {
+                    quality = 2;
+                    blur = 3;
+                    break;
+                }
+                case "blurry": {
+                    quality = 100;
+                    blur = 3;
+                    break;
+                }
+                case "jpegify": {
+                    quality = 3;
+                    blur = 0;
+                    break;
+                }
+
+                default: {
+                    quality = 10;
+                    blur = 3;
+                    break;
+                }
+            }
+        }
 
         let image;
         try {
@@ -98,7 +150,15 @@ export default class Shakalize extends Module{
 
         let shakaledImage;
         try {
-            shakaledImage = await Sharp(image).blur(blur).jpeg({ quality }).toBuffer();
+            let sharp = Sharp(image);
+            if(blur !== 0) {
+                sharp = sharp.blur(blur);
+            }
+            if(quality !== 100) {
+                sharp = sharp.jpeg({ quality });
+            }
+
+            shakaledImage = await sharp.toBuffer();
         } catch (e) {
             throw new SynergyUserError("Cannot process attached file. Is it supported format image?");
         }
