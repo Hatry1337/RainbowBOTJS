@@ -1,21 +1,10 @@
 import { Access, Module, SynergyUserError, Synergy, AccessTarget, User } from "synergy3";
 import Discord from "discord.js";
-import { createCanvas, loadImage, registerFont, Image } from "canvas";
+import { createCanvas, loadImage, Image } from "canvas";
 import got, { HTTPError } from "got/dist/source";
 import Sharp from "sharp";
 import RainbowBOTUtils from "../../RainbowBOTUtils";
-/*
-registerFont("./assets/fonts/arimobold.ttf", {
-    family: "Arimo",
-    weight: "700",
-    style: "normal"
-});
-registerFont("./assets/fonts/heuristicaregular.ttf", {
-    family: "Heuristica",
-    weight: "400",
-    style: "normal"
-});
-*/
+
 export default class Demotivator extends Module{
     public Name:        string = "Demotivator";
     public Description: string = "Using this module you can create demotivators from messages (Click RMB on message -> Applications -> Demotivator)";

@@ -11,3 +11,6 @@ services:
       MASTER_GUILD: ${MASTER_GUILD}
       TOPGG_TOKEN: ${TOPGG_TOKEN}
       OSU_API_KEY: ${OSU_API_KEY}
+    volumes:
+      - ./data:/home/rainbowbot/RainbowBOTJS/data
+      - ./logs:/home/rainbowbot/RainbowBOTJS/logs
