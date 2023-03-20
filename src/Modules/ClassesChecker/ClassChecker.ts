@@ -69,7 +69,7 @@ export default class ClassChecker extends Module{
             // Not already sent today
             this.dayLastSent !== date.getDate() &&
             // After 9:10
-            date.getHours() >= 9 && date.getMinutes() >= 10 &&
+            (date.getHours() >= 9 && date.getMinutes() >= 10) &&
             // Until 13:00
             date.getHours() < 13;
 
@@ -103,6 +103,7 @@ export default class ClassChecker extends Module{
             }
 
             await channel.send({ content: message });
+            this.dayLastSent = new Date().getDay();
         } catch (err) {
             this.Logger.Warn("Error in checkTime interval:", err);
         }
