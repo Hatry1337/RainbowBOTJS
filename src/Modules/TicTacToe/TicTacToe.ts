@@ -147,7 +147,10 @@ export default class TicTacToe extends Module{
             `Match Info:\n` +
             `${game.player1.symbol === "cross" ? "❌" : "⭕"} Player1: ${game.player1.user || `**AI (${game.player1.aiLvl})**`}\n` + 
             `${game.player2.symbol === "cross" ? "❌" : "⭕"} Player2: ${game.player2.user || `**AI (${game.player2.aiLvl})**`}\n` +
-            `Timestamp: ${Utils.ts()}`;
+            `Timestamp: ${Utils.ts()}\n` +
+            "```" +
+            `${game.drawField()}` +
+            "```";
 
         let embd_win = new Discord.EmbedBuilder({
             title: `Tic Tac Toe Game`,
