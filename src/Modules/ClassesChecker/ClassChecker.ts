@@ -67,7 +67,7 @@ export default class ClassChecker extends Module{
             // Today is not sunday
             date.getDay() !== 0 &&
             // Not already sent today
-            this.dayLastSent !== date.getDate() &&
+            this.dayLastSent !== date.getDay() &&
             // After 9:10
             (date.getHours() >= 9 && date.getMinutes() >= 10) &&
             // Until 13:00
