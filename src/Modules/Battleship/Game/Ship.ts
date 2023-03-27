@@ -3,10 +3,10 @@ import { ShipCell } from "./ShipCell";
 export type ShipOrientation = "vertical" | "horizontal";
 
 export class Ship {
-    private readonly x: number;
-    private readonly y: number;
-    private readonly size: number;
-    private readonly orientation: ShipOrientation;
+    public readonly x: number;
+    public readonly y: number;
+    public readonly size: number;
+    public readonly orientation: ShipOrientation;
     private readonly cells: ShipCell[] = [];
 
     constructor(x: number, y: number, size: number, orientation: ShipOrientation) {
