@@ -4,6 +4,7 @@ import { createCanvas, loadImage, Image } from "canvas";
 import got, { HTTPError } from "got/dist/source";
 import Sharp from "sharp";
 import RainbowBOTUtils from "../../RainbowBOTUtils";
+import ContextCategory from "../ContextCategory/ContextCategory";
 
 export default class MkMeme extends Module{
     public Name:        string = "MkMeme";
@@ -15,12 +16,13 @@ export default class MkMeme extends Module{
 
     constructor(bot: Synergy, UUID: string) {
         super(bot, UUID);
-        this.bot.interactions.createMenuCommand(this.Name, this.Access, this, this.bot.moduleGlobalLoading ? undefined : this.bot.masterGuildId)
-            .build(builder => builder
-                .setType(3)
-            )
-            .onExecute(this.Run.bind(this))
-            .commit()
+
+        ContextCategory.addCategoryEntry("Image Utils", {
+            name: this.Name,
+            module: this.Name,
+            type: 3,
+            handler: this.Run.bind(this)
+        });
 
         this.createSlashCommand(this.Name.toLowerCase(), undefined, this.bot.moduleGlobalLoading ? undefined : this.bot.masterGuildId)
             .build(builder => builder
@@ -52,7 +54,7 @@ export default class MkMeme extends Module{
             .commit()
     }
 
-    public async Run(interaction: Discord.ContextMenuCommandInteraction | Discord.ChatInputCommandInteraction, user: User){
+    public async Run(interaction: Discord.ContextMenuCommandInteraction | Discord.ChatInputCommandInteraction, user: User, compInt?: Discord.SelectMenuInteraction){
         let attachment;
         if(interaction.isChatInputCommand()) {
             attachment = interaction.options.getAttachment("image", true);
@@ -91,7 +93,11 @@ export default class MkMeme extends Module{
             throw new SynergyUserError("This command works only with Message context menu action or /mkmeme slash command.");
         }
 
-        await interaction.deferReply();
+        if(compInt) {
+            await compInt.deferReply();
+        } else {
+            await interaction.deferReply();
+        }
 
         let img;
         try {
@@ -107,7 +113,12 @@ export default class MkMeme extends Module{
 
         let memeCanvas = await MkMeme.drawMeme(img, textSize, upperText, bottomText || undefined);
         let meme = memeCanvas.toBuffer("image/png");
-        await interaction.editReply({files: [ meme ]});
+
+        if(compInt) {
+            await compInt.editReply({files: [ meme ]});
+        } else {
+            await interaction.editReply({files: [ meme ]});
+        }
     }
 
     public static async drawMeme(image: Image, textSize?: number, upperText?: string, bottomText?: string){

@@ -3,6 +3,7 @@ import Discord from "discord.js";
 import figlet from "figlet";
 import got, { HTTPError } from "got";
 import imageToAscii from "image-to-ascii";
+import ContextCategory from "../ContextCategory/ContextCategory";
 
 export default class ASCII extends Module{
     public Name:        string = "ASCII";
@@ -62,17 +63,19 @@ export default class ASCII extends Module{
         .onExecute(this.handleDrawText.bind(this))
         .commit()
 
-        this.createMenuCommand("ASCII Art")
-        .build(builder => builder
-            .setType(Discord.ApplicationCommandType.Message)
-        )
-        .onExecute(this.handleDrawPicture.bind(this));
+        ContextCategory.addCategoryEntry("Image Utils", {
+            name: "ASCII Art",
+            module: this.Name,
+            type: 3,
+            handler: this.handleDrawPicture.bind(this)
+        });
 
-        this.createMenuCommand("ASCII Art to File")
-        .build(builder => builder
-            .setType(Discord.ApplicationCommandType.Message)
-        )
-        .onExecute(this.handleDrawPicture.bind(this));
+        ContextCategory.addCategoryEntry("Image Utils", {
+            name: "ASCII Art to File",
+            module: this.Name,
+            type: 3,
+            handler: this.handleDrawPicture.bind(this)
+        });
     }
 
     public async handleDrawText(int: Discord.ChatInputCommandInteraction, user: User){
@@ -121,7 +124,7 @@ export default class ASCII extends Module{
         }
     }
 
-    public async handleDrawPicture(interaction: Discord.ContextMenuCommandInteraction | Discord.ChatInputCommandInteraction, user: User){
+    public async handleDrawPicture(interaction: Discord.ContextMenuCommandInteraction | Discord.ChatInputCommandInteraction, user: User, compInt?: Discord.SelectMenuInteraction){
         let attachment;
         if(interaction.isChatInputCommand()) {
             attachment = interaction.options.getAttachment("image", true);
@@ -145,11 +148,18 @@ export default class ASCII extends Module{
             }
             throw error;
         }
-        await interaction.deferReply();
+
+        if(compInt) {
+            await compInt.deferReply();
+        } else {
+            await interaction.deferReply();
+        }
 
         let file_flag = false;
 
-        if(interaction.isChatInputCommand()) {
+        if(compInt) {
+            file_flag = compInt.values[0] === "ASCII Art to File";
+        } else if(interaction.isChatInputCommand()) {
             file_flag = interaction.options.getSubcommand() === "art_file";
         } else if(interaction.isMessageContextMenuCommand()) {
             file_flag = interaction.commandName === "ASCII Art to File";
@@ -157,7 +167,11 @@ export default class ASCII extends Module{
 
         if(file_flag){
             let result = await this.drawImage(img, 60);
-            await interaction.editReply({files: [ { attachment: Buffer.from(result, "utf-8"), name: "artwork.txt" } ]});
+            if(compInt) {
+                await compInt.editReply({files: [ { attachment: Buffer.from(result, "utf-8"), name: "artwork.txt" } ]});
+            } else {
+                await interaction.editReply({files: [ { attachment: Buffer.from(result, "utf-8"), name: "artwork.txt" } ]});
+            }
             return;
         }
 
@@ -167,7 +181,11 @@ export default class ASCII extends Module{
             throw new SynergyUserError("Cannot send this art as message! Try to use `ASCII Art to File` instead.");
         }
 
-        await interaction.editReply("```" + result + "```");
+        if(compInt) {
+            await compInt.editReply("```" + result + "```");
+        } else {
+            await interaction.editReply("```" + result + "```");
+        }
     }
 
     public drawImage(img: Buffer, max_w: number = 30){

@@ -10,6 +10,7 @@ import {
 import Discord from "discord.js";
 import got, { HTTPError } from "got";
 import Sharp from "sharp";
+import ContextCategory from "../ContextCategory/ContextCategory";
 
 export default class Shakalize extends Module{
     public Name:        string = "Shakalize";
@@ -23,12 +24,13 @@ export default class Shakalize extends Module{
 
     constructor(bot: Synergy, UUID: string) {
         super(bot, UUID);
-        this.bot.interactions.createMenuCommand(this.Name, this.Access, this, this.bot.moduleGlobalLoading ? undefined : this.bot.masterGuildId)
-            .build(builder => builder
-                .setType(3)
-            )
-            .onExecute(this.Run.bind(this))
-            .commit()
+
+        ContextCategory.addCategoryEntry("Image Utils", {
+            name: this.Name,
+            module: this.Name,
+            type: 3,
+            handler: this.Run.bind(this)
+        });
 
         this.createSlashCommand(this.Name.toLowerCase(), undefined, this.bot.moduleGlobalLoading ? undefined : this.bot.masterGuildId)
             .build(builder => builder
@@ -82,7 +84,7 @@ export default class Shakalize extends Module{
         );
     }
 
-    public async Run(interaction: Discord.ContextMenuCommandInteraction | Discord.ChatInputCommandInteraction, user: User){
+    public async Run(interaction: Discord.ContextMenuCommandInteraction | Discord.ChatInputCommandInteraction, user: User, compInt?: Discord.SelectMenuInteraction){
         let attachment;
         let quality = 10;
         let blur = 3;
@@ -104,7 +106,11 @@ export default class Shakalize extends Module{
             throw new SynergyUserError("Message must contains the Image.");
         }
 
-        await interaction.deferReply();
+        if(compInt) {
+            await compInt.deferReply();
+        } else {
+            await interaction.deferReply();
+        }
 
         if(preset) {
             switch (preset) {
@@ -162,6 +168,11 @@ export default class Shakalize extends Module{
         } catch (e) {
             throw new SynergyUserError("Cannot process attached file. Is it supported format image?");
         }
-        await interaction.editReply({files: [ shakaledImage ]});
+
+        if(compInt) {
+            await compInt.editReply({files: [ shakaledImage ]});
+        } else {
+            await interaction.editReply({files: [ shakaledImage ]});
+        }
     }
 }

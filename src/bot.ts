@@ -32,6 +32,7 @@ import ClassChecker from "./Modules/ClassesChecker/ClassChecker";
 import Admin from "./Modules/Admin/Admin";
 import Shakalize from "./Modules/Shakalize/Shakalize";
 import MkMeme from "./Modules/MkMeme/MkMeme";
+import ContextCategory from "./Modules/ContextCategory/ContextCategory";
 
 declare global {
     namespace NodeJS {
@@ -80,7 +81,8 @@ const modules: typeof Module[] = [
     ClassChecker,
     Admin,
     Shakalize,
-    MkMeme
+    MkMeme,
+    ContextCategory
 ]
 
 const dataDir = process.env.DATA_DIR ?? './data';
