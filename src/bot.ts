@@ -31,6 +31,7 @@ import VoteMgr from './Modules/VoteMgr/VoteMgr';
 import ClassChecker from "./Modules/ClassesChecker/ClassChecker";
 import Admin from "./Modules/Admin/Admin";
 import Shakalize from "./Modules/Shakalize/Shakalize";
+import MkMeme from "./Modules/MkMeme/MkMeme";
 
 declare global {
     namespace NodeJS {
@@ -78,7 +79,8 @@ const modules: typeof Module[] = [
     VoteMgr,
     ClassChecker,
     Admin,
-    Shakalize
+    Shakalize,
+    MkMeme
 ]
 
 const dataDir = process.env.DATA_DIR ?? './data';
