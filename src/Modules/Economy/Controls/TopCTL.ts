@@ -23,6 +23,14 @@ export default class TopCTL extends Control {
         
         let users: User[] = [];
         for(let p of players){
+            if(!p.userDiscordId) {
+                let dId = this.bot.users.discordIdFromLegacyId(p.userId);
+                if(!dId) {
+                    continue;
+                }
+                p.userDiscordId = dId;
+                await this.storage.setPlayerData(p.userId, p);
+            }
             let u = await this.bot.users.get(p.userDiscordId);
             if(u) users.push(u);
         }
