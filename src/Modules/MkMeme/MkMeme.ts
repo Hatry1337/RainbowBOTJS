@@ -74,7 +74,7 @@ export default class MkMeme extends Module{
 
 
         if(interaction.isChatInputCommand()) {
-            upperText = interaction.options.getString("upper-text", true);
+            upperText = interaction.options.getString("upper-text") ?? undefined;
             bottomText = interaction.options.getString("bottom-text") ?? undefined;
             textSize = interaction.options.getInteger("text-size") ?? undefined;
         } else if(interaction.isMessageContextMenuCommand()) {
