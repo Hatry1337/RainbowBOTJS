@@ -41,10 +41,14 @@ export default class VoteMgr extends Module{
     }
 
     public async postTopGGStats(){
-        await this.topggApi.postStats({
-            serverCount: this.bot.client.guilds.cache.size,
-            shardCount: 1
-        });
+        try {
+            await this.topggApi.postStats({
+                serverCount: this.bot.client.guilds.cache.size,
+                shardCount: 1
+            });
+        } catch (e) {
+            this.Logger.Error(e);
+        }
     }
 
     public async Run(interaction: Discord.ChatInputCommandInteraction, user: User){
