@@ -2,6 +2,7 @@ import { FieldCell } from "./FieldCell";
 import { EmptyCell } from "./EmptyCell";
 import { Ship } from "./Ship";
 import { FieldError, FieldErrorReason } from "./Errors/FieldError";
+import { ShipCell } from "./ShipCell";
 
 export interface BattleShipDrawFieldSettings {
     emptySymbol?: string;
@@ -103,10 +104,32 @@ export class BattleField {
         return deletedShips;
     }
 
-    public checkIntersect(x: number, y: number, ship: Ship) {
+    public getIntersections(ship: Ship) {
+        let intersected: FieldCell[] = [];
+
         for(let c of ship.getCells()) {
-            
+            let possiblyIntersected = [
+                //Top Left
+                this.getCell(c.x - 1, c.y - 1),
+                //Top Center
+                this.getCell(c.x, c.y - 1),
+                //Top Right
+                this.getCell(c.x + 1, c.y - 1),
+                //Right Center
+                this.getCell(c.x + 1, c.y),
+                //Bottom Right
+                this.getCell(c.x + 1, c.y + 1),
+                //Bottom Center
+                this.getCell(c.x, c.y + 1),
+                //Bottom Left
+                this.getCell(c.x - 1, c.y + 1),
+                //Left Center
+                this.getCell(c.x - 1, c.y),
+            ]
+            intersected = intersected.concat(possiblyIntersected.filter(ic => ic.isShip() && ic.getShip() !== ship));
         }
+
+        return intersected;
     }
 
     public bombCell(x: number, y: number): boolean {

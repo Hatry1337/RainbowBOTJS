@@ -4,7 +4,7 @@ import Discord from "discord.js";
 interface ITestPoint{
     name: string;
     description: string;
-    callback: (int: Discord.CommandInteraction) => Promise<void>;
+    callback: (int: Discord.ChatInputCommandInteraction) => Promise<void>;
 }
 
 const testPoints: Map<string, ITestPoint> = new Map();
@@ -92,7 +92,7 @@ export default class UTS extends Module{
         }
     }
 
-    public static addTestPoint(name: string, description: string, callback: (int: Discord.CommandInteraction) => Promise<void>){
+    public static addTestPoint(name: string, description: string, callback: (int: Discord.ChatInputCommandInteraction) => Promise<void>){
         testPoints.set(name, {
             name,
             description,

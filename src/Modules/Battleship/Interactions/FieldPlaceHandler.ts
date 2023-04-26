@@ -36,6 +36,9 @@ export class FieldPlaceHandler extends InteractionHandler<Battleship> {
                     case PlayerPlaceShipErrorReason.ShipOutOfBounds: {
                         throw new SynergyUserError(`This ship can't be placed here.`);
                     }
+                    case PlayerPlaceShipErrorReason.ShipIntersected: {
+                        throw new SynergyUserError(`This ship intersects another ship.`);
+                    }
                     case PlayerPlaceShipErrorReason.WrongGameStage: {
                         throw new SynergyUserError(`You can't place ships in current game stage.`);
                     }

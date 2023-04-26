@@ -7,7 +7,10 @@ import { PlayerPlaceShipError, PlayerPlaceShipErrorReason } from "./Errors/Playe
 import { FieldError, FieldErrorReason } from "./Errors/FieldError";
 import { PlayerRemoveShipError, PlayerRemoveShipErrorReason } from "./Errors/PlayerRemoveShipError";
 
-const ShipLimit: { [key: number]: number } = {
+interface IShipLimit {
+    [key: number]: number;
+}
+const ShipLimit: IShipLimit = {
     1: 4,
     2: 3,
     3: 2,
@@ -33,12 +36,44 @@ export class BattleshipPlayer {
         this.isReady = false;
     }
 
+    public flushShips() {
+        this.field.setSize(this.field.width, this.field.height);
+        this.ships.splice(0, this.ships.length);
+    }
+
+    public availableShips(): IShipLimit {
+        let available: IShipLimit = {};
+
+        for(let ss of Object.keys(ShipLimit)) {
+            let size = parseInt(ss);
+            available[size] = ShipLimit[size] - this.ships.filter(s => s.size === size).length;
+        }
+
+        return available;
+    }
+
+    public numAvailableShips(): number {
+        let available = 0;
+
+        for(let ss of Object.keys(ShipLimit)) {
+            let size = parseInt(ss);
+            available += ShipLimit[size] - this.ships.filter(s => s.size === size).length;
+        }
+
+        return available;
+    }
+
     public placeShip(ship: Ship) {
         if(this.game.gameStage !== "prepare") {
             throw new PlayerPlaceShipError(PlayerPlaceShipErrorReason.WrongGameStage);
         }
         if(this.ships.filter(s => s.size === ship.size).length >= ShipLimit[ship.size]) {
             throw new PlayerPlaceShipError(PlayerPlaceShipErrorReason.OutOfShips);
+        }
+
+        let intersections = this.field.getIntersections(ship);
+        if(intersections.length !== 0) {
+            throw new PlayerPlaceShipError(PlayerPlaceShipErrorReason.ShipIntersected);
         }
 
         try {

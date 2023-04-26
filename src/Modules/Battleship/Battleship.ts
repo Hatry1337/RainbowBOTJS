@@ -10,6 +10,8 @@ import Discord from "discord.js";
 import { ReadyHandler } from "./Interactions/ReadyHandler";
 import { FieldRemoveHandler } from "./Interactions/FieldRemoveHandler";
 import { BombHandler } from "./Interactions/BombHandler";
+import { FieldRandomHandler } from "./Interactions/FieldRandomHandler";
+import UTS from "../UnifiedTestSuite/UTS";
 
 export default class Battleship extends Module{
     public Name:        string = "Battleship";
@@ -70,6 +72,11 @@ export default class Battleship extends Module{
                                 )
                                 .addSubcommand(command =>
                                     command
+                                        .setName("random")
+                                        .setDescription("Fill your battle field randomly.")
+                                )
+                                .addSubcommand(command =>
+                                    command
                                         .setName("place")
                                         .setDescription("Place ship on your battle field.")
                                         .addStringOption(option =>
@@ -120,6 +127,7 @@ export default class Battleship extends Module{
 
         this.router.defineHandler(new FieldShowHandler(), "show", "field");
         this.router.defineHandler(new FieldPlaceHandler(), "place", "field");
+        this.router.defineHandler(new FieldRandomHandler(), "random", "field");
         this.router.defineHandler(new FieldRemoveHandler(), "remove", "field");
 
         this.configTheme = this.bot.config.defaultConfigEntry("user", this.Name, new EphemeralConfigEntry(
@@ -134,6 +142,35 @@ export default class Battleship extends Module{
             "bool",
             false
         ));
+
+        UTS.addTestPoint(
+            "bs_test-random-field",
+            "Test random field generation in Battleship game",
+            async (int) => {
+                await int.deferReply();
+
+                let game = new BattleshipGame();
+                let player = game.addPlayer(await this.bot.users.fetchOne(this.bot.client.user!.id));
+
+                let maxIters = int.options.getNumber("gparg0") || 450;
+                let maxFails = int.options.getNumber("gparg1") || 100;
+                let repeats = int.options.getNumber("gparg2") || 100;
+
+                let result = FieldRandomHandler.test(player, maxIters, maxFails, repeats);
+
+                await int.editReply(
+                    `Battleship Random Field Generator Test Result:\n` +
+                    "===Input===\n" +
+                    `Max Iterations: ${maxIters}\n` +
+                    `Max Fails: ${maxFails}\n` +
+                    `Repeats: ${repeats}\n` +
+                    "===Output===\n" +
+                    `Average Iterations: ${result.iters}\n` +
+                    `Average Fails: ${result.fails}\n` +
+                    `Average Time: ${result.time} ms.`
+                );
+            }
+        );
     }
 
     public getBoardSettings(userId: string) {

@@ -1,7 +1,8 @@
 export enum PlayerPlaceShipErrorReason {
     ShipOutOfBounds,
     WrongGameStage,
-    OutOfShips
+    OutOfShips,
+    ShipIntersected,
 }
 
 export class PlayerPlaceShipError extends Error {
