@@ -671,11 +671,11 @@ export default class OBJRender extends Module{
 
         const getOrCreateViewportButton = (name: string, emoji: string) => {
             let button = this.bot.interactions.getComponent(
-                `${name}-viewport-${user.discordId}-${camera!.name}`
+                `${name}-viewport-${interaction.user.id}-${camera!.name}`
             ) as InteractiveComponent<Discord.ButtonBuilder>;
 
             if(!button) {
-                button = this.createMessageButton(`${name}-viewport-${user.discordId}-${camera!.name}`)
+                button = this.createMessageButton(`${name}-viewport-${interaction.user.id}-${camera!.name}`)
                     .onExecute(async (int, user) => {
                         await this.handleViewportButton(int, user, name);
                     })

@@ -118,7 +118,7 @@ export default class EconomyCTL extends Control{
             color: Colors.Noraml
         });
 
-        GlobalLogger.userlog.info(`User ${interaction.user}(${interaction.user.tag}) setted "${field}" from "${old_val}" to ${value} on <@${target_user.discord.id}>(${target_user.nickname}).`);
+        GlobalLogger.userlog.info(`User ${interaction.user}(${interaction.user.tag}) setted "${field}" from "${old_val}" to ${value} on ${target_user.unifiedId}(${target_user.nickname}).`);
         await interaction.reply({ embeds: [emb] });
     }
 
@@ -143,7 +143,7 @@ export default class EconomyCTL extends Control{
             color: Colors.Noraml
         });
 
-        GlobalLogger.userlog.info(`User ${interaction.user}(${interaction.user.tag}) gived "${item.name}" x${amount} to <@${target_user.discord.id}>(${target_user.nickname}).`);
+        GlobalLogger.userlog.info(`User ${interaction.user}(${interaction.user.tag}) gived "${item.name}" x${amount} to ${target_user.unifiedId}(${target_user.nickname}).`);
         await interaction.reply({ embeds: [emb] });
     }
 
@@ -175,7 +175,7 @@ export default class EconomyCTL extends Control{
             color: Colors.Noraml
         });
 
-        GlobalLogger.userlog.info(`User ${interaction.user}(${interaction.user.tag}) deleted "${deleted_item.item.name}" x${amount} from <@${target_user.discord.id}>(${target_user.nickname}).`);
+        GlobalLogger.userlog.info(`User ${interaction.user}(${interaction.user.tag}) deleted "${deleted_item.item.name}" x${amount} from ${target_user.unifiedId}(${target_user.nickname}).`);
         await interaction.reply({ embeds: [emb] });
     }
 }

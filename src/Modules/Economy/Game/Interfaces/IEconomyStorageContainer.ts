@@ -3,7 +3,7 @@ import IShopEntryData from "./IShopEntryData";
 
 export default interface IEconomyStorageContainer{
     players: {
-        [key: number]: IPlayerObject;
+        [key: string]: IPlayerObject;
     };
     shop: {
         lastChecked: Date;

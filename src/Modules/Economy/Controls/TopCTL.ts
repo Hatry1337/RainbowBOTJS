@@ -24,24 +24,24 @@ export default class TopCTL extends Control {
         let users: User[] = [];
         for(let p of players){
             if(!p.userDiscordId) {
-                let dId = this.bot.users.discordIdFromLegacyId(p.userId);
+                let dId = this.bot.users.discordIdFromUnifiedId(p.userId);
                 if(!dId) {
                     continue;
                 }
                 p.userDiscordId = dId;
                 await this.storage.setPlayerData(p.userId, p);
             }
-            let u = await this.bot.users.get(p.userDiscordId);
+            let u = await this.bot.users.get(p.userId);
             if(u) users.push(u);
         }
 
         users = users.sort((a, b) => b.economy.points - a.economy.points).filter(u => u);
-        let uindex = users.findIndex(u => u.id === user.id);
+        let uindex = users.findIndex(u => u.unifiedId === user.unifiedId);
 
         let stat = "";
         let i = 1;
         for(let u of users){
-            stat += `${i}. ${u.nickname}(<@${u.discord.id}>) - ${parseFloat(u.economy.points.toFixed(5))} Points.\n`;
+            stat += `${i}. ${u.nickname}${u.discord ? `(<@${u.discord.id}>)` : ""} - ${parseFloat(u.economy.points.toFixed(5))} Points.\n`;
             if(i >= 10){
                 break;
             }

@@ -14,11 +14,11 @@ import {
 } from "synergy3";
 
 export interface IMutedUser{
-    user_id: number;
+    user_id: string;
     discord_id: string;
     discord_tag: string;
     
-    muter_id: number;
+    muter_id: string;
     muter_discord_id: string
 
     mute_reason: string;
@@ -160,10 +160,10 @@ export default class Mute extends Module{
 
             await member.roles.add(muted_role_id);
 
-            let ruser_id = this.bot.users.idFromDiscordId(target_user.id);
+            let ruser_id = this.bot.users.unifiedIdFromDiscordId(target_user.id);
             if(!ruser_id){
                 await this.bot.users.createFromDiscord(target_user);
-                ruser_id = this.bot.users.idFromDiscordId(target_user.id)!;
+                ruser_id = this.bot.users.unifiedIdFromDiscordId(target_user.id)!;
             }
             
             let muted = {
@@ -171,7 +171,7 @@ export default class Mute extends Module{
                 discord_id: target_user.id,
                 discord_tag: target_user.tag,
                 
-                muter_id: user.id,
+                muter_id: user.unifiedId,
                 muter_discord_id: interaction.user.id,
 
                 mute_reason: reason,

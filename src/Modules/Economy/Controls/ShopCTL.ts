@@ -54,7 +54,7 @@ export class ShopCTL extends Control {
         }
 
         let emb = this.embedMessage();
-        let menu = this.economy.createMessageSelectMenu([ Access.USER(user.id) ], -1, 300000);
+        let menu = this.economy.createMessageSelectMenu([ Access.USER(user.unifiedId) ], -1, 300000);
         let items: Discord.SelectMenuOptionBuilder[] = []
 
         let ci = 0;
@@ -118,21 +118,21 @@ export class ShopCTL extends Control {
 
         let actionrow = new Discord.ActionRowBuilder<Discord.ButtonBuilder>();
 
-        let btn1 = this.economy.createMessageButton([ Access.USER(user.id) ], -1, 300000);
+        let btn1 = this.economy.createMessageButton([ Access.USER(user.unifiedId) ], -1, 300000);
         btn1.builder.setLabel("Buy x1");
         btn1.builder.setStyle(Discord.ButtonStyle.Primary);
         btn1.onExecute(async (int, user) => {
             await this.handleFinalBuyInteraction(int, user, category_index, item_index, 1);
         });
 
-        let btn5 = this.economy.createMessageButton([ Access.USER(user.id) ], -1, 300000);
+        let btn5 = this.economy.createMessageButton([ Access.USER(user.unifiedId) ], -1, 300000);
         btn5.builder.setLabel("Buy x5");
         btn5.builder.setStyle(Discord.ButtonStyle.Primary);
         btn5.onExecute(async (int, user) => {
             await this.handleFinalBuyInteraction(int, user, category_index, item_index, 5);
         });
 
-        let btn10 = this.economy.createMessageButton([ Access.USER(user.id) ], -1, 300000);
+        let btn10 = this.economy.createMessageButton([ Access.USER(user.unifiedId) ], -1, 300000);
         btn10.builder.setLabel("Buy x10");
         btn10.builder.setStyle(Discord.ButtonStyle.Primary);
         btn10.onExecute(async (int, user) => {

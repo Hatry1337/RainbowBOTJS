@@ -12,7 +12,7 @@ import ShopEntry from "../Shop/ShopEntry";
 import CachedInstance from "./CachedInstance";
 
 export class StorageWrapper{
-    public cachePlayers: Map<number, CachedInstance<Player>> = new Map();
+    public cachePlayers: Map<string, CachedInstance<Player>> = new Map();
     private timer: NodeJS.Timeout;
     constructor(public bot: Synergy, private UUID: string){
         this.timer = setInterval(() => {
@@ -67,7 +67,7 @@ export class StorageWrapper{
         return data.shop;
     }
 
-    public async getPlayerData(userId: number): Promise<IPlayerObject | undefined> {
+    public async getPlayerData(userId: string): Promise<IPlayerObject | undefined> {
         let container = await this.bot.modules.data.getContainer(this.UUID);
         let data = container.get("data") as IEconomyStorageContainer;
         return data.players[userId];
@@ -79,7 +79,7 @@ export class StorageWrapper{
         return Object.values(data.players);
     }
 
-    public async setPlayerData(userId: number, playerData: IPlayerObject){
+    public async setPlayerData(userId: string, playerData: IPlayerObject){
         let container = await this.bot.modules.data.getContainer(this.UUID);
         let data = container.get("data") as IEconomyStorageContainer;
         data.players[userId] = playerData;
@@ -87,10 +87,10 @@ export class StorageWrapper{
     }
 
     public async getPlayer(user: User, force: boolean = false){
-        let pdata = await this.getPlayerData(user.id);
+        let pdata = await this.getPlayerData(user.unifiedId);
         if(!pdata) return;
 
-        let pcache = this.cachePlayers.get(user.id);
+        let pcache = this.cachePlayers.get(user.unifiedId);
         let player: Player;
         if(!pcache || !pcache.isValid() || force){
             player = new Player(user);
@@ -100,7 +100,7 @@ export class StorageWrapper{
                 room.placedItems = r.placedItems.map(i => new ItemStack(ItemsRegistry.getItem(i.itemId)! as ItemPlaceable, i.size, i.uuid, i.meta));
                 return room;
             });
-            this.cachePlayers.set(user.id, new CachedInstance(player, 30 * 60 * 1000));
+            this.cachePlayers.set(user.unifiedId, new CachedInstance(player, 30 * 60 * 1000));
         }else{
             player = pcache.instance;
         }
@@ -108,10 +108,10 @@ export class StorageWrapper{
     }
 
     public async savePlayer(player: Player){
-        await this.setPlayerData(player.user.id, player.toObject());
-        let pcache = this.cachePlayers.get(player.user.id);
+        await this.setPlayerData(player.user.unifiedId, player.toObject());
+        let pcache = this.cachePlayers.get(player.user.unifiedId);
         if(!pcache){
-            this.cachePlayers.set(player.user.id, new CachedInstance(player, 30 * 60 * 1000));
+            this.cachePlayers.set(player.user.unifiedId, new CachedInstance(player, 30 * 60 * 1000));
         }else{
             pcache.instance = player;
             pcache.cachedAt = new Date();

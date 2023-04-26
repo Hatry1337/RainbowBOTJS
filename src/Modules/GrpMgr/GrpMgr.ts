@@ -10,8 +10,8 @@ interface ITempGroupInfo{
 }
 
 interface ITempGroupInfoJSON{
-    user: number;
-    userDiscordId: string;
+    user: string;
+    userDiscordId?: string;
     group: string;
     time: number;
     addedAt: number;
@@ -145,8 +145,8 @@ export default class GrpMgr extends Module{
             tgrps[e[0]] = [];
             for(let g of e[1]){
                 tgrps[e[0]].push({
-                    user: g.user.id,
-                    userDiscordId: g.user.discordId,
+                    user: g.user.unifiedId,
+                    userDiscordId: g.user.discord?.id,
                     group: g.group,
                     time: g.time,
                     addedAt: Math.floor(g.addedAt.getTime() / 1000),
@@ -165,7 +165,7 @@ export default class GrpMgr extends Module{
             let data: ITempGroupInfo[] = [];
             for(let g of tgrps[k]){
                 data.push({
-                    user: await this.bot.users.get(g.userDiscordId) ?? undefined!,
+                    user: await this.bot.users.get(g.user) ?? undefined!,
                     group: g.group,
                     time: g.time,
                     addedAt: new Date(g.addedAt * 1000),
@@ -177,7 +177,7 @@ export default class GrpMgr extends Module{
     }
 
     public async addTempGroup(group: string, user: User, time_s: number){
-        let uinfo = this.tempGroups.get(user.discord.id) || [];
+        let uinfo = this.tempGroups.get(user.unifiedId) || [];
         uinfo.push({
             user,
             group,
@@ -185,7 +185,7 @@ export default class GrpMgr extends Module{
             addedAt: new Date(),
             expireAt: new Date(new Date().getTime() + (time_s * 1000))
         });
-        this.tempGroups.set(user.discord.id, uinfo);
+        this.tempGroups.set(user.unifiedId, uinfo);
 
         if(!user.groups.includes(group)){
             user.groups.push(group);
@@ -194,13 +194,13 @@ export default class GrpMgr extends Module{
     }
 
     public async delTempGroup(group: string, user: User){
-        let uinfo = this.tempGroups.get(user.discord.id) || [];
+        let uinfo = this.tempGroups.get(user.unifiedId) || [];
         for(let i in uinfo){
             if(uinfo[i].group === group){
                 uinfo.splice(parseInt(i), 1);
             }
         }
-        this.tempGroups.set(user.discord.id, uinfo);
+        this.tempGroups.set(user.unifiedId, uinfo);
 
         await this.saveTempGroupsInfo();
     }
@@ -255,7 +255,7 @@ export default class GrpMgr extends Module{
 
         if(group === "admin") throw new SynergyUserError("You can't remove admin group from user.");
 
-        let u_id = this.bot.users.idFromDiscordId(duser.id);
+        let u_id = this.bot.users.unifiedIdFromDiscordId(duser.id);
         if(!u_id) throw new SynergyUserError("This user is not registered.");
 
         let user = await this.bot.users.get(duser.id);
@@ -280,7 +280,7 @@ export default class GrpMgr extends Module{
         });
 
         let text = "";
-        let tmp_grps = this.tempGroups.get(user.discord.id);
+        let tmp_grps = this.tempGroups.get(user.unifiedId);
 
         for(let g of user.groups){
             let tg = tmp_grps?.find(t => t.group === g);
