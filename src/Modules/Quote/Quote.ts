@@ -86,7 +86,8 @@ export default class Quote extends Module{
 
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, pic_fact_width, canvas.height)
-        
+
+        ctx.textDrawingMode = "glyph";
         ctx.textAlign = "center";
         ctx.textBaseline = "top";
         ctx.font = "24px Comfortaa";

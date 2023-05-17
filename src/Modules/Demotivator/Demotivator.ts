@@ -120,6 +120,8 @@ export default class Demotivator extends Module{
         let max_line_big = canvas.width - (2 * margin_x);
         let max_line_smol = canvas.width - (3 * margin_x);
 
+        ctx.textDrawingMode = "glyph";
+
         //Split text to lines
         ctx.font = "48px Heuristica";
         let big_lines = RainbowBOTUtils.splitTextToLines(canvas, bigText, max_line_big);

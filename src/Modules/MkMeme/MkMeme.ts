@@ -146,6 +146,7 @@ export default class MkMeme extends Module{
         let maxLineWidth = canvas.width - (2 * margin_x);
 
         ctx.font = `${textSize}px Impact`;
+        ctx.textDrawingMode = "glyph";
         ctx.textBaseline = "top";
         ctx.textAlign = "center";
         ctx.fillStyle = "#ffffff";
