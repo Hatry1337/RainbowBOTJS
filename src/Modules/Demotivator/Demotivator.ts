@@ -1,6 +1,6 @@
 import { Access, Module, SynergyUserError, Synergy, AccessTarget, User } from "synergy3";
 import Discord from "discord.js";
-import { createCanvas, loadImage, Image } from "canvas";
+import { createCanvas, loadImage, Image, GlobalFonts } from "@napi-rs/canvas";
 import got, { HTTPError } from "got/dist/source";
 import Sharp from "sharp";
 import RainbowBOTUtils from "../../RainbowBOTUtils";
@@ -120,10 +120,8 @@ export default class Demotivator extends Module{
         let max_line_big = canvas.width - (2 * margin_x);
         let max_line_smol = canvas.width - (3 * margin_x);
 
-        ctx.textDrawingMode = "glyph";
-
         //Split text to lines
-        ctx.font = "48px Heuristica";
+        ctx.font = "48px Heuristica, Noto Color Emoji";
         let big_lines = RainbowBOTUtils.splitTextToLines(canvas, bigText, max_line_big);
 
         if(big_lines.length === 0){
@@ -132,7 +130,7 @@ export default class Demotivator extends Module{
 
         let small_lines: string[] | undefined;
         if(smallText){
-            ctx.font = "24px Arimo";
+            ctx.font = "24px Arimo, Noto Color Emoji";
             small_lines = RainbowBOTUtils.splitTextToLines(canvas, smallText, max_line_smol);
 
             if(small_lines.length === 0){
@@ -157,7 +155,7 @@ export default class Demotivator extends Module{
 
         ctx.textAlign = "center";
         ctx.textBaseline = "top";
-        ctx.font = "48px Heuristica";
+        ctx.font = "48px Heuristica, Noto Color Emoji";
         ctx.fillStyle = "#ffffff";
 
         let text_pos = 24;
@@ -166,7 +164,7 @@ export default class Demotivator extends Module{
             text_pos += 48 * 1.5;
         }
 
-        ctx.font = "24px Arimo";
+        ctx.font = "24px Arimo, Noto Color Emoji";
         for(let t of small_lines || []){
             ctx.fillText(t, Math.floor(canvas.width / 2), res_height + margin_y + text_pos);
             text_pos += 24 * 1.5;

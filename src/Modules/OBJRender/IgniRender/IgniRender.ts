@@ -1,7 +1,4 @@
-import { Canvas, createCanvas } from "canvas";
 import PolyObject from "./Scene/PolyObject";
-import { Scene } from "./Scene/Scene";
-import SceneObject from "./Scene/SceneObject";
 import { Vertex, Face, vec3, v3zero } from "./Utils3D";
 
 export type RenderStyle = "flat" | "wireframe";

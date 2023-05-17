@@ -1,6 +1,6 @@
 import { Access, AccessTarget, Module, Synergy, SynergyUserError } from "synergy3";
 import Discord from "discord.js";
-import { createCanvas, Image, loadImage } from "canvas";
+import { createCanvas, GlobalFonts, Image, loadImage } from "@napi-rs/canvas";
 import got, { HTTPError } from "got/dist/source";
 import RainbowBOTUtils from "../../RainbowBOTUtils";
 
@@ -87,10 +87,9 @@ export default class Quote extends Module{
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, pic_fact_width, canvas.height)
 
-        ctx.textDrawingMode = "glyph";
         ctx.textAlign = "center";
         ctx.textBaseline = "top";
-        ctx.font = "24px Comfortaa";
+        ctx.font = "24px Comfortaa, Noto Color Emoji";
         ctx.fillStyle = "#ffffff";
 
         let big_lines = RainbowBOTUtils.splitTextToLines(canvas, text, canvas.width - pic_fact_width - margin_right);
@@ -117,7 +116,7 @@ export default class Quote extends Module{
             text_pos += 24 * 1.5;
         }
         
-        ctx.font = "italic 24px Comfortaa";
+        ctx.font = "italic 24px Comfortaa, Noto Color Emoji";
         ctx.fillText("- " + author, half_width + (pic_fact_width / 2) - (margin_right / 2), margin_y + text_pos);
         return canvas;
     }

@@ -1,4 +1,4 @@
-import { Canvas } from "canvas";
+import { Canvas } from "@napi-rs/canvas";
 
 type NonFunctionPropertyNames<T> = { [K in keyof T]: T[K] extends Function ? never : K; }[keyof T];
 export type ExcludeMethods<T> = Pick<T, NonFunctionPropertyNames<T>>;

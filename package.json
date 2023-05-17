@@ -1,6 +1,6 @@
 {
   "name": "rainbow-bot-js",
-  "version": "3.8.17",
+  "version": "3.8.18",
   "description": "RainbowBOT JS",
   "main": "./dist/bot.js",
   "repository": "https://github.com/Hatry1337/RainbowBOTJS",
@@ -13,8 +13,8 @@
     "build": "npx tsc"
   },
   "dependencies": {
+    "@napi-rs/canvas": "^0.1.40",
     "@top-gg/sdk": "^3.1.3",
-    "canvas": "^2.11.0",
     "cli-table": "^0.3.11",
     "cowsay": "^1.5.0",
     "discord-api-types": "^0.37.28",

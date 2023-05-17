@@ -1,6 +1,6 @@
 import { Access, Module, SynergyUserError, Synergy, AccessTarget, User } from "synergy3";
 import Discord from "discord.js";
-import { createCanvas, loadImage, Image } from "canvas";
+import { createCanvas, loadImage, Image, GlobalFonts } from "@napi-rs/canvas";
 import got, { HTTPError } from "got/dist/source";
 import Sharp from "sharp";
 import RainbowBOTUtils from "../../RainbowBOTUtils";
@@ -145,13 +145,13 @@ export default class MkMeme extends Module{
 
         let maxLineWidth = canvas.width - (2 * margin_x);
 
-        ctx.font = `${textSize}px Impact`;
-        ctx.textDrawingMode = "glyph";
+        ctx.font = `${textSize}px Impact, Noto Color Emoji`;
         ctx.textBaseline = "top";
         ctx.textAlign = "center";
         ctx.fillStyle = "#ffffff";
         ctx.strokeStyle = "#000000"
         ctx.lineWidth = textSize > 48 ? 2 : 1;
+
 
         let upperLines: string[] | undefined;
         let bottomLines: string[] | undefined;

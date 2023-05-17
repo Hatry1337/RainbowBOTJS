@@ -1,8 +1,7 @@
 import { RenderProjection, RenderStyle } from "../IgniRender";
-import { convertRange, Face, getFaceCenter, getFaceNormal, getNormalColor, matrix4MultPoint, Path, Primitive, v2normalize, v3copy, v3distance, v3dot, v3mul, v3normalize, v3rotate, v3sub, v3sum, vec2, vec3 } from "../Utils3D";
+import { convertRange, getFaceCenter, getFaceNormal, getNormalColor, matrix4MultPoint, Path, v3copy, v3distance, v3dot, v3mul, v3rotate, v3sub, v3sum, vec2, vec3 } from "../Utils3D";
 import SceneObject from "./SceneObject";
-import { Canvas, createCanvas } from 'canvas';
-import { Scene } from "./Scene";
+import { Canvas, createCanvas } from '@napi-rs/canvas';
 
 export default class Camera extends SceneObject{
     public renderResolution: {
