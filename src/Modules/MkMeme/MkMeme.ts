@@ -145,7 +145,7 @@ export default class MkMeme extends Module{
 
         let maxLineWidth = canvas.width - (2 * margin_x);
 
-        ctx.font = `${textSize}px Impact, Noto Color Emoji`;
+        ctx.font = `${textSize}px ArTarumianBakhum, Noto Color Emoji`;
         ctx.textBaseline = "top";
         ctx.textAlign = "center";
         ctx.fillStyle = "#ffffff";

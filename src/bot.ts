@@ -33,6 +33,14 @@ import Admin from "./Modules/Admin/Admin";
 import Shakalize from "./Modules/Shakalize/Shakalize";
 import MkMeme from "./Modules/MkMeme/MkMeme";
 import ContextCategory from "./Modules/ContextCategory/ContextCategory";
+import { GlobalFonts } from "@napi-rs/canvas";
+import path from "path";
+
+GlobalFonts.registerFromPath(path.join(__dirname, "..", "..", "..", "assets", "fonts", "NotoColorEmoji-Regular.ttf"), "Noto Color Emoji");
+GlobalFonts.registerFromPath(path.join(__dirname, "..", "..", "..", "assets", "fonts", "arimobold.ttf"), "Arimo");
+GlobalFonts.registerFromPath(path.join(__dirname, "..", "..", "..", "assets", "fonts", "Comfortaa-Regular.ttf"), "Comfortaa");
+GlobalFonts.registerFromPath(path.join(__dirname, "..", "..", "..", "assets", "fonts", "heuristicaregular.ttf"), "Heuristica");
+GlobalFonts.registerFromPath(path.join(__dirname, "..", "..", "..", "assets", "fonts", "BAKHUM.TTF"), "ArTarumianBakhum");
 
 declare global {
     namespace NodeJS {
