@@ -82,7 +82,7 @@ export default class ASCII extends Module{
         let fonts = await this.getFontsList();
         let subc = int.options.getSubcommand();
 
-        if(subc === "art" || "art_file") {
+        if(subc === "art" || subc === "art_file") {
             await this.handleDrawPicture(int, user);
             return;
         }
@@ -110,7 +110,9 @@ export default class ASCII extends Module{
             await int.reply({ embeds: [emb] });
             return;
 
-        }else if(subc === "draw"){
+        }
+
+        if(subc === "draw"){
             let text = int.options.getString("text", true);
             let font = int.options.getString("font", false) || "Doom";
 
@@ -119,9 +121,9 @@ export default class ASCII extends Module{
 
             await int.reply("```" + result + "```");
             return;
-        }else{
-            throw new SynergyUserError("This subcommand is not implemented!");
         }
+
+        throw new SynergyUserError("This subcommand is not implemented!");
     }
 
     public async handleDrawPicture(interaction: Discord.ContextMenuCommandInteraction | Discord.ChatInputCommandInteraction, user: User, compInt?: Discord.SelectMenuInteraction){
