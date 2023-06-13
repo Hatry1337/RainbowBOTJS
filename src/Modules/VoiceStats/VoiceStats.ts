@@ -8,6 +8,7 @@ import {
     User, Utils
 } from "synergy3";
 import { NeatTopBuilder } from "../../NeatTopBuilder";
+import UTS from "../UnifiedTestSuite/UTS";
 
 interface VoiceStatsSession {
     channel: Discord.VoiceChannel;
@@ -132,6 +133,8 @@ export default class VoiceStats extends Module {
             "bool",
             false
         ));
+
+        UTS.addTestPoint("vcs_fetch_names", "Fetch channels/users/guilds names from discord.", this.fetchNames.bind(this));
     }
 
     private async onRVoiceChannelJoin(channel: Discord.VoiceChannel, member: Discord.GuildMember) {
@@ -216,6 +219,64 @@ export default class VoiceStats extends Module {
         );
         this.activeSessions.clear();
         await this.saveData();
+    }
+
+    private async fetchNames(int: Discord.CommandInteraction) {
+        this.Logger.Info(`[Init] Trying to fetch names of users/channels/guilds.`);
+
+        let container = await this.bot.modules.data.getContainer(this.UUID);
+        let users = (container.get("users") ?? {}) as VoiceStatsContainerUsers;
+        let guilds = (container.get("guilds") ?? {}) as VoiceStatsContainerGuilds;
+        let channels = (container.get("channels") ?? {}) as VoiceStatsContainerChannels;
+
+        let i = 0;
+        let guildsEntries = Object.entries(guilds);
+        for(let g of guildsEntries) {
+            try {
+                let guild = this.bot.client.guilds.resolve(g[0]) ?? await this.bot.client.guilds.fetch(g[0]);
+                guilds[g[0]].name = guild.name;
+            } catch (e) {
+                this.Logger.Warn(e);
+            }
+            this.Logger.Info(`Fetching guilds' names: ${i}/${guildsEntries.length}`);
+            i++;
+        }
+
+        i = 0;
+        let channelsEntries = Object.entries(channels);
+        for(let c of channelsEntries) {
+            try {
+                let channel = this.bot.client.channels.resolve(c[0]) ?? await this.bot.client.channels.fetch(c[0]);
+                if (channel && channel.isVoiceBased()) {
+                    channels[c[0]].name = channel.name;
+                }
+            } catch (e) {
+                this.Logger.Warn(e);
+            }
+            this.Logger.Info(`Fetching channels' names: ${i}/${channelsEntries.length}`);
+            i++;
+        }
+
+        i = 0;
+        let usersEntries = Object.entries(users);
+        for(let u of usersEntries) {
+            try {
+                let user = this.bot.client.users.resolve(u[0]) ?? await this.bot.client.users.fetch(u[0]);
+                users[u[0]].name = user.tag;
+                await this.bot.users.createFromDiscord(user);
+            } catch (e) {
+                this.Logger.Warn(e);
+            }
+
+            this.Logger.Info(`Fetching users' names: ${i}/${usersEntries.length}`);
+            i++;
+        }
+
+        container.set("users", users);
+        container.set("guilds", guilds);
+        container.set("channels", channels);
+
+        await int.reply("successfully fetched all names.");
     }
 
     private async saveData() {
