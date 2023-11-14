@@ -10,4 +10,6 @@ WORKDIR /home/rainbowbot/RainbowBOTJS
 RUN npm i
 RUN npx tsc
 
+RUN apk del git python3 pkgconf pixman-dev
+
 CMD node dist/bot.js
