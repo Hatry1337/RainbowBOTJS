@@ -1,7 +1,7 @@
 FROM node:19-alpine
 RUN adduser -Dg rainbowbot -g /bin/sh rainbowbot
 
-RUN apk add graphicsmagick git
+RUN apk add graphicsmagick git python3
 
 USER rainbowbot
 WORKDIR /home/rainbowbot
