@@ -1,7 +1,7 @@
 FROM node:19-alpine
 RUN adduser -Dg rainbowbot -g /bin/sh rainbowbot
 
-RUN apk add graphicsmagick git python3 pkgconf cairo-dev pango-dev libjpeg-turbo-dev giflib-dev librsvg-dev
+RUN apk add graphicsmagick git python3 pkgconf make cairo-dev pango-dev libjpeg-turbo-dev giflib-dev librsvg-dev
 
 USER rainbowbot
 WORKDIR /home/rainbowbot
