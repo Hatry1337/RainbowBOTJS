@@ -10,6 +10,7 @@ WORKDIR /home/rainbowbot/RainbowBOTJS
 RUN npm i
 RUN npx tsc
 
-RUN apk del git python3 pkgconf
+USER root
+RUN apk del git python3 pkgconf make g++ cairo-dev pango-dev libjpeg-turbo-dev giflib-dev librsvg-dev
 
 CMD node dist/bot.js
