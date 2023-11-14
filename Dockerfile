@@ -1,4 +1,4 @@
-FROM node:19
+FROM node:19-alpine
 RUN useradd -ms /bin/bash rainbowbot
 
 RUN apt update && apt install -y graphicsmagick
