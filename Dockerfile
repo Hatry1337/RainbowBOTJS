@@ -19,9 +19,12 @@ RUN apk add --no-cache --virtual .build-deps \
     ; \ 
     npm i && npm tsq \ 
     ; \ 
-    apk del --no-network .build-deps
+    apk del --no-network .build-deps \ 
+    ; \ 
+    rm -rf /root/.npm /root/.cache
 
 RUN chown -R rainbowbot:rainbowbot /home/rainbowbot
 
 USER rainbowbot
+WORKDIR /home/rainbowbot/RainbowBOTJS
 CMD node dist/bot.js
