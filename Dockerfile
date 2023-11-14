@@ -1,13 +1,12 @@
 FROM node:19-alpine
-RUN useradd -ms /bin/bash rainbowbot
+RUN adduser -Dg rainbowbot -g /bin/sh rainbowbot
 
-RUN apt update && apt install -y graphicsmagick
+RUN apk add graphicsmagick git
 
 USER rainbowbot
 WORKDIR /home/rainbowbot
 RUN git clone https://github.com/Hatry1337/RainbowBOTJS
 WORKDIR /home/rainbowbot/RainbowBOTJS
-RUN mkdir -p ~/.local/share/fonts && cp assets/fonts/* ~/.local/share/fonts && fc-cache -f -v
 RUN npm i
 RUN npx tsc
 
