@@ -1,6 +1,8 @@
 FROM node:19-alpine
 RUN adduser -Dg rainbowbot -g /bin/sh rainbowbot
 
+RUN apk add --no-cache graphicsmagick
+
 RUN apk add --no-cache --virtual .build-deps \
     git \ 
     python3 \ 
@@ -21,9 +23,15 @@ RUN apk add --no-cache --virtual .build-deps \
     ; \ 
     apk del --no-network .build-deps \ 
     ; \ 
-    rm -rf /root/.npm /root/.cache
+    rm -rf \ 
+        /root/.npm \ 
+        /root/.cache \ 
+        /home/rainbowbot/RainbowBOTJS/src \ 
+        /home/rainbowbot/RainbowBOTJS/typings \ 
+    ; \ 
+    apk add --no-cache cairo pango libjpeg-turbo giflib librsvg
 
-RUN apk add --no-cache graphicsmagick cairo pango libjpeg-turbo giflib librsvg
+ 
 
 USER rainbowbot
 WORKDIR /home/rainbowbot/RainbowBOTJS
