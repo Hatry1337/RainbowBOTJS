@@ -17,7 +17,7 @@ RUN apk add --no-cache --virtual .build-deps \
     ; \
     cd /home/rainbowbot && git clone https://github.com/Hatry1337/RainbowBOTJS && cd RainbowBOTJS \ 
     ; \ 
-    npm i && npm tsq \ 
+    npm i && npx tsc \ 
     ; \ 
     chown -R rainbowbot:rainbowbot /home/rainbowbot \ 
     ; \ 
