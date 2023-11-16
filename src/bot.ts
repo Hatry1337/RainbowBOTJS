@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { Module, ModuleUUIDPair, Synergy } from "synergy3";
+import { GlobalLogger, Module, ModuleUUIDPair, Synergy } from "synergy3";
 import Discord from "discord.js";
 import fs from "fs";
 import crypto from "crypto";
@@ -35,6 +35,7 @@ import MkMeme from "./Modules/MkMeme/MkMeme";
 import ContextCategory from "./Modules/ContextCategory/ContextCategory";
 import { GlobalFonts } from "@napi-rs/canvas";
 import path from "path";
+import Prometheus from './Prometheus';
 
 GlobalFonts.registerFromPath(path.join(__dirname, "..", "..", "..", "assets", "fonts", "NotoColorEmoji-Regular.ttf"), "Noto Color Emoji");
 GlobalFonts.registerFromPath(path.join(__dirname, "..", "..", "..", "assets", "fonts", "arimobold.ttf"), "Arimo");
@@ -45,15 +46,16 @@ GlobalFonts.registerFromPath(path.join(__dirname, "..", "..", "..", "assets", "f
 declare global {
     namespace NodeJS {
         interface ProcessEnv {
-            TOKEN: string;
-            DBURI: string;
-            MASTER_GUILD: string;
-            NODE_ENV: 'development' | 'production';
-            TOPGG_TOKEN: string;
-            OSU_API_KEY: string;
-            DATA_DIR?: string;
-            LOGS_DIR?: string;
-            ADMIN_ID?: string;
+            TOKEN: string;                          // Discord BOT Token
+            DBURI: string;                          // Database URI to use with Sequelize
+            MASTER_GUILD: string;                   // Main guild to register bot's commands
+            NODE_ENV: 'development' | 'production'; // Runtime environment
+            TOPGG_TOKEN: string;                    // Auth token for TopGG bot monitoring
+            OSU_API_KEY: string;                    // API key to fetch osu! game stats
+            DATA_DIR?: string;                      // Directory path for configuration files 
+            LOGS_DIR?: string;                      // Path to directory where to store logs
+            ADMIN_ID?: string;                      // Discord user id to pass admin checks
+            PROM_PFX?: string;                      // Prometheus metrics prefix
         }
     }
 }
@@ -152,5 +154,17 @@ const bot = new Synergy({
 }, modulePairs);
 
 (async () => {
+    GlobalLogger.root.info("Starting Prometheus metrics client...");
+    if(process.env.PROM_PORT) {
+        Prometheus.startHttpServer(parseInt(process.env.PROM_PORT));
+        GlobalLogger.root.info("Started Prometheus metrics client on http://127.0.0.1:" + process.env.PROM_PORT);
+    } else {
+        Prometheus.startHttpServer();
+        GlobalLogger.root.info("Started Prometheus metrics client on http://127.0.0.1:9258");
+    }
+    let g = Prometheus.createGauge("start_time", "BOT start time");
+
+    const stop = g.startTimer();
     await bot.login(process.env.TOKEN);
+    stop();
 })();

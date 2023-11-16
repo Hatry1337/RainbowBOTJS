@@ -110,6 +110,6 @@ export default class ClassChecker extends Module{
     }
 
     public async UnLoad() {
-        clearInterval(this._checkInterval);
+        clearInterval(this._checkInterval as unknown as number);
     }
 }

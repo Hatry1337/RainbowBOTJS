@@ -1,0 +1,33 @@
+version: '3'
+
+services:
+  rainbowbot:
+    build:
+      context: .
+    environment:
+      TOKEN: ${TOKEN}
+      DBURI: postgres://rbot:pgrbot9258@postgres:5432/rbot
+      NODE_ENV: ${NODE_ENV}
+      MASTER_GUILD: ${MASTER_GUILD}
+      TOPGG_TOKEN: ${TOPGG_TOKEN}
+      OSU_API_KEY: ${OSU_API_KEY}
+      DATA_DIR: /home/rainbowbot/data
+      LOGS_DIR: /home/rainbowbot/logs
+      ADMIN_ID: ${ADMIN_ID}
+      PROM_PFX: ${PROM_PFX}
+    volumes:
+      - ./data:/home/rainbowbot/data
+      - ./logs:/home/rainbowbot/logs
+    ports:
+      - "9258:9258"
+
+  postgres:
+    image: postgres:alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_INITDB_ARGS: "--locale-provider=icu --icu-locale=en-US"
+      POSTGRES_USER: rbot
+      POSTGRES_PASSWORD: pgrbot9258
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - ./data/pgdata:/var/lib/postgresql/data/pgdata
