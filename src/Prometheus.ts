@@ -13,7 +13,7 @@ let httpServer: http.Server | undefined;
 const lazyParamsMap = new Map<string, client.Gauge>();
 
 export default class Metrics {
-    public static startHttpServer(port: number = 9258, host: string = "127.0.0.1") {
+    public static startHttpServer(port: number = 9258, host: string = "0.0.0.0") {
         if(httpServer) {
             throw new Error("Server is already running!");
         }
