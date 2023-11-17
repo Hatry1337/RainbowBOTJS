@@ -1,4 +1,4 @@
-FROM node:19-alpine
+FROM node:20-alpine3.18
 RUN adduser -Dg rainbowbot -u 2770 -g /bin/sh rainbowbot
 
 RUN apk add --no-cache graphicsmagick

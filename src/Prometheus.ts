@@ -37,15 +37,19 @@ export default class Metrics {
         
         res.statusCode = 404;
         res.setHeader("Content-Type", "application/json; charset=utf-8;");
-        res.write("{error: 1, status: 404, message: \"not found.\"}");
+        res.write("{ \"error\": 1, \"status\": 404, \"message\": \"not found.\"}");
         return res.end();
     }
 
-    public static createGauge(name: string, help: string, callback?: client.CollectFunction<client.Gauge>, pfx: boolean = true) {
+    public static createGauge(name: string, help: string, callback?: (gauge: client.Gauge) => void, pfx: boolean = true) {
         return new client.Gauge({
             name: pfx ? ((process.env.PROM_PFX ?? "rainbowbot_") + name) : name,
             help,
-            collect: callback,
+            collect: callback
+                ?   function () {
+                        return callback(this);
+                    }
+                :   undefined,
             registers: [ botRegistry ]
         });
     }

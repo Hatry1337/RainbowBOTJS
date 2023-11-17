@@ -6,6 +6,10 @@ import EconomyCTL from "./Controls/EconomyCTL";
 import Control from "./Controls/Control";
 import { MiningCTL } from "./Controls/MiningCTL";
 import TopCTL from "./Controls/TopCTL";
+import Prometheus from "../../Prometheus";
+import { StorageUserEconomyInfo } from "synergy3/dist/Models/StorageUserEconomyInfo";
+import { ItemsRegistry } from "./Game/Items/ItemsRegistry";
+import ItemMiner from "./Game/Items/ItemMiner";
 
 export const ECONOMY_CONSTANTS = {
     wattHourCost: 0.00727
@@ -44,6 +48,34 @@ export default class Economy extends Module{
                 await c.Init();
             }
         }
+
+        let m_economy_items = Prometheus.createGauge("economy_items", "Total count of economy items");
+        Prometheus.createGauge("economy_players", "Total count of economy players", async (g) => {
+            let players = await this.storage.getPlayersData();
+            
+            g.set(players.length);
+            m_economy_items.set(players.reduce((pAcc, pCurr) => pAcc + pCurr.inventory.reduce((iAcc, iCurr) => iAcc + iCurr.size, 0), 0));
+        });
+        
+        Prometheus.createGauge("economy_points_total", "Count of total economy points", async (g) => {
+            g.set(await StorageUserEconomyInfo.sum("economyPoints"));
+        });
+        
+        let m_economy_total_power_consumption = Prometheus.createGauge("economy_total_power_consumption", "Total economy power consumption");
+        Prometheus.createGauge("economy_total_mining_rate", "Total economy mining rate", async (g) => {
+            g.reset();
+            m_economy_total_power_consumption.reset();
+            let players = await this.storage.getPlayersData();
+            for(let p of players) {
+                let items = p.inventory.map(i => ({ item: ItemsRegistry.getItem(i.itemId), count: i.size }));
+                for(let i of items) {
+                    if(i.item instanceof ItemMiner) {
+                        g.inc(i.item.miningRate * i.count);
+                        m_economy_total_power_consumption.inc(i.item.powerConsumption * i.count);
+                    }
+                }
+            }
+        });
     }
 
     public async UnLoad(){

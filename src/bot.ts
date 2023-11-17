@@ -56,6 +56,8 @@ declare global {
             LOGS_DIR?: string;                      // Path to directory where to store logs
             ADMIN_ID?: string;                      // Discord user id to pass admin checks
             PROM_PFX?: string;                      // Prometheus metrics prefix
+            PROM_PORT?: string;                     // Prometheus http server port
+            PROM_BIND?: string;                     // Prometheus http server bind host
         }
     }
 }
@@ -155,16 +157,51 @@ const bot = new Synergy({
 
 (async () => {
     GlobalLogger.root.info("Starting Prometheus metrics client...");
-    if(process.env.PROM_PORT) {
-        Prometheus.startHttpServer(parseInt(process.env.PROM_PORT));
-        GlobalLogger.root.info("Started Prometheus metrics client on http://0.0.0.0:" + process.env.PROM_PORT);
-    } else {
-        Prometheus.startHttpServer();
-        GlobalLogger.root.info("Started Prometheus metrics client on http://0.0.0.0:9258");
-    }
-    let g = Prometheus.createGauge("start_time", "BOT start time");
+    let port = process.env.PROM_PORT ? parseInt(process.env.PROM_PORT) : 9258;
+    let host = process.env.PROM_BIND ?? "0.0.0.0";
 
-    const stop = g.startTimer();
+
+    Prometheus.startHttpServer(port, host);
+    GlobalLogger.root.info(`Started Prometheus metrics client on http://:${host}:${port}`);
+
+    let m_start_time = Prometheus.createGauge("start_time", "BOT start time");
+
+    const stop = m_start_time.startTimer();
     await bot.login(process.env.TOKEN);
     stop();
+
+    Prometheus.createGauge("discord_gw_ping", "Ping of discord gateway websocket", (g) => {
+        g.set(bot.client.ws.ping);
+    });
+
+    Prometheus.createGauge("bot_guilds", "Count of bot's discord guilds", (g) => {
+        g.set(bot.client.guilds.cache.size);
+    });
+
+    Prometheus.createGauge("bot_users", "Count of bot's discord users", (g) => {
+        g.reset();
+        bot.client.guilds.cache.each(guild => g.inc(guild.memberCount));
+    });
+
+
+    let m_bot_interactions = Prometheus.createGauge("bot_interactions", "BOT interactions count");
+    let m_bot_interactions_chat_command = Prometheus.createGauge("bot_interactions_chat_command", "BOT chat command interactions count");
+    let m_bot_interactions_menu_command = Prometheus.createGauge("bot_interactions_menu_command", "BOT menu command interactions count");
+    let m_bot_interactions_component_command = Prometheus.createGauge("bot_interactions_component_command", "BOT component command interactions count");
+
+    bot.client.on("interactionCreate", (interaction) => {
+        m_bot_interactions.inc(1);
+        
+        if(interaction.isChatInputCommand()) {
+            m_bot_interactions_chat_command.inc(1);
+        }
+
+        if(interaction.isContextMenuCommand()) {
+            m_bot_interactions_menu_command.inc(1);
+        }
+
+        if(interaction.isMessageComponent()) {
+            m_bot_interactions_component_command.inc(1);
+        }
+    });
 })();
