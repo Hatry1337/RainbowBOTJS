@@ -157,10 +157,10 @@ const bot = new Synergy({
     GlobalLogger.root.info("Starting Prometheus metrics client...");
     if(process.env.PROM_PORT) {
         Prometheus.startHttpServer(parseInt(process.env.PROM_PORT));
-        GlobalLogger.root.info("Started Prometheus metrics client on http://127.0.0.1:" + process.env.PROM_PORT);
+        GlobalLogger.root.info("Started Prometheus metrics client on http://0.0.0.0:" + process.env.PROM_PORT);
     } else {
         Prometheus.startHttpServer();
-        GlobalLogger.root.info("Started Prometheus metrics client on http://127.0.0.1:9258");
+        GlobalLogger.root.info("Started Prometheus metrics client on http://0.0.0.0:9258");
     }
     let g = Prometheus.createGauge("start_time", "BOT start time");
 
