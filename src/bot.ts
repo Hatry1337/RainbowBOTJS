@@ -36,6 +36,7 @@ import ContextCategory from "./Modules/ContextCategory/ContextCategory";
 import { GlobalFonts } from "@napi-rs/canvas";
 import path from "path";
 import Prometheus from './Prometheus';
+
 import { StorageUser } from 'synergy3/dist/Models/StorageUser';
 import sequelize from 'sequelize';
 
@@ -213,8 +214,8 @@ const bot = new Synergy({
                 [sequelize.fn('count', sequelize.col('unifiedId')), 'totalUsers'],
             ],
             raw: true
-        }) as unknown as { totalUsers: number };
-        
-        g.set(result.totalUsers);
+        }) as unknown as { totalUsers: number }[];
+        console.log(result);
+        g.set(result[0].totalUsers);
     });
 })();
