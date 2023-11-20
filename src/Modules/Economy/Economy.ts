@@ -64,11 +64,10 @@ export default class Economy extends Module{
                     [sequelize.fn('sum', sequelize.col('economyPoints')), 'totalPoints'],
                 ],
                 raw: true
-            }) as unknown as { totalPoints: number }[];
+            }) as unknown as { totalPoints: number | string }[];
             
-            g.set(result[0].totalPoints);
-            console.log(result);
-        });
+            g.set(parseInt(`${result[0].totalPoints}`));
+        }); 
         
         let m_economy_total_power_consumption = Prometheus.createGauge("economy_total_power_consumption", "Total economy power consumption");
         Prometheus.createGauge("economy_total_mining_rate", "Total economy mining rate", async (g) => {

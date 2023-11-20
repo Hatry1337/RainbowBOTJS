@@ -214,8 +214,8 @@ const bot = new Synergy({
                 [sequelize.fn('count', sequelize.col('unifiedId')), 'totalUsers'],
             ],
             raw: true
-        }) as unknown as { totalUsers: number }[];
-        console.log(result);
-        g.set(result[0].totalUsers);
+        }) as unknown as { totalUsers: number | string }[];
+            
+        g.set(parseInt(`${result[0].totalUsers}`));
     });
 })();
