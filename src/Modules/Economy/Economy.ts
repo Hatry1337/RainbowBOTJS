@@ -10,6 +10,7 @@ import Prometheus from "../../Prometheus";
 import { StorageUserEconomyInfo } from "synergy3/dist/Models/StorageUserEconomyInfo";
 import { ItemsRegistry } from "./Game/Items/ItemsRegistry";
 import ItemMiner from "./Game/Items/ItemMiner";
+import sequelize from "sequelize";
 
 export const ECONOMY_CONSTANTS = {
     wattHourCost: 0.00727
@@ -58,7 +59,14 @@ export default class Economy extends Module{
         });
         
         Prometheus.createGauge("economy_points_total", "Count of total economy points", async (g) => {
-            g.set(await StorageUserEconomyInfo.sum("economyPoints"));
+            let result = await StorageUserEconomyInfo.findAll({
+                attributes: [
+                    [sequelize.fn('sum', sequelize.col('economyPoints')), 'totalPoints'],
+                ],
+                raw: true
+            }) as unknown as { totalPoints: number };
+            
+            g.set(result.totalPoints);
         });
         
         let m_economy_total_power_consumption = Prometheus.createGauge("economy_total_power_consumption", "Total economy power consumption");

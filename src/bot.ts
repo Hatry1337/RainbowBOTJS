@@ -36,6 +36,8 @@ import ContextCategory from "./Modules/ContextCategory/ContextCategory";
 import { GlobalFonts } from "@napi-rs/canvas";
 import path from "path";
 import Prometheus from './Prometheus';
+import { StorageUser } from 'synergy3/dist/Models/StorageUser';
+import sequelize from 'sequelize';
 
 GlobalFonts.registerFromPath(path.join(__dirname, "..", "..", "..", "assets", "fonts", "NotoColorEmoji-Regular.ttf"), "Noto Color Emoji");
 GlobalFonts.registerFromPath(path.join(__dirname, "..", "..", "..", "assets", "fonts", "arimobold.ttf"), "Arimo");
@@ -162,7 +164,7 @@ const bot = new Synergy({
 
 
     Prometheus.startHttpServer(port, host);
-    GlobalLogger.root.info(`Started Prometheus metrics client on http://:${host}:${port}`);
+    GlobalLogger.root.info(`Started Prometheus metrics client on http://${host}:${port}`);
 
     let m_start_time = Prometheus.createGauge("start_time", "BOT start time");
 
@@ -203,5 +205,16 @@ const bot = new Synergy({
         if(interaction.isMessageComponent()) {
             m_bot_interactions_component_command.inc(1);
         }
+    });
+
+    Prometheus.createGauge("database_users", "Count of total database users", async (g) => {
+        let result = await StorageUser.findAll({
+            attributes: [
+                [sequelize.fn('count', sequelize.col('unifiedId')), 'totalUsers'],
+            ],
+            raw: true
+        }) as unknown as { totalUsers: number };
+        
+        g.set(result.totalUsers);
     });
 })();
