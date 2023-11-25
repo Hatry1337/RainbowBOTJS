@@ -218,4 +218,14 @@ const bot = new Synergy({
             
         g.set(parseInt(`${result[0].totalUsers}`));
     });
+
+    Prometheus.createGauge("bot_users_cache_keys", "Count of users cached by bot", async (g) => {    
+        g.set(bot.users.getCacheStats().keys);
+    });
+    Prometheus.createGauge("bot_users_cache_hits", "Count of users cache hits", async (g) => {    
+        g.set(bot.users.getCacheStats().hits);
+    });
+    Prometheus.createGauge("bot_users_cache_misses", "Count of users cache misses", async (g) => {    
+        g.set(bot.users.getCacheStats().misses);
+    });
 })();
