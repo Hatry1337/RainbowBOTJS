@@ -48,7 +48,7 @@ export class ShopCTL extends Control {
     }
 
     public async handleInteraction(interaction: Discord.ChatInputCommandInteraction, user: User){
-        let player = await this.storage.getPlayer(user);
+        let player = await this.storage.get(user.unifiedId);
         if(!player){
             player = await this.storage.createPlayer(user);
         }
@@ -85,7 +85,7 @@ export class ShopCTL extends Control {
     }
 
     public async handlePreBuyInteraction(interaction: Discord.SelectMenuInteraction, user: User){
-        let player = await this.storage.getPlayer(user);
+        let player = await this.storage.get(user.unifiedId);
         if(!player){
             player = await this.storage.createPlayer(user);
         }
@@ -149,7 +149,7 @@ export class ShopCTL extends Control {
     }
 
     public async handleFinalBuyInteraction(interaction: Discord.ButtonInteraction, user: User, category: number, item: number, amount: number){
-        let player = await this.storage.getPlayer(user);
+        let player = await this.storage.get(user.unifiedId);
         if(!player){
             player = await this.storage.createPlayer(user);
         }
@@ -171,7 +171,7 @@ export class ShopCTL extends Control {
             throw new SynergyUserError(`Not enough points on your balance (${player.user.economy.points}, you want buy for ${amount * shop_item.price})`);
         }
 
-        await this.storage.savePlayer(player);
+        await this.storage.savePlayer(player.user.unifiedId);
 
         let emb =  new Discord.EmbedBuilder({
             title: `You successfully purchased ${shop_item.item.item.name} x${amount} for ${amount * shop_item.price} ${CEmojis.PointCoin}`,

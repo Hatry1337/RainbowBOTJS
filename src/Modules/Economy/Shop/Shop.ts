@@ -11,7 +11,6 @@ export interface IShopCategory {
     name: string;
     entries: ShopEntry[];
 }
-
 export default class Shop {
     public categories: IShopCategory[] = [];
     private watchTimer: NodeJS.Timeout;

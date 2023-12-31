@@ -9,23 +9,11 @@ import ItemStack from "../Game/ItemStack";
 import Player from "../Game/Player";
 import Room from "../Game/Room";
 import ShopEntry from "../Shop/ShopEntry";
-import CachedInstance from "./CachedInstance";
+import CachedManager from "./CachedManager";
 
-export class StorageWrapper{
-    public cachePlayers: Map<string, CachedInstance<Player>> = new Map();
-    private timer: NodeJS.Timeout;
+export class StorageWrapper extends CachedManager<Player>{
     constructor(public bot: Synergy, private UUID: string){
-        this.timer = setInterval(() => {
-            this.cachePlayers.forEach((val, key) => {
-                if(!val.isValid()){
-                    this.cachePlayers.delete(key);
-                }
-            })
-        }, 60000);
-
-        bot.events.once("Stop", () => {
-            clearInterval(this.timer);
-        });
+        super();
     }
 
     public async createRootObject(force: boolean = false){
@@ -86,41 +74,48 @@ export class StorageWrapper{
         container.set("data", data);
     }
 
-    public async getPlayer(user: User, force: boolean = false){
-        let pdata = await this.getPlayerData(user.unifiedId);
+    public async fetchOne(key: string): Promise<Player | undefined> {
+        let pdata = await this.getPlayerData(key);
         if(!pdata) return;
 
-        let pcache = this.cachePlayers.get(user.unifiedId);
-        let player: Player;
-        if(!pcache || !pcache.isValid() || force){
-            player = new Player(user);
-            player.inventory = pdata.inventory.map(i => new ItemStack(ItemsRegistry.getItem(i.itemId)!, i.size, i.uuid, i.meta));
-            player.rooms = pdata.rooms.map(r => {
-                let room = new Room(ItemsRegistry.getItem(r.referenceId) as ItemRoom);
-                room.placedItems = r.placedItems.map(i => new ItemStack(ItemsRegistry.getItem(i.itemId)! as ItemPlaceable, i.size, i.uuid, i.meta));
-                return room;
-            });
-            this.cachePlayers.set(user.unifiedId, new CachedInstance(player, 30 * 60 * 1000));
-        }else{
-            player = pcache.instance;
-        }
+        let user = await this.bot.users.get(key);
+
+        if(!user) return;
+
+        let player = new Player(user);
+        player.inventory = pdata.inventory.map(i => new ItemStack(ItemsRegistry.getItem(i.itemId)!, i.size, i.uuid, i.meta));
+        player.rooms = pdata.rooms.map(r => {
+            let room = new Room(ItemsRegistry.getItem(r.referenceId) as ItemRoom);
+            room.placedItems = r.placedItems.map(i => new ItemStack(ItemsRegistry.getItem(i.itemId)! as ItemPlaceable, i.size, i.uuid, i.meta));
+            return room;
+        });
+
+        this.cacheStorage.set(key, player);
         return player;
     }
 
-    public async savePlayer(player: Player){
-        await this.setPlayerData(player.user.unifiedId, player.toObject());
-        let pcache = this.cachePlayers.get(player.user.unifiedId);
-        if(!pcache){
-            this.cachePlayers.set(player.user.unifiedId, new CachedInstance(player, 30 * 60 * 1000));
-        }else{
-            pcache.instance = player;
-            pcache.cachedAt = new Date();
+    public async fetchBulk(keys: string[]): Promise<Map<string, Player>> {
+        let playerMap = new Map();
+        for(let k of keys) {
+            let player = await this.fetchOne(k);
+            if(player) {
+                playerMap.set(k, player);
+            }
+        }
+        return playerMap;
+    }
+
+    public async savePlayer(id: string){
+        let player = await this.get(id);
+        if(player) {
+            await this.setPlayerData(player.user.unifiedId, player.toObject());
         }
     }
 
     public async createPlayer(user: User){
         let player = new Player(user);
-        await this.savePlayer(player);
+        this.cacheStorage.set(user.unifiedId, player);
+        await this.savePlayer(user.unifiedId);
         return player;
     }
 }

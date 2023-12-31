@@ -84,7 +84,7 @@ export class ItemsCTL extends Control{
     }
 
     public async handleInteraction(interaction: Discord.ChatInputCommandInteraction, user: User){
-        let player = await this.storage.getPlayer(user);
+        let player = await this.storage.get(user.unifiedId);
         if(!player){
             player = await this.storage.createPlayer(user);
         }
@@ -130,7 +130,7 @@ export class ItemsCTL extends Control{
     }
 
     public async handleInfoInteraction(interaction: Discord.StringSelectMenuInteraction, user: User){
-        let player = await this.storage.getPlayer(user);
+        let player = await this.storage.get(user.unifiedId);
         if(!player){
             player = await this.storage.createPlayer(user);
         }
@@ -187,7 +187,7 @@ export class ItemsCTL extends Control{
     }
 
     public async handleUseItemInteraction(interaction: Discord.ButtonInteraction, user: User, slot: number){
-        let player = await this.storage.getPlayer(user);
+        let player = await this.storage.get(user.unifiedId);
         if(!player){
             player = await this.storage.createPlayer(user);
         }
@@ -206,7 +206,7 @@ export class ItemsCTL extends Control{
         }
 
         await item.item.use(item, player);
-        await this.storage.savePlayer(player);
+        await this.storage.savePlayer(player.user.unifiedId);
 
         let emb =  new Discord.EmbedBuilder({
             title: 'You are sucessfully used "' + item.item.name + '".',
@@ -218,7 +218,7 @@ export class ItemsCTL extends Control{
     }
 
     public async handlePlaceItemInteraction(interaction: Discord.ButtonInteraction, user: User, slot: number){
-        let player = await this.storage.getPlayer(user);
+        let player = await this.storage.get(user.unifiedId);
         if(!player){
             player = await this.storage.createPlayer(user);
         }
@@ -260,7 +260,7 @@ export class ItemsCTL extends Control{
     }
 
     public async handlePlaceItemInRoomInteraction(interaction: Discord.SelectMenuInteraction, user: User, item_slot: number){
-        let player = await this.storage.getPlayer(user);
+        let player = await this.storage.get(user.unifiedId);
         if(!player){
             player = await this.storage.createPlayer(user);
         }
@@ -286,7 +286,7 @@ export class ItemsCTL extends Control{
             throw new SynergyUserError("Can't place item in this room. Not enough slots or power grid.");
         }
 
-        await this.storage.savePlayer(player);
+        await this.storage.savePlayer(player.user.unifiedId);
 
         let emb =  new Discord.EmbedBuilder({
             title: `You are sucessfully placed "${item.item.name}" in room "${room.reference.name}".`,

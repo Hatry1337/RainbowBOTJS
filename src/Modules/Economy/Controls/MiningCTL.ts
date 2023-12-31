@@ -20,7 +20,7 @@ export class MiningCTL extends Control{
     }
 
     public async handleMinersRedeem(interaction: Discord.ChatInputCommandInteraction, user: User){
-        let player = await this.storage.getPlayer(user);
+        let player = await this.storage.get(user.unifiedId);
         if(!player){
             player = await this.storage.createPlayer(user);
         }
@@ -58,7 +58,7 @@ export class MiningCTL extends Control{
         }
 
         player.restackInventory();
-        await this.storage.savePlayer(player);
+        await this.storage.savePlayer(player.user.unifiedId);
 
         let elec_bill = totalPowerConsumed * ECONOMY_CONSTANTS.wattHourCost;
         let total_earn = totalPoints - elec_bill;
