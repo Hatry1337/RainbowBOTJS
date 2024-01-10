@@ -12,6 +12,8 @@ import { ItemsRegistry } from "./Game/Items/ItemsRegistry";
 import ItemMiner from "./Game/Items/ItemMiner";
 import sequelize from "sequelize";
 
+export type NumberFormatter = (n: number) => string;
+
 export const ECONOMY_CONSTANTS = {
     wattHourCost: 0.00727
 }
@@ -48,6 +50,27 @@ export default class Economy extends Module{
             new MiningCTL(this.bot, this, this.storage),
             new TopCTL(this.bot, this, this.storage)
         ]
+    }
+
+    public numFormatterFactory(unifiedId: string): NumberFormatter;
+    public numFormatterFactory(value: boolean): NumberFormatter;
+    public numFormatterFactory(unifiedIdOrValue: string | boolean): NumberFormatter {
+        return (num: number) => {
+            let flag: boolean;
+            if(typeof unifiedIdOrValue === "boolean") {
+                flag = unifiedIdOrValue;
+            } else {
+                flag = this.configShortNumbers.getValue(unifiedIdOrValue) ?? false;
+            }
+
+            if(flag) {
+                return Intl.NumberFormat('en-US', {
+                    notation: "compact",
+                    maximumFractionDigits: 3
+                }).format(num);
+            }
+            return parseFloat(num.toFixed(5)).toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",");
+        }
     }
 
     public async Init(){

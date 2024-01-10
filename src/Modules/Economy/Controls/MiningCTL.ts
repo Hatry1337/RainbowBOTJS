@@ -66,16 +66,7 @@ export class MiningCTL extends Control{
         user.economy.points += totalPoints;
         user.economy.points -= elec_bill;
 
-        const fnum = (num: number) => {
-            if(this.economy.configShortNumbers.getValue(user.unifiedId)) {
-                return Intl.NumberFormat('en-US', {
-                    notation: "compact",
-                    maximumFractionDigits: 3
-                }).format(num);
-            }
-
-            return num.toFixed(5).replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",");
-        }
+        let fnum = this.economy.numFormatterFactory(user.unifiedId);
 
         let miningTime = Utils.formatTime(Math.floor((new Date().getTime() - minstart.getTime()) / 1000));
 
