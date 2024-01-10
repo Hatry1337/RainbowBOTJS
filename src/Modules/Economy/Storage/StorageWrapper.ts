@@ -14,6 +14,7 @@ import CachedManager from "./CachedManager";
 export class StorageWrapper extends CachedManager<Player>{
     constructor(public bot: Synergy, private UUID: string){
         super();
+        this.cacheStorage.on("del", this.onCacheEntryDeleted.bind(this));
     }
 
     public async createRootObject(force: boolean = false){
@@ -117,5 +118,16 @@ export class StorageWrapper extends CachedManager<Player>{
         this.cacheStorage.set(user.unifiedId, player);
         await this.savePlayer(user.unifiedId);
         return player;
+    }
+
+    public override async destroy() {
+        for(let k of this.cacheStorage.keys()) {
+            await this.onCacheEntryDeleted(k, this.cacheStorage.get(k)!);
+        }
+        await super.destroy();
+    }
+
+    private async onCacheEntryDeleted(unifiedId: string, player: Player) {
+        await this.setPlayerData(unifiedId, player.toObject());
     }
 }

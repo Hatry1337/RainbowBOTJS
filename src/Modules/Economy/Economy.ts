@@ -1,4 +1,4 @@
-import { Access, AccessTarget, Module, Synergy } from "synergy3";
+import { Access, AccessTarget, EphemeralConfigEntry, Module, Synergy } from "synergy3";
 import { StorageWrapper } from "./Storage/StorageWrapper";
 import { ItemsCTL } from "./Controls/ItemsCTL";
 import { ShopCTL } from "./Controls/ShopCTL";
@@ -27,8 +27,17 @@ export default class Economy extends Module{
     private storage: StorageWrapper;
     private controls: Control[];
 
+    public configShortNumbers: EphemeralConfigEntry<"bool">;
+
     constructor(bot: Synergy, UUID: string) {
         super(bot, UUID);
+
+        this.configShortNumbers = this.bot.config.defaultConfigEntry("user", this.Name, new EphemeralConfigEntry(
+            "economy_short_numbers",
+            "Use short numbers in economy module (like 1.2k, 6.5M, etc.)",
+            "bool",
+            false
+        ));
 
         this.storage = new StorageWrapper(this.bot, this.UUID);
 
