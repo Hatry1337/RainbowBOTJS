@@ -93,7 +93,7 @@ export default class Economy extends Module{
         Prometheus.createGauge("economy_points_total", "Count of total economy points", async (g) => {
             let result = await StorageUserEconomyInfo.findAll({
                 attributes: [
-                    [sequelize.fn('sum', sequelize.cast(sequelize.col('economyPoints'), 'integer')), 'totalPoints'],
+                    [sequelize.fn('sum', sequelize.cast(sequelize.col('economyPoints'), 'bigint')), 'totalPoints'],
                 ],
                 raw: true
             }) as unknown as { totalPoints: number | string }[];
