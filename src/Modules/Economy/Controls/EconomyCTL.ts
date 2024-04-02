@@ -126,7 +126,7 @@ export default class EconomyCTL extends Control{
         let target_user = await this.economy.bot.users.fetchOne(interaction.user.id);
         if(!target_user) throw new SynergyUserError("Target user doesn't exist.");
 
-        let target_player = await this.storage.getPlayer(target_user);
+        let target_player = await this.storage.get(target_user.unifiedId);
         if(!target_player) throw new SynergyUserError("Target player doesn't exist.");
 
         let item_id = interaction.options.getString("item_id", true);
@@ -136,7 +136,7 @@ export default class EconomyCTL extends Control{
         if(!item) throw new SynergyUserError("Item with this id doesn't exist.");
 
         target_player.tryStackItem(new ItemStack(item, amount));
-        await this.storage.savePlayer(target_player);
+        await this.storage.savePlayer(target_user.unifiedId);
 
         let emb = new Discord.EmbedBuilder({
             title: `Successfully gived "${item.name}" x${amount} to ${target_user.nickname}.`,
@@ -151,7 +151,7 @@ export default class EconomyCTL extends Control{
         let target_user = await this.economy.bot.users.fetchOne(interaction.user.id);
         if(!target_user) throw new SynergyUserError("Target user doesn't exist.");
 
-        let target_player = await this.storage.getPlayer(target_user);
+        let target_player = await this.storage.get(target_user.unifiedId);
         if(!target_player) throw new SynergyUserError("Target player doesn't exist.");
 
         let item_id = interaction.options.getString("item_id", true);
@@ -168,7 +168,7 @@ export default class EconomyCTL extends Control{
             deleted_item.setSize(final_amount);
         }
         target_player.updateInventory();
-        await this.storage.savePlayer(target_player);
+        await this.storage.savePlayer(target_user.unifiedId);
 
         let emb = new Discord.EmbedBuilder({
             title: `Successfully deleted "${deleted_item.item.name}" x${amount} from ${target_user.nickname}.`,

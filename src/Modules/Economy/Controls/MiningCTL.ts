@@ -1,4 +1,4 @@
-import { Colors, GlobalLogger, Synergy, SynergyUserError, User, Utils } from "synergy3";
+import { Colors, CommonConfigEntry, GlobalLogger, Synergy, SynergyUserError, User, Utils } from "synergy3";
 import { StorageWrapper } from "../Storage/StorageWrapper";
 import Discord from "discord.js";
 import Economy, { ECONOMY_CONSTANTS } from "../Economy";
@@ -20,7 +20,7 @@ export class MiningCTL extends Control{
     }
 
     public async handleMinersRedeem(interaction: Discord.ChatInputCommandInteraction, user: User){
-        let player = await this.storage.getPlayer(user);
+        let player = await this.storage.get(user.unifiedId);
         if(!player){
             player = await this.storage.createPlayer(user);
         }
@@ -58,7 +58,7 @@ export class MiningCTL extends Control{
         }
 
         player.restackInventory();
-        await this.storage.savePlayer(player);
+        await this.storage.savePlayer(player.user.unifiedId);
 
         let elec_bill = totalPowerConsumed * ECONOMY_CONSTANTS.wattHourCost;
         let total_earn = totalPoints - elec_bill;
@@ -66,9 +66,7 @@ export class MiningCTL extends Control{
         user.economy.points += totalPoints;
         user.economy.points -= elec_bill;
 
-        function fnum(num: number){
-            return parseFloat(num.toFixed(5));
-        }
+        let fnum = this.economy.numFormatterFactory(user.unifiedId);
 
         let miningTime = Utils.formatTime(Math.floor((new Date().getTime() - minstart.getTime()) / 1000));
 

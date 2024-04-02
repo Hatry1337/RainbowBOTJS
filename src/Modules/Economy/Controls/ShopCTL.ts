@@ -1,7 +1,7 @@
 import { Access, Colors, GlobalLogger, Synergy, SynergyUserError, User } from "synergy3";
 import { StorageWrapper } from "../Storage/StorageWrapper";
 import Discord from "discord.js";
-import Economy from "../Economy";
+import Economy, { NumberFormatter } from "../Economy";
 import Shop from "../Shop/Shop";
 import RainbowBOTUtils, { CEmojis } from "../../../RainbowBOTUtils";
 import Control from "./Control";
@@ -25,18 +25,24 @@ export class ShopCTL extends Control {
         await this.shop.Init();
     }
 
-    public embedMessage(){
+    public embedMessage(numFormatter?: NumberFormatter){
+        let fnum = numFormatter ?? ((n: number) => n.toString());
+
         let emb = new Discord.EmbedBuilder({
             title: "Shop",
             color: 0xFFFF00
         });
+
         for(let c in this.shop.categories){
             let cat = this.shop.categories[c]; 
             let txt = "";
             for(let i in cat.entries){
                 let item = cat.entries[i];
                 let cross = item.stock === 0 ? "~~" : "";
-                txt += `${cross}**🔸 ${item.item.item.name}** - ${item.item.item.description} x${item.item.size} \nStock: ${item.stock}/${item.maxStock} 📦, Cost: ${RainbowBOTUtils.numReadable(item.price)} ${CEmojis.PointCoin}${cross}\n\n`;
+                txt +=  `${cross}**🔸 ${item.item.item.name}** - ` +
+                        `${item.item.item.description} x${item.item.size} \n` +
+                        `Stock: ${item.stock}/${item.maxStock} 📦, ` +
+                        `Cost: ${fnum(item.price)} ${CEmojis.PointCoin}${cross}\n\n`;
             }
             emb.addFields({
                 name: cat.name,
@@ -48,12 +54,14 @@ export class ShopCTL extends Control {
     }
 
     public async handleInteraction(interaction: Discord.ChatInputCommandInteraction, user: User){
-        let player = await this.storage.getPlayer(user);
+        let player = await this.storage.get(user.unifiedId);
         if(!player){
             player = await this.storage.createPlayer(user);
         }
 
-        let emb = this.embedMessage();
+        let fnum = this.economy.numFormatterFactory(user.unifiedId);
+
+        let emb = this.embedMessage(fnum);
         let menu = this.economy.createMessageSelectMenu([ Access.USER(user.unifiedId) ], -1, 300000);
         let items: Discord.SelectMenuOptionBuilder[] = []
 
@@ -65,7 +73,7 @@ export class ShopCTL extends Control {
                 if(i.stock !== 0){
                     items.push(
                         new Discord.SelectMenuOptionBuilder()
-                            .setLabel(`${c.name} -> ${i.item.item.name} (${i.price} points)`)
+                            .setLabel(`${c.name} -> ${i.item.item.name} (${fnum(i.price)} points)`)
                             .setValue(`buyitem.${ci}.${ii}`)
                     );
                 }
@@ -85,10 +93,12 @@ export class ShopCTL extends Control {
     }
 
     public async handlePreBuyInteraction(interaction: Discord.SelectMenuInteraction, user: User){
-        let player = await this.storage.getPlayer(user);
+        let player = await this.storage.get(user.unifiedId);
         if(!player){
             player = await this.storage.createPlayer(user);
         }
+
+        let fnum = this.economy.numFormatterFactory(user.unifiedId);
 
         let args = interaction.values[0].split(".");
         
@@ -108,13 +118,13 @@ export class ShopCTL extends Control {
             title: "Buy __" + shop_item.item.item.name + "__",
             color: Colors.Noraml,
             fields: [
-                { name: "Price", value: `${shop_item.price} ${CEmojis.PointCoin}` },
+                { name: "Price", value: `${fnum(shop_item.price)} ${CEmojis.PointCoin}` },
                 { name: "Stock", value: `${shop_item.stock}/${shop_item.maxStock} 📦` },
             ],
             thumbnail: shop_item.item.item.iconUrl ? { url: shop_item.item.item.iconUrl } : undefined
         });
         
-        emb = ItemsCTL.generateItemInfo(shop_item.item.item, emb);
+        emb = ItemsCTL.generateItemInfo(shop_item.item.item, emb, fnum);
 
         let actionrow = new Discord.ActionRowBuilder<Discord.ButtonBuilder>();
 
@@ -149,10 +159,12 @@ export class ShopCTL extends Control {
     }
 
     public async handleFinalBuyInteraction(interaction: Discord.ButtonInteraction, user: User, category: number, item: number, amount: number){
-        let player = await this.storage.getPlayer(user);
+        let player = await this.storage.get(user.unifiedId);
         if(!player){
             player = await this.storage.createPlayer(user);
         }
+
+        let fnum = this.economy.numFormatterFactory(user.unifiedId);
 
         let shop_category = this.shop.categories[category];
         if(!shop_category) throw new Error("Unknown shop category provided.");
@@ -168,13 +180,13 @@ export class ShopCTL extends Control {
         }
 
         if(status === -2){
-            throw new SynergyUserError(`Not enough points on your balance (${player.user.economy.points}, you want buy for ${amount * shop_item.price})`);
+            throw new SynergyUserError(`Not enough points on your balance (${fnum(player.user.economy.points)}, you want buy for ${fnum(amount * shop_item.price)})`);
         }
 
-        await this.storage.savePlayer(player);
+        await this.storage.savePlayer(player.user.unifiedId);
 
         let emb =  new Discord.EmbedBuilder({
-            title: `You successfully purchased ${shop_item.item.item.name} x${amount} for ${amount * shop_item.price} ${CEmojis.PointCoin}`,
+            title: `You successfully purchased ${shop_item.item.item.name} x${amount} for ${fnum(amount * shop_item.price)} ${CEmojis.PointCoin}`,
             color: Colors.Noraml
         });
 

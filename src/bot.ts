@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { Module, ModuleUUIDPair, Synergy } from "synergy3";
+import { GlobalLogger, Module, ModuleUUIDPair, Synergy } from "synergy3";
 import Discord from "discord.js";
 import fs from "fs";
 import crypto from "crypto";
@@ -35,6 +35,10 @@ import MkMeme from "./Modules/MkMeme/MkMeme";
 import ContextCategory from "./Modules/ContextCategory/ContextCategory";
 import { GlobalFonts } from "@napi-rs/canvas";
 import path from "path";
+import Prometheus from './Prometheus';
+
+import { StorageUser } from 'synergy3/dist/Models/StorageUser';
+import sequelize from 'sequelize';
 
 GlobalFonts.registerFromPath(path.join(__dirname, "..", "..", "..", "assets", "fonts", "NotoColorEmoji-Regular.ttf"), "Noto Color Emoji");
 GlobalFonts.registerFromPath(path.join(__dirname, "..", "..", "..", "assets", "fonts", "arimobold.ttf"), "Arimo");
@@ -45,15 +49,18 @@ GlobalFonts.registerFromPath(path.join(__dirname, "..", "..", "..", "assets", "f
 declare global {
     namespace NodeJS {
         interface ProcessEnv {
-            TOKEN: string;
-            DBURI: string;
-            MASTER_GUILD: string;
-            NODE_ENV: 'development' | 'production';
-            TOPGG_TOKEN: string;
-            OSU_API_KEY: string;
-            DATA_DIR?: string;
-            LOGS_DIR?: string;
-            ADMIN_ID?: string;
+            TOKEN: string;                          // Discord BOT Token
+            DBURI: string;                          // Database URI to use with Sequelize
+            MASTER_GUILD: string;                   // Main guild to register bot's commands
+            NODE_ENV: 'development' | 'production'; // Runtime environment
+            TOPGG_TOKEN: string;                    // Auth token for TopGG bot monitoring
+            OSU_API_KEY: string;                    // API key to fetch osu! game stats
+            DATA_DIR?: string;                      // Directory path for configuration files 
+            LOGS_DIR?: string;                      // Path to directory where to store logs
+            ADMIN_ID?: string;                      // Discord user id to pass admin checks
+            PROM_PFX?: string;                      // Prometheus metrics prefix
+            PROM_PORT?: string;                     // Prometheus http server port
+            PROM_BIND?: string;                     // Prometheus http server bind host
         }
     }
 }
@@ -152,5 +159,73 @@ const bot = new Synergy({
 }, modulePairs);
 
 (async () => {
+    GlobalLogger.root.info("Starting Prometheus metrics client...");
+    let port = process.env.PROM_PORT ? parseInt(process.env.PROM_PORT) : 9258;
+    let host = process.env.PROM_BIND ?? "0.0.0.0";
+
+
+    Prometheus.startHttpServer(port, host);
+    GlobalLogger.root.info(`Started Prometheus metrics client on http://${host}:${port}`);
+
+    let m_start_time = Prometheus.createGauge("start_time", "BOT start time");
+
+    const stop = m_start_time.startTimer();
     await bot.login(process.env.TOKEN);
+    stop();
+
+    Prometheus.createGauge("discord_gw_ping", "Ping of discord gateway websocket", (g) => {
+        g.set(bot.client.ws.ping);
+    });
+
+    Prometheus.createGauge("bot_guilds", "Count of bot's discord guilds", (g) => {
+        g.set(bot.client.guilds.cache.size);
+    });
+
+    Prometheus.createGauge("bot_users", "Count of bot's discord users", (g) => {
+        g.reset();
+        bot.client.guilds.cache.each(guild => g.inc(guild.memberCount));
+    });
+
+
+    let m_bot_interactions = Prometheus.createGauge("bot_interactions", "BOT interactions count");
+    let m_bot_interactions_chat_command = Prometheus.createGauge("bot_interactions_chat_command", "BOT chat command interactions count");
+    let m_bot_interactions_menu_command = Prometheus.createGauge("bot_interactions_menu_command", "BOT menu command interactions count");
+    let m_bot_interactions_component_command = Prometheus.createGauge("bot_interactions_component_command", "BOT component command interactions count");
+
+    bot.client.on("interactionCreate", (interaction) => {
+        m_bot_interactions.inc(1);
+        
+        if(interaction.isChatInputCommand()) {
+            m_bot_interactions_chat_command.inc(1);
+        }
+
+        if(interaction.isContextMenuCommand()) {
+            m_bot_interactions_menu_command.inc(1);
+        }
+
+        if(interaction.isMessageComponent()) {
+            m_bot_interactions_component_command.inc(1);
+        }
+    });
+
+    Prometheus.createGauge("database_users", "Count of total database users", async (g) => {
+        let result = await StorageUser.findAll({
+            attributes: [
+                [sequelize.fn('count', sequelize.col('unifiedId')), 'totalUsers'],
+            ],
+            raw: true
+        }) as unknown as { totalUsers: number | string }[];
+            
+        g.set(parseInt(`${result[0].totalUsers}`));
+    });
+
+    Prometheus.createGauge("bot_users_cache_keys", "Count of users cached by bot", async (g) => {    
+        g.set(bot.users.getCacheStats().keys);
+    });
+    Prometheus.createGauge("bot_users_cache_hits", "Count of users cache hits", async (g) => {    
+        g.set(bot.users.getCacheStats().hits);
+    });
+    Prometheus.createGauge("bot_users_cache_misses", "Count of users cache misses", async (g) => {    
+        g.set(bot.users.getCacheStats().misses);
+    });
 })();

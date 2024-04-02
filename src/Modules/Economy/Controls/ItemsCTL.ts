@@ -2,7 +2,7 @@ import { Access, Colors, GlobalLogger, Synergy, SynergyUserError, User } from "s
 import { StorageWrapper } from "../Storage/StorageWrapper";
 import Discord from "discord.js";
 import Table from "cli-table";
-import Economy from "../Economy";
+import Economy, { NumberFormatter } from "../Economy";
 import ItemPlaceable from "../Game/Items/ItemPlaceable";
 import ItemStack from "../Game/ItemStack";
 import ItemMiner from "../Game/Items/ItemMiner";
@@ -24,7 +24,9 @@ export class ItemsCTL extends Control{
         .commit()
     }
 
-    public static generateItemInfo(item: Item, emb: Discord.EmbedBuilder){
+    public static generateItemInfo(item: Item, emb: Discord.EmbedBuilder, numFormatter?: NumberFormatter){
+        let fnum = numFormatter ?? ((n: number) => n.toString());
+
         let fields: Discord.APIEmbedField[] = [
             {
                 name: "ID",
@@ -57,13 +59,13 @@ export class ItemsCTL extends Control{
         if(item instanceof ItemMiner){
             fields.push({
                 name: "Miner",
-                value: `Mine CryptoPoints \nMining Rate: ${item.miningRate} CPT/Hour.`
+                value: `Mine CryptoPoints \nMining Rate: ${fnum(item.miningRate)} CPT/Hour.`
             });
         }
         if(item instanceof ItemPowerConsumer){
             fields.push({
                 name: "Power Consumer",
-                value: `Consumes electrical power: ${item.powerConsumption}W`
+                value: `Consumes electrical power: ${fnum(item.powerConsumption)}W`
             });
         }
         if(item instanceof ItemGroup){
@@ -75,7 +77,7 @@ export class ItemsCTL extends Control{
         if(item instanceof ItemPoints){
             fields.push({
                 name: "Item Points",
-                value: `After usage gives you \`${item.pointsAmount}\` points.`
+                value: `After usage gives you \`${fnum(item.pointsAmount)}\` points.`
             });
         }
 
@@ -84,11 +86,11 @@ export class ItemsCTL extends Control{
     }
 
     public async handleInteraction(interaction: Discord.ChatInputCommandInteraction, user: User){
-        let player = await this.storage.getPlayer(user);
+        let player = await this.storage.get(user.unifiedId);
         if(!player){
             player = await this.storage.createPlayer(user);
         }
-        
+
         let inv = "Your inventory is empty.";
 
         if(player.inventory.length !== 0){
@@ -130,10 +132,12 @@ export class ItemsCTL extends Control{
     }
 
     public async handleInfoInteraction(interaction: Discord.StringSelectMenuInteraction, user: User){
-        let player = await this.storage.getPlayer(user);
+        let player = await this.storage.get(user.unifiedId);
         if(!player){
             player = await this.storage.createPlayer(user);
         }
+
+        let fnum = this.economy.numFormatterFactory(user.unifiedId);
 
         let slot = parseInt(interaction.values[0]);
         if(isNaN(slot) || !isFinite(slot)) throw new Error("Item info incorrect slot value error.");
@@ -148,8 +152,8 @@ export class ItemsCTL extends Control{
             color: Colors.Noraml,
             thumbnail: item.item.iconUrl ? { url: item.item.iconUrl } : undefined
         });
-        
-        emb = ItemsCTL.generateItemInfo(item.item, emb);
+
+        emb = ItemsCTL.generateItemInfo(item.item, emb, fnum);
 
         let actionrow = new Discord.ActionRowBuilder<Discord.ButtonBuilder>();
 
@@ -187,7 +191,7 @@ export class ItemsCTL extends Control{
     }
 
     public async handleUseItemInteraction(interaction: Discord.ButtonInteraction, user: User, slot: number){
-        let player = await this.storage.getPlayer(user);
+        let player = await this.storage.get(user.unifiedId);
         if(!player){
             player = await this.storage.createPlayer(user);
         }
@@ -206,7 +210,7 @@ export class ItemsCTL extends Control{
         }
 
         await item.item.use(item, player);
-        await this.storage.savePlayer(player);
+        await this.storage.savePlayer(player.user.unifiedId);
 
         let emb =  new Discord.EmbedBuilder({
             title: 'You are sucessfully used "' + item.item.name + '".',
@@ -218,7 +222,7 @@ export class ItemsCTL extends Control{
     }
 
     public async handlePlaceItemInteraction(interaction: Discord.ButtonInteraction, user: User, slot: number){
-        let player = await this.storage.getPlayer(user);
+        let player = await this.storage.get(user.unifiedId);
         if(!player){
             player = await this.storage.createPlayer(user);
         }
@@ -260,7 +264,7 @@ export class ItemsCTL extends Control{
     }
 
     public async handlePlaceItemInRoomInteraction(interaction: Discord.SelectMenuInteraction, user: User, item_slot: number){
-        let player = await this.storage.getPlayer(user);
+        let player = await this.storage.get(user.unifiedId);
         if(!player){
             player = await this.storage.createPlayer(user);
         }
@@ -286,7 +290,7 @@ export class ItemsCTL extends Control{
             throw new SynergyUserError("Can't place item in this room. Not enough slots or power grid.");
         }
 
-        await this.storage.savePlayer(player);
+        await this.storage.savePlayer(player.user.unifiedId);
 
         let emb =  new Discord.EmbedBuilder({
             title: `You are sucessfully placed "${item.item.name}" in room "${room.reference.name}".`,

@@ -20,7 +20,9 @@ export default class TopCTL extends Control {
         await interaction.deferReply();
 
         let players = await this.storage.getPlayersData();
-        
+
+        let fnum = this.economy.numFormatterFactory(user.unifiedId);
+
         let users: User[] = [];
         for(let p of players){
             if(!p.userDiscordId) {
@@ -41,7 +43,7 @@ export default class TopCTL extends Control {
         let stat = "";
         let i = 1;
         for(let u of users){
-            stat += `${i}. ${u.nickname}${u.discord ? `(<@${u.discord.id}>)` : ""} - ${parseFloat(u.economy.points.toFixed(5))} Points.\n`;
+            stat += `${i}. ${u.nickname}${u.discord ? `(<@${u.discord.id}>)` : ""} - ${fnum(u.economy.points)} Points.\n`;
             if(i >= 10){
                 break;
             }
@@ -56,7 +58,7 @@ export default class TopCTL extends Control {
 
         if(uindex !== -1){
             emb.setFooter({
-                text: `You're on the ${uindex + 1} place. (${parseFloat(user.economy.points.toFixed(5))} Points.)`,
+                text: `You're on the ${uindex + 1} place. (${fnum(user.economy.points)} Points.)`,
                 iconURL: interaction.user.avatarURL() || undefined
             });
         }
