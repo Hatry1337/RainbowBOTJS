@@ -3,11 +3,11 @@ import IEconomyStorageContainer from "../Game/Interfaces/IEconomyStorageContaine
 import IPlayerObject from "../Game/Interfaces/IPlayerObject";
 import IShopEntryData from "../Game/Interfaces/IShopEntryData";
 import ItemPlaceable from "../Game/Items/ItemPlaceable";
-import ItemRoom from "../Game/Items/ItemRoom";
+import ItemBuilding from "../Game/Items/ItemBuilding";
 import { ItemsRegistry } from "../Game/Items/ItemsRegistry";
 import ItemStack from "../Game/ItemStack";
 import Player from "../Game/Player";
-import Room from "../Game/Room";
+import Building from "../Game/Building";
 import ShopEntry from "../Shop/ShopEntry";
 import CachedInstance from "./CachedInstance";
 
@@ -95,8 +95,8 @@ export class StorageWrapper{
         if(!pcache || !pcache.isValid() || force){
             player = new Player(user);
             player.inventory = pdata.inventory.map(i => new ItemStack(ItemsRegistry.getItem(i.itemId)!, i.size, i.uuid, i.meta));
-            player.rooms = pdata.rooms.map(r => {
-                let room = new Room(ItemsRegistry.getItem(r.referenceId) as ItemRoom);
+            player.buildings = pdata.rooms.map(r => {
+                let room = new Building(ItemsRegistry.getItem(r.referenceId) as ItemBuilding);
                 room.placedItems = r.placedItems.map(i => new ItemStack(ItemsRegistry.getItem(i.itemId)! as ItemPlaceable, i.size, i.uuid, i.meta));
                 return room;
             });

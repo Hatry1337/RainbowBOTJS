@@ -1,12 +1,12 @@
 import IRoomObject from "./Interfaces/IRoomObject";
 import ItemPlaceable from "./Items/ItemPlaceable";
 import ItemPowerConsumer from "./Items/ItemPowerConsumer";
-import ItemRoom from "./Items/ItemRoom";
+import ItemBuilding from "./Items/ItemBuilding";
 import ItemStack from "./ItemStack";
 
-export default class Room {
+export default class Building {
     public placedItems: ItemStack<ItemPlaceable>[] = [];
-    constructor(public readonly reference: ItemRoom){
+    constructor(public readonly reference: ItemBuilding){
         
     }
 
@@ -28,7 +28,7 @@ export default class Room {
     }
 
     public placeItem(stack: ItemStack<ItemPlaceable>){
-        if(this.getUsedSlots() + (stack.item.sizeSlots * stack.size) > this.reference.slots){
+        if(this.getUsedSlots() + (stack.item.sizeSlots * stack.size) > this.reference.size){
             return -1;
         }
         if(stack.item instanceof ItemPowerConsumer){

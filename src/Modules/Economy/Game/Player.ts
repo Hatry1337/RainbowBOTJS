@@ -1,12 +1,12 @@
 import { User } from "synergy3";
 import IPlayerObject from "./Interfaces/IPlayerObject";
 import ItemStack from "./ItemStack";
-import Room from "./Room";
 import _ from "lodash";
+import Building from "./Building";
 
 export default class Player {
     public inventory: ItemStack[] = [];
-    public rooms: Room[] = [];
+    public buildings: Building[] = [];
     constructor(public user: User){
 
     }
@@ -68,7 +68,7 @@ export default class Player {
             userId: this.user.unifiedId,
             userDiscordId: this.user.discord?.id,
             inventory: this.inventory.map(i => i.toObject()),
-            rooms: this.rooms.map(r => r.toObject())
+            rooms: this.buildings.map(r => r.toObject())
         }
     }
 }

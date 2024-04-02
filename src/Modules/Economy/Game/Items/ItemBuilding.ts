@@ -1,11 +1,11 @@
 import ItemStack from "../ItemStack";
 import Player from "../Player";
-import Room from "../Room";
+import Building from "../Building";
 import ItemUsable from "./ItemUsable";
 
-export default class ItemRoom extends ItemUsable {
+export default class ItemBuilding extends ItemUsable {
     public powerGrid: number = 1000;
-    public slots: number = 10;
+    public size: number = 10;
     public weeklyFee: number = 5000;
 
     constructor(id: string){
@@ -17,8 +17,8 @@ export default class ItemRoom extends ItemUsable {
         return this;
     }
 
-    public setSlots(slots: number){
-        this.slots = slots;
+    public setSize(size: number){
+        this.size = size;
         return this;
     }
 
@@ -34,7 +34,7 @@ export default class ItemRoom extends ItemUsable {
     public async use(itemStack: ItemStack, player: Player) {
         if(itemStack.size <= 0) return player.updateInventory();
 
-        player.rooms.push(new Room(this));
+        player.buildings.push(new Building(this));
         itemStack.size -= 1;
         player.updateInventory();
     }
