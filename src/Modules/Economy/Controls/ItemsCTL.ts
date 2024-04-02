@@ -238,11 +238,11 @@ export class ItemsCTL extends Control{
 
         let actionrow = new Discord.ActionRowBuilder<Discord.SelectMenuBuilder>();
 
-        if(player.rooms.length !== 0) {
+        if(player.buildings.length !== 0) {
             let select = this.economy.createMessageSelectMenu([ Access.USER(interaction.user.id) ], -1, 300000)
             .build(builder => builder
                 .setMaxValues(1)
-                .setOptions(player!.rooms.map((i, indx) => ({ label: `${i.reference.name}, ${i.reference.powerGrid}W power, ${i.getUsedSlots()}/${i.reference.slots} slots.`, value: indx.toString() })))
+                .setOptions(player!.buildings.map((i, indx) => ({ label: `${i.reference.name}, ${i.reference.powerGrid}W power, ${i.getUsedSlots()}/${i.reference.size} slots.`, value: indx.toString() })))
             )
             .onExecute(async (int, user) => {
                 await this.handlePlaceItemInRoomInteraction(int, user, slot);
@@ -281,7 +281,7 @@ export class ItemsCTL extends Control{
         let room_slot = parseInt(interaction.values[0]);
         if(isNaN(room_slot) || !isFinite(room_slot)) throw new Error("Item info incorrect slot value error.");
 
-        let room = player.rooms[room_slot];
+        let room = player.buildings[room_slot];
         if(!room){
             throw new SynergyUserError("You don't have room in this slot.");
         }
