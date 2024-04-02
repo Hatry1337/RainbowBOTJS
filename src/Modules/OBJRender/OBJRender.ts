@@ -442,8 +442,8 @@ export default class OBJRender extends Module{
 
         let model = interaction.options.getAttachment("model", true);
 
-        if(!model.url.endsWith(".obj") || model.size > 5 * 1024 * 1024){
-            throw new SynergyUserError("Your file is not .obj extension file or bigger than 3 MB.");
+        if(model.contentType !== "model/obj" || model.size > 5 * 1024 * 1024){
+            throw new SynergyUserError("Your file is not model/obj or it's bigger than 5 MB.");
         }
 
         await interaction.deferReply();
@@ -671,11 +671,11 @@ export default class OBJRender extends Module{
 
         const getOrCreateViewportButton = (name: string, emoji: string) => {
             let button = this.bot.interactions.getComponent(
-                `${name}-viewport-${interaction.user.id}-${camera!.name}`
+                `${name}-viewport-${user.unifiedId}-${camera!.name}`
             ) as InteractiveComponent<Discord.ButtonBuilder>;
 
             if(!button) {
-                button = this.createMessageButton(`${name}-viewport-${interaction.user.id}-${camera!.name}`)
+                button = this.createMessageButton(`${name}-viewport-${user.unifiedId}-${camera!.name}`)
                     .onExecute(async (int, user) => {
                         await this.handleViewportButton(int, user, name);
                     })
