@@ -165,7 +165,7 @@ const bot = new Synergy({
 
 
     Prometheus.startHttpServer(port, host);
-    GlobalLogger.root.info(`Started Prometheus metrics client on http://${host}:${port}`);
+    GlobalLogger.root.info(`Started Prometheus metrics http server on http://${host}:${port}`);
 
     let m_start_time = Prometheus.createGauge("start_time", "BOT start time");
 
