@@ -16,6 +16,7 @@ import { Scene } from "./IgniRender/Scene/Scene";
 import AxesMarker from "./IgniRender/Scene/AxesMarker";
 import PolyObject from "./IgniRender/Scene/PolyObject";
 import SceneObject from "./IgniRender/Scene/SceneObject";
+import { NodeCanvasBackend } from "./NodeCanvasBackend/NodeCanvasBackend";
 
 export default class OBJRender extends Module{
     public Name:        string = "OBJRender";
@@ -665,10 +666,6 @@ export default class OBJRender extends Module{
             throw new SynergyUserError("Specified object is not a camera.");
         }
 
-        await interaction.deferReply();
-
-        let img = await camera.Render();
-
         const getOrCreateViewportButton = (name: string, emoji: string) => {
             let button = this.bot.interactions.getComponent(
                 `${name}-viewport-${user.unifiedId}-${camera!.name}`
@@ -710,9 +707,15 @@ export default class OBJRender extends Module{
         let row3 = new Discord.ActionRowBuilder<Discord.ButtonBuilder>()
             .addComponents(buttonUp.builder, buttonBackward.builder, buttonDown.builder);
 
+        await interaction.deferReply();
+
+        let backend = new NodeCanvasBackend();
+        let context = backend.createContext(400, 300);
+        camera.Render(context);
+
         await interaction.editReply({
             files: [
-                { name: "render.png", attachment: img.toBuffer("image/png") }
+                { name: "render.png", attachment: context.canvas.toBuffer("image/png") }
             ],
             components: [row1, row2, row3]
         });
@@ -810,10 +813,13 @@ export default class OBJRender extends Module{
             }
         }
 
-        let img = await camera.Render();
+        let backend = new NodeCanvasBackend();
+        let context = backend.createContext(400, 300);
+        camera.Render(context);
+
         await interaction.message.edit({
             files: [
-                { name: "render.png", attachment: img.toBuffer("image/png") }
+                { name: "render.png", attachment: context.canvas.toBuffer("image/png") }
             ]
         });
     }

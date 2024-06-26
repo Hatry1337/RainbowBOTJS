@@ -1,5 +1,5 @@
-import PolyObject from "./Scene/PolyObject";
-import { Vertex, Face, vec3, v3zero } from "./Utils3D";
+import PolyObject from "./Scene/PolyObject.js";
+import { Vertex, Face, vec3, v3zero } from "./Utils3D.js";
 
 export type RenderStyle = "flat" | "wireframe";
 export type RenderProjection = "none" | "perspective" | "orthogonal";

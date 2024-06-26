@@ -1,14 +1,27 @@
-import { RenderProjection, RenderStyle } from "../IgniRender";
-import { convertRange, getFaceCenter, getFaceNormal, getNormalColor, matrix4MultPoint, Path, v3copy, v3distance, v3dot, v3mul, v3rotate, v3sub, v3sum, vec2, vec3 } from "../Utils3D";
-import SceneObject from "./SceneObject";
-import { Canvas, createCanvas } from '@napi-rs/canvas';
+import { RenderProjection, RenderStyle } from "../IgniRender.js";
+import {
+    convertRangeVec2,
+    getFaceCenter,
+    getFaceNormal,
+    getNormalColor,
+    matrix4MultPoint,
+    Path, v2fill, v2zero,
+    v3copy,
+    v3distance,
+    v3dot, v3fill,
+    v3mul,
+    v3rotate,
+    v3sub,
+    v3sum,
+    vec2,
+    vec3
+} from "../Utils3D.js";
+import SceneObject from "./SceneObject.js";
+import { GFXContext } from "../GFXBackend/GFXContext.js";
 
 export default class Camera extends SceneObject{
-    public renderResolution: {
-        Width: number;
-        Height: number;
-    }
-    public aspectRatio;
+    public planeWidth: number = 4;
+    public planeHeight: number = 3;
     public renderStyle: RenderStyle = "flat";
     public projection: RenderProjection = "perspective";
     public FOV: number = 90;
@@ -17,11 +30,6 @@ export default class Camera extends SceneObject{
 
     constructor(name: string, pos: vec3, rot: vec3){
         super(name, pos, rot);
-        this.renderResolution = {
-            Width: 400,
-            Height: 300
-        }
-        this.aspectRatio = this.renderResolution.Height / this.renderResolution.Width;
     }
 
     public Draw(): Path[] {
@@ -115,29 +123,29 @@ export default class Camera extends SceneObject{
         return out;
     }
 
-    public Project(point: vec3): vec2 {
+    public Project(point: vec3, cords_min?: vec2, cords_max?: vec2): vec2 {
         if(this.projection === "perspective"){
             //point = v3normalize(point);
 
-            let s = 1 / Math.tan(this.FOV / 2 * Math.PI / 180);
-            let d = this.farClipPlane - this.nearClipPlane;
-            let fn1 = this.farClipPlane / d;
-            let fn2 = this.farClipPlane * this.nearClipPlane / d;
+            // let s = 1 / Math.tan(this.FOV / 2 * Math.PI / 180);
+            // let d = this.farClipPlane - this.nearClipPlane;
+            // let fn1 = this.farClipPlane / d;
+            // let fn2 = this.farClipPlane * this.nearClipPlane / d;
+            //
+            //
+            // let mat = [
+            //     [s, 0, 0,     0],
+            //     [0, s, 0,     0],
+            //     [0, 0, -fn1, -1],
+            //     [0, 0, -fn2,  0]
+            // ];
 
-            /*
-            let mat = [
-                [s, 0, 0,     0], 
-                [0, s, 0,     0],
-                [0, 0, -fn1, -1],
-                [0, 0, -fn2,  0]
-            ];
-            */
 
             let top, bottom, left, right;
 
             top = this.nearClipPlane * Math.tan((this.FOV * 0.0174533)/2);
             bottom = -top;
-            right = top * this.aspectRatio;
+            right = top * this.planeHeight / this.planeWidth;
             left = -right;
 
             let mat = [
@@ -147,7 +155,11 @@ export default class Camera extends SceneObject{
                 [0, 0, -1, 0]
             ]
             
-            let res = matrix4MultPoint(mat, point);
+            let res: vec2 = matrix4MultPoint(mat, point);
+
+            if(cords_max && cords_min) {
+                res = convertRangeVec2(res, cords_max, cords_min, v2fill(1), v2fill(0));
+            }
 
             return res;
 
@@ -161,31 +173,27 @@ export default class Camera extends SceneObject{
         }
     }
 
-    public Render(): Canvas {
-        let canvas = createCanvas(this.renderResolution.Width, this.renderResolution.Height);
-        let ctx = canvas.getContext("2d")!;
-        ctx.fillStyle = "white";
-        ctx.fillRect(0,0, canvas.width, canvas.height);
-        ctx.fillStyle = "black";
+    public Render(ctx: GFXContext): GFXContext {
+        ctx.fillBackground("white");
 
         let rend_obj = this.scene.objects.filter(o => o.visible && o.id !== this.id);
 
         for(let obj of rend_obj){
             let prims = obj.Draw();
-            
-            /*
-            for(let p of prims){
-                if(p.isFace()){
-                    p.vertices.sort((a, b) => v3distance(a, this.position) - v3distance(b, this.position));
-                }else if(p.isPath()){
-                    p.points.sort((a, b) => v3distance(a, this.position) - v3distance(b, this.position));
-                }
-            }
-            */
+
+            // for(let p of prims){
+            //     if(p.isFace()){
+            //         p.vertices.sort((a, b) => v3distance(a, this.position) - v3distance(b, this.position));
+            //     }else if(p.isPath()){
+            //         p.points.sort((a, b) => v3distance(a, this.position) - v3distance(b, this.position));
+            //     }
+            // }
+
+            let camera_pos = v3rotate(this.position, v3mul(this.rotation, v3fill(-1)));
 
             prims.sort((a, b) => {
                 if(a.isFace() && b.isFace()){
-                    return v3distance(a.getCenter(true), this.position) - v3distance(b.getCenter(true), this.position);
+                    return a.shortestDistance(camera_pos) - b.shortestDistance(camera_pos);
                 }else{
                     return -Infinity;
                 }
@@ -193,66 +201,55 @@ export default class Camera extends SceneObject{
 
             for(let p of prims){
                 if(p.isPath()){
-                    if(p.color){
-                        ctx.strokeStyle = p.color;
-                    }
-
                     //let points = p.points.map(p => this.Project(v3sum(v3rotate(p, this.rotation), this.position)));
-                    let points = p.points.map(p => this.Project(this.worldToCameraSpace(p)));
-                    
-                    ctx.beginPath();
-                    ctx.moveTo( convertRange(points[0].x, this.renderResolution.Width, 0, 1, -1), 
-                                convertRange(points[0].y, this.renderResolution.Height, 0, 1, -1));
-                    for(let i = 1; i < points.length; i++){
-                        ctx.lineTo( convertRange(points[i].x, this.renderResolution.Width, 0, 1, -1), 
-                                    convertRange(points[i].y, this.renderResolution.Height, 0, 1, -1));
-                    }
-                    ctx.stroke();
-                    ctx.closePath();
-                    ctx.strokeStyle = "black";
+                    let points = p.points
+                        .map(p => this.Project(this.worldToCameraSpace(p), v2zero(), {
+                            x: ctx.getWidth(),
+                            y: ctx.getHeight()
+                        }));
+
+                    ctx.drawPath(points, p.color);
                 }else if(p.isFace()) {
-                    p.center = p.center ? p.center : getFaceCenter(p);
-                    p.normal = p.normal ? p.normal : getFaceNormal(p);
+                    p.center = p.center ?? getFaceCenter(p);
+                    p.normal = p.normal ?? getFaceNormal(p);
 
                     let draw_flag = false;
 
                     if(this.renderStyle === "wireframe"){
                         draw_flag = true;
-                    }else if(v3dot(p.normal, v3sub(p.center, v3rotate(this.position, v3mul(this.rotation, { x: -1, y: -1, z: -1})))) > 0){
+                    }else if(v3dot(v3sub(p.vertices[0], camera_pos), p.normal) >= 0){
                         draw_flag = true;
                     }
 
                     if(draw_flag){
                        // let verts_prj = p.vertices.map(p => this.Project(v3sum(v3rotate(p, this.rotation), this.position)));
-                        let verts_prj = p.vertices.map(p => this.Project(this.worldToCameraSpace(p)));
-                       
-                        ctx.beginPath();
-                        
+                        let verts_prj = p.vertices.map(p => this.Project(this.worldToCameraSpace(p), v2zero(), {
+                            x: ctx.getWidth(),
+                            y: ctx.getHeight()
+                        }));
+
+                        let color: string | undefined;
                         if(this.renderStyle === "flat"){
-                            let color = Math.floor(getNormalColor(p.normal, {
+                            let brightness = Math.floor(getNormalColor(p.normal, {
                                 x: -0.5,
                                 y: 0.75,
                                 z: -1
                             }));
-                            ctx.fillStyle = `rgb(${color},${color},${color})`;
+                            color = `rgb(${brightness},${brightness},${brightness})`;
                         }
 
-                        ctx.moveTo( convertRange(verts_prj[0].x, this.renderResolution.Width, 0, 1, -1), 
-                                    convertRange(verts_prj[0].y, this.renderResolution.Height, 0, 1, -1));
-                        for(let i = 1; i < verts_prj.length; i++){
-                            ctx.lineTo( convertRange(verts_prj[i].x, this.renderResolution.Width, 0, 1, -1), 
-                                        convertRange(verts_prj[i].y, this.renderResolution.Height, 0, 1, -1));
+                        if(verts_prj.length === 3) {
+                            ctx.drawTriangle({
+                                points: verts_prj as [vec2, vec2, vec2],
+                                color
+                            });
+                        } else {
+                            ctx.drawNGon(verts_prj, color);
                         }
-                        if(this.renderStyle === "flat"){
-                            ctx.fill();
-                        }else{
-                            ctx.stroke();
-                        }
-                        ctx.closePath();
                     }
                 }
             }
         }
-        return canvas;
+        return ctx;
     }
 }

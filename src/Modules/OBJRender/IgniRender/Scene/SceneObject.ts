@@ -1,6 +1,5 @@
-import { Face, Primitive, v3sum, vec3 } from "../Utils3D";
-import { Scene } from "./Scene";
-import crypto from "crypto";
+import { Primitive, v3sum, vec3 } from "../Utils3D.js";
+import { Scene } from "./Scene.js";
 
 export default abstract class SceneObject{
     public id: string;
@@ -12,7 +11,7 @@ export default abstract class SceneObject{
     public stateChanged: boolean = true;
 
     protected constructor(name: string, pos: vec3, rot: vec3){
-        this.id = crypto.randomUUID();
+        this.id = Math.floor(Math.random() * 100000000).toString();
         this.name = name;
         this.position = pos;
         this.rotation = rot;

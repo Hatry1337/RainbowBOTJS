@@ -38,6 +38,30 @@ export class Face extends Primitive {
         }
         return this.center;
     }
+
+    public nearestVert(pos: vec3) {
+        let dist = Infinity;
+        let vert = this.vertices[0];
+        for(let v of this.vertices) {
+            let d = v3distance(v, pos);
+            if (d < dist) {
+                dist = d;
+                vert = v;
+            }
+        }
+        return vert;
+    }
+
+    public shortestDistance(pos: vec3) {
+        let dist = Infinity;
+        for(let v of this.vertices) {
+            let d = v3distance(v, pos);
+            if (d < dist) {
+                dist = d;
+            }
+        }
+        return dist;
+    }
 }
 
 export class Path extends Primitive {
@@ -47,14 +71,26 @@ export class Path extends Primitive {
     }
 }
 
+export function v2fill(num: number): vec2 {
+    return { x: num, y: num };
+}
+
+export function v3fill(num: number): vec3 {
+    return { x: num, y: num, z: num };
+}
+
+export function v4fill(num: number): vec4 {
+    return { x: num, y: num, z: num, w: num };
+}
+
 export function v2zero(): vec2 {
-    return { x: 0, y: 0 };
+    return v2fill(0);
 } 
 export function v3zero(): vec3 {
-    return { x: 0, y: 0, z: 0 };
+    return v3fill(0);
 }
 export function v4zero(): vec4 {
-    return { x: 0, y: 0, z: 0, w: 0 };
+    return v4fill(0);
 }
 
 export function v3copy(vec: vec3): vec3{
@@ -424,18 +460,34 @@ export function getFaceNormal(face: Face){
 
 /**
  * 
- * @param x Value to convert
+ * @param num Value to convert
  * @param n_max New value range max
  * @param n_min New value range min
  * @param o_max Old value range max
  * @param o_min Old value range min
  * @returns 
  */
-export function convertRange(x: number, n_max: number, n_min: number, o_max: number, o_min: number){
+export function convertRange(num: number, n_max: number, n_min: number, o_max: number, o_min: number){
     let n_rng = n_max - n_min;
     let o_rng = o_max - o_min;
-    return (((x - o_min) * n_rng) / o_rng) + n_min;
+    return (((num - o_min) * n_rng) / o_rng) + n_min;
 }
+
+export function convertRangeVec2(vec: vec2, n_max: vec2, n_min: vec2, o_max: vec2, o_min: vec2): vec2 {
+    return {
+        x: convertRange(vec.x, n_max.x, n_min.x, o_max.x, o_min.x),
+        y: convertRange(vec.y, n_max.y, n_min.y, o_max.y, o_min.y),
+    }
+}
+
+export function convertRangeVec3(vec: vec3, n_max: vec3, n_min: vec3, o_max: vec3, o_min: vec3): vec3 {
+    return {
+        x: convertRange(vec.x, n_max.x, n_min.x, o_max.x, o_min.x),
+        y: convertRange(vec.y, n_max.y, n_min.y, o_max.y, o_min.y),
+        z: convertRange(vec.z, n_max.z, n_min.z, o_max.z, o_min.z),
+    }
+}
+
 
 export function getNormalColor(normal: vec3, fakeLight: vec3){
     let cf = v3dot(fakeLight, v3normalize(normal));

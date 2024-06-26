@@ -1,6 +1,5 @@
-import { Path, vec3 } from "../Utils3D";
-import SceneObject from "./SceneObject";
-import { Scene } from "./Scene";
+import { Path, vec3 } from "../Utils3D.js";
+import SceneObject from "./SceneObject.js";
 
 export default class AxesMarker extends SceneObject{
     constructor(name: string, pos: vec3, rot: vec3){

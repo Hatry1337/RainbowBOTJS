@@ -6,3 +6,5 @@
 uuids.json
 /logs/**
 /data/**
+/src/Modules/OBJRender/IgniRender/build/*
+/src/Modules/OBJRender/IgniRender/build/

@@ -1,6 +1,5 @@
-import { Face, getFaceCenter, getFaceNormal, v3mul, v3rotate, v3sum, v3zero, vec3, Vertex } from "../Utils3D";
-import { Scene } from "./Scene";
-import SceneObject from "./SceneObject";
+import { Face, getFaceCenter, getFaceNormal, v3mul, v3rotate, v3sum, v3zero, vec3, Vertex } from "../Utils3D.js";
+import SceneObject from "./SceneObject.js";
 
 export default class PolyObject extends SceneObject{
     public calculatedMesh: Face[] = [];

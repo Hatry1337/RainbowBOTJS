@@ -1,0 +1,42 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IgniRenderEngine</title>
+    <script type="module" src="script.js"></script>
+</head>
+<body>
+    <style>
+        .column {
+            float: left;
+        }
+        .row:after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+        .row {
+           display: flex;
+        }
+        .column {
+            flex: 50%;
+        }
+    </style>
+    <div class="row">
+        <canvas id="viewport" width="800" height="600" style="border:1px solid #000000;"></canvas>
+        <div class="column">
+            <div class="row">
+                <input type="number" id="fov_input" placeholder="FOV">
+                <button id="fov_btn" onclick="sock.send(JSON.stringify({ input: { type: 'set_fov', value: parseInt(document.getElementById('fov_input').value) } }))">Set</button>
+            </div>
+            <div class="row">
+                <button id="dlobj_btn" onclick="sock.send(JSON.stringify({ input: { type: 'get_model' } }))">Download Model</button>
+            </div>
+            <div class="row">
+                <button id="dlobjo_btn" onclick="sock.send(JSON.stringify({ input: { type: 'get_model_original' } }))">Download Original Model</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

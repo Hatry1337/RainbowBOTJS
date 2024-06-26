@@ -1,4 +1,4 @@
-import SceneObject from "./SceneObject";
+import SceneObject from "./SceneObject.js";
 
 export class Scene {
     public objects: SceneObject[];
